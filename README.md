@@ -32,6 +32,10 @@ The only configuration field is an **optional API key**, needed solely to displa
 
 Without the key, everything else keeps working — only the map tile is unavailable.
 
+A second optional field sets the **cache duration** (600 s by default, 0 to disable): every request costs two
+upstream calls, and the forecast endpoint can take ~20 s on a cold cache, so a recent answer is reused. A change
+in the vigilance level clears the cache and nudges the core, so alert scenes never wait for the cache to expire.
+
 ## Coverage
 
 Météo France covers **France and its overseas departments**. For a location outside that area, the forecast API
@@ -55,6 +59,8 @@ The integration is split so that every piece is testable without a network:
 | `src/forecast.js`          | Raw forecast payload → pivot weather format |
 | `src/vigilance.js`         | Raw vigilance payload → pivot CAP alerts    |
 | `src/vigilance-watcher.js` | Upstream poll and freshness nudge           |
+| `src/forecast-cache.js`    | Short in-memory cache in front of the API   |
+| `src/config.js`            | Defaults and normalization of the config    |
 | `index.js`                 | The three SDK hooks, wiring it all together |
 
 ## Requirements

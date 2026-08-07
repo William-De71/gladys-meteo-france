@@ -34,6 +34,15 @@ Displaying the national vigilance map requires a personal API key, free of charg
 
 Without this key, everything else keeps working normally — only the map is unavailable.
 
+## Cache duration
+
+The dashboard and the chat assistant both ask for the weather, and every request costs two calls to Météo France. The integration therefore reuses a recent answer for the **cache duration**, adjustable in the **Configuration** screen (600 seconds by default, between 0 and 3600).
+
+You normally never need to change it. Worth knowing:
+
+- a change in the vigilance level is detected independently of the cache: the integration clears the cache and asks Gladys to re-pull immediately, so **your alert scenes fire without waiting for the cache to expire**;
+- setting it to **0** disables the cache and calls Météo France on every request. Since the forecast endpoint can take up to 20 seconds on a cold cache, the dashboard may then feel slower.
+
 ## Coverage
 
 Météo France covers **mainland France and its overseas departments**. For a house outside that area, the integration returns no data and Gladys automatically falls back to another weather service if you have one configured.

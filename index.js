@@ -19,7 +19,11 @@
 //
 // Zero configuration is required: forecast and vigilance go through the public
 // token of the Météo France mobile app. The personal API key is optional and
-// only unlocks the vigilance map image.
+// only unlocks the vigilance map image; the cache duration is optional too.
+//
+// A short in-memory cache sits in front of the provider (see forecast-cache.js):
+// every request costs two upstream calls, and the forecast endpoint can take
+// ~20 s on a cold cache.
 //
 // Environment variables provided by the Gladys supervisor:
 //   GLADYS_HOST_API_URL / GLADYS_INTEGRATION_TOKEN / GLADYS_INTEGRATION_SELECTOR
@@ -32,6 +36,7 @@ import { getForecast, getVigilance, getVigilanceMap } from './src/meteo-france-a
 import { buildWeather, readDepartment } from './src/forecast.js';
 import { buildAlerts, readMaxColor } from './src/vigilance.js';
 import { createVigilanceWatcher } from './src/vigilance-watcher.js';
+import { createForecastCache } from './src/forecast-cache.js';
 
 const gladys = new GladysIntegration();
 
@@ -45,12 +50,22 @@ const MAP_KEYS = {
 // Integration-scoped config, refreshed by the supervisor on every change.
 let config = normalizeConfig();
 
+// Short in-memory cache in front of Météo France: two upstream calls per
+// request, on an endpoint that can take ~20 s cold.
+const forecastCache = createForecastCache();
+
 // Upstream vigilance watcher: it only ever polls departments the core asked
 // about, and nudges when a color changed.
 const vigilanceWatcher = createVigilanceWatcher({
   fetchVigilance: (department) => getVigilance(department),
   readMaxColor,
-  onChange: () => gladys.requestWeatherRefresh(),
+  onChange: () => {
+    // The cached payloads carry the PREVIOUS alerts: drop them before nudging,
+    // otherwise the re-pull we are asking for would be served from the cache
+    // and the alert scene would never fire.
+    forecastCache.clear();
+    gladys.requestWeatherRefresh();
+  },
   logger,
 });
 
@@ -110,6 +125,18 @@ async function fetchAlerts(department) {
 // This is the whole point of the integration: the dashboard widget, the chat
 // assistant and the weather-alert scene triggers all come through here.
 gladys.onWeatherGet(async ({ latitude, longitude, language, units }) => {
+  const cacheKey = { latitude, longitude, language, units };
+  const cached = forecastCache.get(cacheKey);
+  if (cached !== null) {
+    logger.debug(`onWeatherGet -> cached answer for (${latitude}, ${longitude})`);
+    // Refresh the TTL of the department even on a cache hit: the core is still
+    // asking about this location, so the watcher must keep polling it.
+    if (cached.department !== null) {
+      vigilanceWatcher.track(cached.department);
+    }
+    return cached.weather;
+  }
+
   logger.info(`onWeatherGet -> forecast for (${latitude}, ${longitude}) in ${units}`);
   const data = await getForecast(latitude, longitude, { language });
   const weather = buildWeather(data, { units });
@@ -131,6 +158,10 @@ gladys.onWeatherGet(async ({ latitude, longitude, language, units }) => {
   if (images.length > 0) {
     weather.images = images;
   }
+
+  // The department travels with the payload so a cache hit can still refresh
+  // the watcher TTL without re-reading the forecast.
+  forecastCache.set(cacheKey, { weather, department }, config.cacheDuration);
   return weather;
 });
 
@@ -155,6 +186,9 @@ gladys.onWeatherGetImage(async (key) => {
 // means the vigilance map is unavailable.
 gladys.onConfigUpdated((rawConfig) => {
   config = normalizeConfig(rawConfig);
+  // A new API key changes the `images` metadata of the payload, and a shorter
+  // cache duration must take effect now: the previous answers are stale.
+  forecastCache.clear();
   logger.info(
     hasVigilanceMap(config)
       ? 'Météo France API key configured: the vigilance map is available'
@@ -169,6 +203,8 @@ gladys.onConfigUpdated((rawConfig) => {
 gladys.on('connected', async () => {
   try {
     config = normalizeConfig(await gladys.getConfig());
+    // The config may have changed while we were disconnected.
+    forecastCache.clear();
     await gladys.setConnectionStatus(true);
     vigilanceWatcher.start();
   } catch (err) {

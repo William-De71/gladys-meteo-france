@@ -6,10 +6,11 @@
     "en": "French weather forecasts and official vigilance alerts from Météo France.",
     "fr": "Prévisions météo et vigilance officielle Météo France pour la France."
   },
-  "version": "1.0.0",
-  "docker_image": "ghcr.io/william-de71/gladys-meteo-france:1.0.0",
+  "version": "0.0.1",
+  "docker_image": "ghcr.io/william-de71/gladys-meteo-france:0.0.1",
   "gladys_version": ">=4.85.0",
-  "cover_image": "https://raw.githubusercontent.com/William-De71/gladys-meteo-france/master/cover.jpg",
+  "cover_image": "https://raw.githubusercontent.com/William-De71/gladys-meteo-france/main/cover.jpg",
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
@@ -44,6 +45,22 @@
         "fr": "Nécessaire uniquement pour afficher la carte de vigilance nationale. Créez un compte gratuit sur le portail API Météo France et souscrivez à l'API « Données Publiques de Vigilance »."
       },
       "required": false
+    },
+    {
+      "key": "cache_duration",
+      "type": "number",
+      "label": {
+        "en": "Cache duration (s)",
+        "fr": "Durée du cache (s)"
+      },
+      "description": {
+        "en": "How long a weather answer is reused before calling Météo France again. The forecast endpoint can take up to 20 seconds on a cold cache, so reusing a recent answer keeps the dashboard responsive. Set to 0 to always call the API.",
+        "fr": "Durée pendant laquelle une réponse est réutilisée avant de rappeler Météo France. L'API de prévisions peut mettre jusqu'à 20 secondes à froid : réutiliser une réponse récente garde le tableau de bord réactif. Mettre 0 pour toujours appeler l'API."
+      },
+      "required": false,
+      "default": 600,
+      "min": 0,
+      "max": 3600
     }
   ]
 }

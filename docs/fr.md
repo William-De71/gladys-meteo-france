@@ -34,6 +34,15 @@ L'affichage de la carte nationale nécessite une clé d'API personnelle, gratuit
 
 Sans cette clé, tout le reste continue de fonctionner normalement : seule la carte n'est pas disponible.
 
+## Durée du cache
+
+Le tableau de bord et l'assistant conversationnel demandent tous les deux la météo, et chaque demande représente deux appels à Météo France. L'intégration réutilise donc une réponse récente pendant la **durée du cache**, réglable dans l'écran **Configuration** (600 secondes par défaut, entre 0 et 3600).
+
+Vous n'avez normalement pas à y toucher. À savoir :
+
+- une vigilance qui change est détectée indépendamment du cache : l'intégration vide le cache et demande à Gladys de recharger immédiatement, donc **vos scènes d'alerte se déclenchent sans attendre l'expiration du cache** ;
+- la valeur **0** désactive le cache et appelle Météo France à chaque demande. L'API de prévisions pouvant mettre jusqu'à 20 secondes à froid, l'affichage du tableau de bord peut alors être plus lent.
+
 ## Zone couverte
 
 Météo France couvre **la France métropolitaine et les départements d'outre-mer**. Pour une maison située en dehors de cette zone, l'intégration ne renvoie pas de données et Gladys bascule automatiquement sur un autre service météo si vous en avez configuré un.
