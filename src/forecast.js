@@ -134,9 +134,39 @@ function readHourlyRain(entry) {
 }
 
 /**
+ * @description Read the probability of one `probability_forecast` slice. MF
+ * nests them per phenomenon and per step: `rain['3h']`, and only `rain['6h']`
+ * on the far days where the 3h step is no longer published (the '3h' key is
+ * then present but null). The overall chance of any precipitation is the
+ * highest of the phenomena.
+ * @param {object} slice - A raw `probability_forecast` entry.
+ * @returns {{value: number, hours: number}|null} The probability 0-100 and the
+ * width of the slice in hours, or null when the slice carries none.
+ * @example
+ * readSliceProbability({ rain: { '3h': 40, '6h': 40 } }); // -> { value: 40, hours: 3 }
+ */
+function readSliceProbability(slice) {
+  if (!slice || typeof slice !== 'object') {
+    return null;
+  }
+  const atStep = (step) => [slice.rain, slice.snow].map((p) => p && p[step]).filter(isNumber);
+
+  const threeHour = atStep('3h');
+  if (threeHour.length > 0) {
+    return { value: Math.max(...threeHour), hours: 3 };
+  }
+  const sixHour = atStep('6h');
+  if (sixHour.length > 0) {
+    return { value: Math.max(...sixHour), hours: 6 };
+  }
+  return null;
+}
+
+/**
  * @description Find the precipitation probability covering a timestamp. MF
  * publishes them on 3h/6h slices, so the matching slice is the last one that
- * started at or before the entry.
+ * started at or before the entry — provided the entry still falls inside it,
+ * otherwise a gap in the array would leak a stale value onto later hours.
  * @param {Array<object>} probabilities - The `probability_forecast` array.
  * @param {number} timestamp - The entry timestamp in seconds.
  * @returns {number|null} The probability 0-100, or null when unavailable.
@@ -144,7 +174,7 @@ function readHourlyRain(entry) {
  * findProbability(probabilities, 1754300000);
  */
 function findProbability(probabilities, timestamp) {
-  if (!Array.isArray(probabilities)) {
+  if (!Array.isArray(probabilities) || !isNumber(timestamp)) {
     return null;
   }
   let best = null;
@@ -159,19 +189,109 @@ function findProbability(probabilities, timestamp) {
   if (best === null) {
     return null;
   }
-  // MF splits the probability per phenomenon: the overall chance of any
-  // precipitation is the highest of them.
-  const candidates = [
-    best.rain_hazard_3h,
-    best.rain_hazard_6h,
-    best.snow_hazard_3h,
-    best.snow_hazard_6h,
-  ];
-  const values = candidates.filter(isNumber);
-  if (values.length === 0) {
+  const probability = readSliceProbability(best);
+  if (probability === null) {
     return null;
   }
-  return Math.max(...values);
+  // Each slice covers its own width: past that, the value no longer applies.
+  if (timestamp >= best.dt + probability.hours * 3600) {
+    return null;
+  }
+  return probability.value;
+}
+
+/**
+ * @description Build the calendar-day key of a timestamp in a given timezone.
+ *
+ * Days must be grouped in LOCAL time, but `daily_forecast[].dt` is stamped at
+ * 00:00 UTC as a pure day marker: in Paris (UTC+2) that lands on the right
+ * local day, while in Guadeloupe (UTC-4) it lands on the previous one. So the
+ * daily entry is keyed on its UTC date and the hourly entries on their local
+ * date — which is what makes the two meet on the same day.
+ * @param {number} timestamp - The timestamp in seconds.
+ * @param {string|null} timezone - An IANA timezone, or null for UTC.
+ * @returns {string|null} The 'YYYY-MM-DD' key, or null when unusable.
+ * @example
+ * dayKey(1754300000, 'Europe/Paris'); // -> '2025-08-04'
+ */
+function dayKey(timestamp, timezone) {
+  if (!isNumber(timestamp)) {
+    return null;
+  }
+  const date = new Date(timestamp * 1000);
+  if (!timezone) {
+    return date.toISOString().slice(0, 10);
+  }
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+  } catch {
+    // An unknown timezone must not sink the whole forecast.
+    return date.toISOString().slice(0, 10);
+  }
+}
+
+/**
+ * @description Group the hourly entries by local calendar day.
+ * @param {Array<object>} hourly - The raw `forecast` array.
+ * @param {string|null} timezone - The IANA timezone of the location.
+ * @returns {Map<string, Array<object>>} The entries indexed by day key.
+ * @example
+ * groupHourlyByDay(forecast.forecast, 'Europe/Paris');
+ */
+function groupHourlyByDay(hourly, timezone) {
+  const days = new Map();
+  hourly.forEach((entry) => {
+    const key = dayKey(entry && entry.dt, timezone);
+    if (key === null) {
+      return;
+    }
+    const bucket = days.get(key);
+    if (bucket === undefined) {
+      days.set(key, [entry]);
+    } else {
+      bucket.push(entry);
+    }
+  });
+  return days;
+}
+
+/**
+ * @description Highest finite value a reader extracts from a list of entries.
+ * @param {Array<object>} entries - The entries to scan.
+ * @param {Function} read - Reader returning a number or null per entry.
+ * @returns {number|null} The maximum, or null when no entry carries a value.
+ * @example
+ * maxOf(entries, (entry) => entry.wind && entry.wind.speed);
+ */
+function maxOf(entries, read) {
+  const values = entries.map(read).filter(isNumber);
+  return values.length === 0 ? null : Math.max(...values);
+}
+
+/**
+ * @description Set a field on every day, but only when EVERY day has a value.
+ *
+ * The dashboard widget hides a whole forecast row as soon as one column misses
+ * the field, so a partially filled field is worse than no field at all.
+ * @param {Array<object>} days - The pivot days to complete.
+ * @param {Array<number|null>} values - One value per day, aligned by index.
+ * @param {string} field - The pivot field name.
+ * @returns {void}
+ * @example
+ * assignWhenComplete(days, [4.2, 3.1], 'wind_speed');
+ */
+function assignWhenComplete(days, values, field) {
+  if (days.length === 0 || values.length !== days.length || !values.every(isNumber)) {
+    return;
+  }
+  days.forEach((day, index) => {
+    day[field] = values[index];
+  });
 }
 
 /**
@@ -256,10 +376,7 @@ function buildHours(hourly, probabilities, units, nowSeconds) {
         if (rain !== null) {
           hour.precipitation = convertPrecipitation(rain, units);
         }
-        const probability = findProbability(probabilities, entry.dt);
-        if (probability !== null) {
-          hour.precipitation_probability = probability;
-        }
+        hour.datetimeSeconds = entry.dt;
         return hour;
       })
       .filter((hour) => hour !== null)
@@ -267,16 +384,54 @@ function buildHours(hourly, probabilities, units, nowSeconds) {
 }
 
 /**
+ * @description Fill `precipitation_probability` on the pivot hours.
+ *
+ * MF stops publishing the probability of the slice already under way (its
+ * `rain`/`snow` steps come back null), which would leave the running hour — and
+ * only it — without a value. Since the widget hides the whole row as soon as
+ * one hour misses the field, that first hole is backfilled from the earliest
+ * known slice. If any hour is still uncovered afterwards, the field is dropped
+ * everywhere rather than sent half-filled.
+ * @param {Array<object>} hours - The pivot hours, carrying `datetimeSeconds`.
+ * @param {Array<object>} probabilities - The raw `probability_forecast` array.
+ * @returns {void}
+ * @example
+ * assignHourlyProbabilities(hours, forecast.probability_forecast);
+ */
+function assignHourlyProbabilities(hours, probabilities) {
+  if (hours.length === 0) {
+    return;
+  }
+  const values = hours.map((hour) => findProbability(probabilities, hour.datetimeSeconds));
+
+  // Backfill the leading hole with the first known value: the running hour
+  // belongs to a slice MF no longer rates, not to a slice without rain.
+  const firstKnown = values.findIndex(isNumber);
+  if (firstKnown > 0) {
+    values.fill(values[firstKnown], 0, firstKnown);
+  }
+  if (!values.every(isNumber)) {
+    return;
+  }
+  hours.forEach((hour, index) => {
+    hour.precipitation_probability = values[index];
+  });
+}
+
+/**
  * @description Build the pivot `days` array from the raw daily entries.
  * @param {Array<object>} daily - The raw `daily_forecast` array.
  * @param {Array<object>} hourly - The raw `forecast` array (weather12H fallback).
+ * @param {Array<object>} probabilities - The raw `probability_forecast` array.
  * @param {string} units - The requested unit system.
+ * @param {string|null} timezone - The IANA timezone of the location.
  * @returns {Array<object>} The pivot days (≤ 8 entries).
  * @example
- * buildDays(forecast.daily_forecast, forecast.forecast, 'metric');
+ * buildDays(forecast.daily_forecast, forecast.forecast, probabilities, 'metric', 'Europe/Paris');
  */
-function buildDays(daily, hourly, units) {
-  return daily
+function buildDays(daily, hourly, probabilities, units, timezone) {
+  const kept = [];
+  const days = daily
     .slice(0, MAX_DAYS)
     .map((entry) => {
       const temperatureMin = entry.T && entry.T.min;
@@ -317,9 +472,46 @@ function buildDays(daily, hourly, units) {
       if (sunset !== null) {
         day.sunset = sunset;
       }
+      kept.push(entry);
       return day;
     })
     .filter((day) => day !== null);
+
+  // Wind and probability have no daily equivalent in the MF payload: they are
+  // aggregated from the hourly entries of the matching day. This MUST happen
+  // here — the core truncates `hours` to a single day, so the widget could
+  // never compute it for the later days.
+  const hourlyByDay = groupHourlyByDay(hourly, timezone);
+  const probabilitiesByDay = groupHourlyByDay(probabilities, timezone);
+  const entriesOf = (index, source) => source.get(dayKey(kept[index].dt, null)) || [];
+
+  const gusts = days.map((_day, index) =>
+    maxOf(entriesOf(index, hourlyByDay), (entry) => entry.wind && entry.wind.gust),
+  );
+  const speeds = days.map((_day, index) =>
+    maxOf(entriesOf(index, hourlyByDay), (entry) => entry.wind && entry.wind.speed),
+  );
+  // The day's wind is its peak gust, falling back to the peak sustained speed:
+  // MF reports a 0 gust on calm days, which is a real "no gust", not a hole.
+  const winds = days.map((_day, index) => {
+    const gust = gusts[index];
+    return isNumber(gust) && gust > 0 ? gust : speeds[index];
+  });
+  const toSpeed = (value) => (isNumber(value) ? convertWindSpeed(value, units) : null);
+  assignWhenComplete(days, winds.map(toSpeed), 'wind_speed');
+  // A 0 gust is MF saying "no gust", so it is never reported as one.
+  const reportableGusts = gusts.map((gust) => (isNumber(gust) && gust > 0 ? gust : null));
+  assignWhenComplete(days, reportableGusts.map(toSpeed), 'wind_gust');
+
+  const dailyProbabilities = days.map((_day, index) =>
+    maxOf(entriesOf(index, probabilitiesByDay), (slice) => {
+      const probability = readSliceProbability(slice);
+      return probability === null ? null : probability.value;
+    }),
+  );
+  assignWhenComplete(days, dailyProbabilities, 'precipitation_probability');
+
+  return days;
 }
 
 /**
@@ -341,8 +533,14 @@ function buildWeather(data, { units = 'metric', nowSeconds = Math.floor(Date.now
     ? data.probability_forecast
     : [];
 
+  const position = (data && data.position) || {};
+  const timezone = typeof position.timezone === 'string' ? position.timezone : null;
+
   const hours = buildHours(hourly, probabilities, units, nowSeconds);
-  const days = buildDays(daily, hourly, units);
+  assignHourlyProbabilities(hours, probabilities);
+  // Internal bookkeeping of the probability pass: never part of the pivot.
+  hours.forEach((hour) => delete hour.datetimeSeconds);
+  const days = buildDays(daily, hourly, probabilities, units, timezone);
 
   // Current conditions = the first upcoming hourly entry. MF has no dedicated
   // "current" block in this endpoint, and the pilot widget did exactly this.

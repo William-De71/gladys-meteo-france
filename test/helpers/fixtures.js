@@ -58,10 +58,25 @@ function buildForecastFixture(overrides = {}) {
         T: { value: 18 },
         weather: { icon: 'p1n', desc: 'Ciel clair' }, // night
       },
+      {
+        // Tomorrow: MF drops to a 3h step on the later days. The daily wind is
+        // aggregated from these, so every returned day needs its own entries.
+        dt: NOON + 24 * 3600,
+        T: { value: 27 },
+        wind: { speed: 5, gust: 12, direction: 200 },
+        weather: { icon: 'p3j', desc: 'Ciel voilé' },
+      },
     ],
+    // MF nests the probabilities per phenomenon and per step, and leaves the
+    // slice already under way unrated (null steps) — both shapes are covered.
     probability_forecast: [
-      { dt: DAY_START, rain_hazard_3h: 10 },
-      { dt: NOON, rain_hazard_3h: 40, snow_hazard_3h: 0 },
+      { dt: DAY_START, rain: { '3h': null, '6h': null }, snow: { '3h': null, '6h': null } },
+      { dt: NOON, rain: { '3h': 40, '6h': 40 }, snow: { '3h': 0, '6h': 0 } },
+      { dt: NOON + 3 * 3600, rain: { '3h': null, '6h': 20 }, snow: { '3h': null, '6h': 0 } },
+      // Tomorrow, so the daily aggregation has a slice on the second day too.
+      { dt: DAY_START + 24 * 3600, rain: { '3h': 60, '6h': 60 }, snow: { '3h': 0, '6h': 0 } },
+      // The 6h step MF falls back to on the later days, covering tomorrow noon.
+      { dt: NOON + 24 * 3600, rain: { '3h': null, '6h': 30 }, snow: { '3h': null, '6h': 0 } },
     ],
     daily_forecast: [
       {
