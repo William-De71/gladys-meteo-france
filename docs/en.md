@@ -28,9 +28,39 @@ Gladys checks for alerts every 30 minutes. This integration additionally watches
 Displaying the national vigilance map requires a personal API key, free of charge:
 
 1. Create an account on the [Météo France API portal](https://portail-api.meteofrance.fr/).
-2. Subscribe to the **"Données Publiques de Vigilance"** API (free).
-3. Copy the generated API key.
+2. Subscribe to the **"Données Publiques de Vigilance"** API (free). It also appears as **"Bulletin Vigilance"**, and as `DPVigilance` in technical URLs — all three are the same API.
+3. On the API configuration screen, pick the **API Key** token type (not OAuth2), enter a long validity **duration**, then generate the key — see the two points below, this is where it usually goes wrong.
 4. In Gladys, open the Météo France integration's **Configuration** screen, paste the key and save.
+
+### An API key, not an OAuth2 token
+
+On the **"Configurer l'API Bulletin Vigilance"** screen, the portal asks for a **token type**:
+
+|                                          | Works here | Lifetime                       |
+| ---------------------------------------- | ---------- | ------------------------------ |
+| **API Key**                              | ✅ **yes** | the duration you enter         |
+| **OAuth2** (the _Generate Token_ button) | ❌ no      | about 1 hour, not renewed here |
+
+So tick **API Key**. An OAuth2 token appears to work at first, then **stops working after roughly an hour**: the map silently disappears. If your map used to show and no longer does, this is almost always why.
+
+### Key validity duration
+
+Once **API Key** is ticked, the portal shows a mandatory **"Durée"** (duration) field, empty by default, to be filled **in seconds**. That is when the key stops working — and the vigilance map with it.
+
+Since the integration uses this key permanently, enter the **longest duration you can**, otherwise you will have to regenerate and re-paste it regularly.
+
+> **Enter `94672800`** (about 3 years). That is the maximum the portal accepts — anything higher is rejected.
+
+For reference, should you prefer a shorter duration:
+
+| Duration | Value to enter           |
+| -------- | ------------------------ |
+| 1 month  | `2592000`                |
+| 6 months | `15552000`               |
+| 1 year   | `31536000`               |
+| ~3 years | `94672800` — **maximum** |
+
+Write the expiry date down somewhere: on that day the map will stop with no warning, exactly like an OAuth2 token. Generating a new key and re-pasting it in Gladys is then all it takes.
 
 Without this key, everything else keeps working normally — only the map is unavailable.
 
@@ -38,10 +68,26 @@ Without this key, everything else keeps working normally — only the map is una
 
 The dashboard and the chat assistant both ask for the weather, and every request costs two calls to Météo France. The integration therefore reuses a recent answer for the **cache duration**, adjustable in the **Configuration** screen (600 seconds by default, between 0 and 3600).
 
-You normally never need to change it. Worth knowing:
+You normally never need to change it: the 600-second default suits the vast majority of setups.
 
-- a change in the vigilance level is detected independently of the cache: the integration clears the cache and asks Gladys to re-pull immediately, so **your alert scenes fire without waiting for the cache to expire**;
-- setting it to **0** disables the cache and calls Météo France on every request. Since the forecast endpoint can take up to 20 seconds on a cold cache, the dashboard may then feel slower.
+### Which value to pick
+
+The setting is in **seconds**, between 0 and 3600 (1 hour).
+
+| Value                        | Effect                                      |
+| ---------------------------- | ------------------------------------------- |
+| **0**                        | no cache, every request calls Météo France  |
+| **300** (5 min)              | fresher data, more calls                    |
+| **600** (10 min) — _default_ | good balance, recommended                   |
+| **1800** (30 min)            | fewer calls, very responsive dashboard      |
+| **3600** (1 h)               | maximum, forecasts may be up to an hour old |
+
+Raising the value is not risky: Météo France only refreshes its forecasts a few times an hour, so a 10 to 30 minute cache costs you almost nothing in freshness while making the dashboard faster.
+
+Two things worth knowing:
+
+- a change in the vigilance level is detected independently of the cache: the integration clears the cache and asks Gladys to re-pull immediately, so **your alert scenes fire without waiting for the cache to expire**, even with the cache set to 1 hour;
+- setting it to **0** disables the cache and calls Météo France on every request. Since the forecast endpoint can take up to 20 seconds on a cold cache, the dashboard may then feel much slower. Keep it for one-off troubleshooting rather than permanent use.
 
 ## Coverage
 

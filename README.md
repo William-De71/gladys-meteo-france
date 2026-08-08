@@ -27,14 +27,22 @@ application. Install the integration and it works.
 The only configuration field is an **optional API key**, needed solely to display the national vigilance map:
 
 1. Create a free account on the [Météo France API portal](https://portail-api.meteofrance.fr/).
-2. Subscribe to the **Données Publiques de Vigilance** API.
-3. Paste the key in the integration's Configuration screen.
+2. Subscribe to the **Données Publiques de Vigilance** API (also listed as _Bulletin Vigilance_, `DPVigilance`
+   in technical URLs).
+3. On the API configuration screen, pick the **API Key** token type — **not** OAuth2, whose token expires after
+   ~1 hour — then fill the mandatory **Durée** field **in seconds**: `94672800` (~3 years) is the maximum the
+   portal accepts.
+4. Paste the generated key in the integration's Configuration screen. The client sends it as the `apikey` header.
+
+The map silently stops loading once that duration runs out, so keep the expiry date in mind.
 
 Without the key, everything else keeps working — only the map tile is unavailable.
 
-A second optional field sets the **cache duration** (600 s by default, 0 to disable): every request costs two
-upstream calls, and the forecast endpoint can take ~20 s on a cold cache, so a recent answer is reused. A change
-in the vigilance level clears the cache and nudges the core, so alert scenes never wait for the cache to expire.
+A second optional field sets the **cache duration**, in seconds, between 0 and 3600 (600 by default, 0 to
+disable): every request costs two upstream calls, and the forecast endpoint can take ~20 s on a cold cache, so a
+recent answer is reused. Météo France only refreshes a few times an hour, so raising it to 1800 costs almost no
+freshness. A change in the vigilance level clears the cache and nudges the core, so alert scenes never wait for
+the cache to expire, whatever the value.
 
 ## Coverage
 

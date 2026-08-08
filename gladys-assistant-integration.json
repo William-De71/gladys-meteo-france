@@ -41,8 +41,8 @@
         "fr": "Clé d'API Météo France (optionnelle)"
       },
       "description": {
-        "en": "Only needed to display the national vigilance map. Create a free account on the Météo France API portal and subscribe to the \"Données Publiques de Vigilance\" API.",
-        "fr": "Nécessaire uniquement pour afficher la carte de vigilance nationale. Créez un compte gratuit sur le portail API Météo France et souscrivez à l'API « Données Publiques de Vigilance »."
+        "en": "Only needed to display the national vigilance map. Create a free account on the Météo France API portal and subscribe to the \"Données Publiques de Vigilance\" API. Pick the \"API Key\" token type, NOT OAuth2 (which expires after about an hour), and set the mandatory \"Durée\" field to 94672800 seconds — about 3 years, the maximum the portal accepts. The map stops loading once that duration runs out.",
+        "fr": "Nécessaire uniquement pour afficher la carte de vigilance nationale. Créez un compte gratuit sur le portail API Météo France et souscrivez à l'API « Données Publiques de Vigilance ». Choisissez le type de token « API Key », PAS OAuth2 (qui expire au bout d'une heure environ), et renseignez le champ obligatoire « Durée » avec 94672800 secondes — environ 3 ans, le maximum accepté par le portail. La carte cesse de s'afficher une fois cette durée écoulée."
       },
       "required": false
     },
@@ -54,8 +54,8 @@
         "fr": "Durée du cache (s)"
       },
       "description": {
-        "en": "How long a weather answer is reused before calling Météo France again. The forecast endpoint can take up to 20 seconds on a cold cache, so reusing a recent answer keeps the dashboard responsive. Set to 0 to always call the API.",
-        "fr": "Durée pendant laquelle une réponse est réutilisée avant de rappeler Météo France. L'API de prévisions peut mettre jusqu'à 20 secondes à froid : réutiliser une réponse récente garde le tableau de bord réactif. Mettre 0 pour toujours appeler l'API."
+        "en": "In seconds, between 0 and 3600. How long a weather answer is reused before calling Météo France again. The forecast endpoint can take up to 20 seconds on a cold cache, so reusing a recent answer keeps the dashboard responsive. The default of 600 (10 min) suits most setups; raising it to 1800 costs almost no freshness, as Météo France only refreshes a few times an hour. Set to 0 to always call the API (slower dashboard). A vigilance change always refreshes immediately, whatever this value.",
+        "fr": "En secondes, entre 0 et 3600. Durée pendant laquelle une réponse est réutilisée avant de rappeler Météo France. L'API de prévisions peut mettre jusqu'à 20 secondes à froid : réutiliser une réponse récente garde le tableau de bord réactif. La valeur par défaut de 600 (10 min) convient à la plupart des installations ; monter à 1800 ne fait presque rien perdre en fraîcheur, Météo France ne mettant à jour que quelques fois par heure. Mettre 0 pour toujours appeler l'API (tableau de bord plus lent). Une vigilance qui change rafraîchit toujours immédiatement, quelle que soit cette valeur."
       },
       "required": false,
       "default": 600,
