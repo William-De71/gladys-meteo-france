@@ -71,6 +71,13 @@ jobs:
             gladys-assistant-integration.json > "$tmp"
           mv "$tmp" gladys-assistant-integration.json
 
+          # jq reformats the whole file in its own style, which breaks the
+          # Prettier check on the next CI run: hand it back its formatting.
+          # This job installs no dependency, so the pinned Prettier is fetched
+          # on the fly rather than pulling the whole dev tree in.
+          prettier_version="$(node -p "require('./package.json').devDependencies.prettier")"
+          npx --yes "prettier@${prettier_version}" --write gladys-assistant-integration.json
+
           echo "version=${new_version}" >> "$GITHUB_OUTPUT"
 
       # Note: if the branch you release from is protected against direct pushes,
