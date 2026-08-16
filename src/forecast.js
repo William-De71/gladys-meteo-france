@@ -25,18 +25,27 @@ const MAX_DAYS = 8;
 const POURING_THRESHOLD_MM_PER_HOUR = 7.6;
 
 /**
- * @description Convert a Celsius temperature to the requested unit system.
+ * @description Convert a Celsius temperature to the requested unit system, and
+ * round it to the nearest whole degree.
+ *
+ * The rounding is deliberate: the dashboard widget TRUNCATES the decimals it
+ * receives, so MF's own 27.9 °C showed up as 27° next to the 28° printed by
+ * meteofrance.com. Rounding here is what makes the two agree — the decimal is
+ * false precision on a forecast anyway.
  * @param {number} celsius - The temperature in °C.
  * @param {string} units - 'metric' or 'us'.
- * @returns {number} The converted temperature, rounded to one decimal.
+ * @returns {number} The converted temperature, rounded to the nearest degree.
  * @example
- * convertTemperature(20, 'us'); // -> 68
+ * convertTemperature(27.9, 'metric'); // -> 28
  */
 function convertTemperature(celsius, units) {
+  // `+ 0` normalises the -0 Math.round returns just below zero. JSON already
+  // serialises it as 0, so this guards the in-memory value for any consumer
+  // reading the number directly.
   if (units !== 'us') {
-    return celsius;
+    return Math.round(celsius) + 0;
   }
-  return Math.round((celsius * (9 / 5) + 32) * 10) / 10;
+  return Math.round(celsius * (9 / 5) + 32) + 0;
 }
 
 /**

@@ -11,7 +11,9 @@ import { buildForecastFixture, NOON } from './helpers/fixtures.js';
 
 test('builds the required pivot fields from the first upcoming hour', () => {
   const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON });
-  assert.equal(weather.temperature, 24.3);
+  // 24.3 °C is reported as 24: the widget truncates decimals, so the pivot
+  // rounds to the nearest degree rather than letting it read 24 for 24.9.
+  assert.equal(weather.temperature, 24);
   assert.equal(weather.weather, 'partly-cloudy');
   assert.equal(weather.datetime, new Date(NOON * 1000).toISOString());
   assert.equal(weather.is_day, true);
@@ -173,18 +175,33 @@ test('exposes the daily UV index and sun times of today', () => {
 
 test('converts every measure to the us unit system', () => {
   const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON, units: 'us' });
-  // 24.3 °C -> 75.7 °F
-  assert.equal(weather.temperature, 75.7);
+  // 24.3 °C -> 75.74 °F, rounded to 76
+  assert.equal(weather.temperature, 76);
   // 3.5 m/s -> 7.8 mph
   assert.equal(weather.wind_speed, 7.8);
   // 9.2 mm -> 0.36 in
   assert.equal(weather.hours[1].precipitation, 0.36);
-  assert.equal(weather.days[0].temperature_max, 78.8);
+  // 26 °C -> 78.8 °F, rounded to 79
+  assert.equal(weather.days[0].temperature_max, 79);
 });
 
 test('keeps metric values untouched', () => {
   assert.equal(convertTemperature(20, 'metric'), 20);
   assert.equal(convertWindSpeed(10, 'metric'), 10);
+});
+
+test('rounds temperatures to the nearest degree', () => {
+  // The widget truncates: sending 27.9 made it print 27° where meteofrance.com
+  // printed 28°. Rounding here is what puts the two back in agreement.
+  assert.equal(convertTemperature(27.9, 'metric'), 28);
+  assert.equal(convertTemperature(29.6, 'metric'), 30);
+  assert.equal(convertTemperature(15.1, 'metric'), 15);
+  // Half degrees go up, negatives included (-2.5 -> -2, JS rounds towards +∞).
+  assert.equal(convertTemperature(21.5, 'metric'), 22);
+  assert.equal(convertTemperature(-3.2, 'metric'), -3);
+  // Fahrenheit is rounded on the converted value, not before.
+  assert.equal(convertTemperature(0, 'us'), 32);
+  assert.equal(convertTemperature(-17.8, 'us'), 0);
 });
 
 test('reads the department out of the forecast payload', () => {
