@@ -1,6 +1,6 @@
 {
   "name": "gladys-meteo-france",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "External Gladys Assistant integration providing Météo France forecasts and official vigilance alerts.",
   "type": "module",
