@@ -82,8 +82,11 @@ test('never looks up a bis code in the base table', () => {
     condition: 'rain',
     isDay: true,
   });
+  // A `bis` code whose wording matches nothing now degrades to the family of
+  // its base code instead of to 'unknown': the dashboard paints 'unknown' as a
+  // red thermometer labelled "Indisponible", which is worse than a rough sky.
   assert.deepEqual(parseWeather({ icon: 'p14bisj', desc: 'Phénomène inédit' }), {
-    condition: 'unknown',
+    condition: 'snow',
     isDay: true,
   });
   // The base code still reports snow when the description agrees.
@@ -119,4 +122,45 @@ test('returns unknown rather than guessing a clear sky', () => {
 test('survives a missing weather object', () => {
   assert.deepEqual(parseWeather(undefined), { condition: 'unknown', isDay: null });
   assert.deepEqual(parseWeather({}), { condition: 'unknown', isDay: null });
+});
+
+test('reads the "Variable" sky the p2bis code answers', () => {
+  // The red-thermometer bug reported on the forum: MF answers p2bis/"Variable"
+  // on an ordinary mixed sky, no keyword matched it, and 'unknown' rendered as
+  // a thermometer labelled "Indisponible" on the dashboard.
+  assert.deepEqual(parseWeather({ icon: 'p2bisj', desc: 'Variable' }), {
+    condition: 'partly-cloudy',
+    isDay: true,
+  });
+  assert.deepEqual(parseWeather({ icon: 'p2bisn', desc: 'Variable' }), {
+    condition: 'partly-cloudy',
+    isDay: false,
+  });
+});
+
+test('reads the English labels the API returns despite lang=fr', () => {
+  // Observed mid-payload on real locations, next to French entries.
+  assert.equal(conditionFromDescription('Cloudy'), 'partly-cloudy');
+  assert.equal(conditionFromDescription('Clear sky'), 'clear');
+  assert.equal(conditionFromDescription('Storms'), 'thunderstorm');
+  assert.equal(conditionFromDescription('Slight showers'), 'rain');
+  assert.equal(conditionFromDescription('Overcast'), 'cloud');
+  assert.equal(conditionFromDescription('Light snow'), 'snow');
+});
+
+test('reports hail rather than a plain thunderstorm when both are named', () => {
+  // p25bis arrives as "Orage avec grêle": the pivot has a hail condition, and
+  // the keyword order must prefer it over the 'orage' that follows.
+  assert.deepEqual(parseWeather({ icon: 'p25bisj', desc: 'Orage avec grêle' }), {
+    condition: 'hail',
+    isDay: true,
+  });
+});
+
+test('separates an overcast sky from a merely cloudy one', () => {
+  // MF renders "Très nuageux" as a full cloud, so reporting partly-cloudy put
+  // a sun on an overcast sky.
+  assert.equal(conditionFromDescription('Très nuageux'), 'cloud');
+  assert.equal(conditionFromDescription('Nuageux'), 'partly-cloudy');
+  assert.equal(conditionFromDescription('Ciel voilé'), 'partly-cloudy');
 });
