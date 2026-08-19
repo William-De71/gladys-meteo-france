@@ -9,7 +9,7 @@
 //                         be null on some days), precipitation['24h'], uv, sun_*
 //   - `probability_forecast[]` precipitation probabilities, per 3h-6h slices
 //
-// Unit handling: MF always answers in METRIC (°C, m/s, mm, hPa). The pivot
+// Unit handling: MF always answers in METRIC (°C, km/h, mm, hPa). The pivot
 // contract says the integration must answer in the REQUESTED unit system, so
 // the `us` case converts here — the core never converts for us.
 // -----------------------------------------------------------------------------
@@ -49,19 +49,23 @@ function convertTemperature(celsius, units) {
 }
 
 /**
- * @description Convert a wind speed from m/s (what MF returns) to the requested
- * unit system: m/s for metric, mph for us.
- * @param {number} metersPerSecond - The speed in m/s.
+ * @description Convert a wind speed from km/h (what MF returns) to the
+ * requested unit system: km/h for metric, mph for us.
+ *
+ * The unit is km/h, NOT m/s: the mobile webservice answers with the very
+ * numbers meteofrance.com prints next to a wind arrow. Reading them as m/s
+ * made the `us` conversion overstate the wind by a factor of ~3.6.
+ * @param {number} kilometersPerHour - The speed in km/h.
  * @param {string} units - 'metric' or 'us'.
  * @returns {number} The converted speed, rounded to one decimal.
  * @example
- * convertWindSpeed(10, 'us'); // -> 22.4
+ * convertWindSpeed(10, 'us'); // -> 6.2
  */
-function convertWindSpeed(metersPerSecond, units) {
+function convertWindSpeed(kilometersPerHour, units) {
   if (units !== 'us') {
-    return metersPerSecond;
+    return kilometersPerHour;
   }
-  return Math.round(metersPerSecond * 2.23694 * 10) / 10;
+  return Math.round(kilometersPerHour * 0.621371 * 10) / 10;
 }
 
 /**
@@ -500,17 +504,18 @@ function buildDays(daily, hourly, probabilities, units, timezone) {
   const speeds = days.map((_day, index) =>
     maxOf(entriesOf(index, hourlyByDay), (entry) => entry.wind && entry.wind.speed),
   );
-  // The day's wind is its peak gust, falling back to the peak sustained speed:
-  // MF reports a 0 gust on calm days, which is a real "no gust", not a hole.
-  const winds = days.map((_day, index) => {
-    const gust = gusts[index];
-    return isNumber(gust) && gust > 0 ? gust : speeds[index];
-  });
+  // The day's wind is its peak SUSTAINED speed, never its peak gust: MF's own
+  // forecast prints the mean wind, and reporting the gust here made the widget
+  // show 14 km/h where meteofrance.com showed 10. The gust has its own field
+  // just below, so nothing is lost by keeping the two apart.
   const toSpeed = (value) => (isNumber(value) ? convertWindSpeed(value, units) : null);
-  assignWhenComplete(days, winds.map(toSpeed), 'wind_speed');
-  // A 0 gust is MF saying "no gust", so it is never reported as one.
-  const reportableGusts = gusts.map((gust) => (isNumber(gust) && gust > 0 ? gust : null));
-  assignWhenComplete(days, reportableGusts.map(toSpeed), 'wind_gust');
+  assignWhenComplete(days, speeds.map(toSpeed), 'wind_speed');
+  // A 0 gust is MF saying "no gust" — a real measurement, not a hole — so it is
+  // reported as a 0 rather than dropped. Nulling it would starve the
+  // all-or-nothing rule below and hide the gusts of EVERY day as soon as a
+  // single one is calm, which is what emptied the row on an ordinary week.
+  // A day with no wind entry at all stays null: that one is a genuine hole.
+  assignWhenComplete(days, gusts.map(toSpeed), 'wind_gust');
 
   const dailyProbabilities = days.map((_day, index) =>
     maxOf(entriesOf(index, probabilitiesByDay), (slice) => {

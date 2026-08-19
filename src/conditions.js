@@ -40,8 +40,8 @@
 const CONDITION_BY_CODE = {
   1: 'clear', // Ensoleillé / Ciel clair
   2: 'partly-cloudy', // Peu nuageux
-  3: 'partly-cloudy', // Nuageux
-  4: 'partly-cloudy', // Nuageux
+  3: 'cloud', // Nuageux: a mostly covered sky on MF's own legend
+  4: 'cloud', // Nuageux / Ciel voilé
   5: 'cloud', // Très nuageux / Couvert
   6: 'fog', // Brouillard
   7: 'fog', // Brouillard givrant
@@ -92,16 +92,24 @@ const KEYWORD_CONDITIONS = [
   { keywords: ['bruine', 'drizzle'], condition: 'drizzle' },
   { keywords: ['pluie', 'averse', 'rain', 'shower'], condition: 'rain' },
   { keywords: ['brouillard', 'brume', 'fog', 'mist'], condition: 'fog' },
-  // "Très nuageux" is an overcast sky on MF's own legend, not a sunny spell:
-  // it must be tested before the bare 'nuage' below, which would otherwise
-  // print a sun behind the cloud.
-  { keywords: ['couvert', 'overcast', 'très nuageux', 'tres nuageux'], condition: 'cloud' },
+  // "Peu nuageux" is a mostly clear sky and must be tested BEFORE the bare
+  // 'nuageux' below, which would otherwise swallow it into the overcast family.
+  { keywords: ['peu nuageux', 'partly'], condition: 'partly-cloudy' },
   // Broken clouds, not a clear sky: MF pairs "Eclaircies" with the p2 icon,
   // which its own legend renders as a sun behind a cloud. "Variable" is the
   // same idea worded differently — it is what p2bis answers, and leaving it
   // unmatched is what put a red thermometer on the dashboard.
   { keywords: ['eclaircie', 'éclaircie', 'variable'], condition: 'partly-cloudy' },
-  { keywords: ['nuage', 'nuageux', 'voilé', 'voile', 'cloud'], condition: 'partly-cloudy' },
+  // "Nuageux", "Très nuageux" and "Couvert" are all a mostly covered sky on
+  // MF's own legend, not a sunny spell: mapping them to `partly-cloudy` printed
+  // a sun behind a cloud where meteofrance.com showed a plain cloud.
+  {
+    keywords: ['couvert', 'overcast', 'nuageux', 'nuage', 'cloud'],
+    condition: 'cloud',
+  },
+  // "Ciel voilé" is a thin veil over an otherwise bright sky: the pivot has no
+  // condition for it, and `partly-cloudy` is the closest of the two families.
+  { keywords: ['voilé', 'voile'], condition: 'partly-cloudy' },
   { keywords: ['soleil', 'ensoleillé', 'ciel clair', 'clear', 'sun'], condition: 'clear' },
 ];
 

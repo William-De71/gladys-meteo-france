@@ -140,7 +140,7 @@ test('reads the "Variable" sky the p2bis code answers', () => {
 
 test('reads the English labels the API returns despite lang=fr', () => {
   // Observed mid-payload on real locations, next to French entries.
-  assert.equal(conditionFromDescription('Cloudy'), 'partly-cloudy');
+  assert.equal(conditionFromDescription('Cloudy'), 'cloud');
   assert.equal(conditionFromDescription('Clear sky'), 'clear');
   assert.equal(conditionFromDescription('Storms'), 'thunderstorm');
   assert.equal(conditionFromDescription('Slight showers'), 'rain');
@@ -157,10 +157,16 @@ test('reports hail rather than a plain thunderstorm when both are named', () => 
   });
 });
 
-test('separates an overcast sky from a merely cloudy one', () => {
-  // MF renders "Très nuageux" as a full cloud, so reporting partly-cloudy put
-  // a sun on an overcast sky.
+test('separates a covered sky from a merely broken one', () => {
+  // MF renders "Nuageux" and "Très nuageux" as a full cloud, so reporting
+  // partly-cloudy put a sun on a covered sky. Only the skies MF itself draws
+  // with a sun behind the cloud stay partly-cloudy.
   assert.equal(conditionFromDescription('Très nuageux'), 'cloud');
-  assert.equal(conditionFromDescription('Nuageux'), 'partly-cloudy');
+  assert.equal(conditionFromDescription('Nuageux'), 'cloud');
+  assert.equal(conditionFromDescription('Couvert'), 'cloud');
+  // "Peu nuageux" is mostly clear: the bare 'nuageux' above must not catch it.
+  assert.equal(conditionFromDescription('Peu nuageux'), 'partly-cloudy');
+  assert.equal(conditionFromDescription('Eclaircies'), 'partly-cloudy');
+  // No pivot condition for a veiled sky: partly-cloudy is the closest family.
   assert.equal(conditionFromDescription('Ciel voilé'), 'partly-cloudy');
 });

@@ -87,31 +87,55 @@ test('omits the probability when MF publishes none, as overseas', () => {
   assert.equal(weather.hours[0].precipitation_probability, undefined);
   assert.equal(weather.days[0].precipitation_probability, undefined);
   // The wind aggregation does not depend on it and must still be there.
-  assert.equal(weather.days[0].wind_speed, 8);
+  assert.equal(weather.days[0].wind_speed, 4);
 });
 
 test('aggregates the daily wind from the hourly entries of each day', () => {
   const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON });
-  // Day 1 peaks at gust 8, day 2 at gust 12: every day carries its own value.
-  assert.equal(weather.days[0].wind_speed, 8);
-  assert.equal(weather.days[1].wind_speed, 12);
+  // The day's wind is its peak SUSTAINED speed (4 then 5), never its peak gust:
+  // MF's own forecast prints the mean wind, and reporting the gust here showed
+  // 14 km/h where meteofrance.com showed 10. The gust keeps its own field.
+  assert.equal(weather.days[0].wind_speed, 4);
+  assert.equal(weather.days[1].wind_speed, 5);
   assert.equal(weather.days[0].wind_gust, 8);
   assert.equal(weather.days[1].wind_gust, 12);
 });
 
-test('falls back to the peak speed on a day MF reports no gust', () => {
+test('reports a calm day as a zero gust rather than as a hole', () => {
   const fixture = buildForecastFixture();
-  // A calm day: MF reports a 0 gust, which is not a missing value.
+  // A calm day: MF reports a 0 gust, which is a real measurement, not a hole.
   fixture.forecast.forEach((entry) => {
     if (entry.wind) {
       entry.wind.gust = 0;
     }
   });
   const weather = buildWeather(fixture, { nowSeconds: NOON });
+  // The sustained speed is unaffected by the missing gust.
   assert.equal(weather.days[0].wind_speed, 4);
   assert.equal(weather.days[1].wind_speed, 5);
-  // A zero gust is never reported as a gust.
+  // Sending the 0 is what keeps the row filled: nulling it would hide the
+  // gusts of every day as soon as a single one is calm.
+  assert.equal(weather.days[0].wind_gust, 0);
+  assert.equal(weather.days[1].wind_gust, 0);
+});
+
+test('keeps the gusts of the windy days when only some days are calm', () => {
+  // The regression this guards: one calm day used to empty the whole row.
+  const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON });
+  assert.equal(weather.days[0].wind_gust, 8);
+  assert.equal(weather.days[1].wind_gust, 12);
+});
+
+test('drops the daily gust rather than filling only some days', () => {
+  const fixture = buildForecastFixture();
+  // Tomorrow keeps an entry, but without any wind at all: a genuine hole, which
+  // must still empty the row rather than be read as a calm day.
+  fixture.forecast = fixture.forecast.map((entry) =>
+    entry.dt >= NOON + 24 * 3600 ? { ...entry, wind: undefined } : entry,
+  );
+  const weather = buildWeather(fixture, { nowSeconds: NOON });
   assert.equal(weather.days[0].wind_gust, undefined);
+  assert.equal(weather.days[1].wind_gust, undefined);
 });
 
 test('drops the daily wind rather than filling only some days', () => {
@@ -141,8 +165,8 @@ test('groups the days on local time, not on UTC slices', () => {
     position: { lat: 16.24, lon: -61.53, dept: '971', timezone: 'America/Guadeloupe' },
   });
   const weather = buildWeather(fixture, { nowSeconds: NOON });
-  assert.equal(weather.days[0].wind_speed, 8);
-  assert.equal(weather.days[1].wind_speed, 12);
+  assert.equal(weather.days[0].wind_speed, 4);
+  assert.equal(weather.days[1].wind_speed, 5);
 });
 
 test('falls back to the midday hour when weather12H is null', () => {
@@ -177,8 +201,8 @@ test('converts every measure to the us unit system', () => {
   const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON, units: 'us' });
   // 24.3 °C -> 75.74 °F, rounded to 76
   assert.equal(weather.temperature, 76);
-  // 3.5 m/s -> 7.8 mph
-  assert.equal(weather.wind_speed, 7.8);
+  // MF answers in km/h, not m/s: 3.5 km/h -> 2.2 mph
+  assert.equal(weather.wind_speed, 2.2);
   // 9.2 mm -> 0.36 in
   assert.equal(weather.hours[1].precipitation, 0.36);
   // 26 °C -> 78.8 °F, rounded to 79
