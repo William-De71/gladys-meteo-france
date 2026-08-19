@@ -90,6 +90,28 @@ test('omits the probability when MF publishes none, as overseas', () => {
   assert.equal(weather.days[0].wind_speed, 4);
 });
 
+test('carries the cloud cover MF publishes as `clouds`', () => {
+  const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON });
+  // The pivot wants a 0-100 percentage, which is already what MF sends.
+  assert.equal(weather.hours[0].cloud_cover, 40);
+  assert.equal(weather.hours[1].cloud_cover, 100);
+  // The current conditions carry the field of the running hour.
+  assert.equal(weather.cloud_cover, 40);
+  // An hour without the field simply omits it: the row is per-hour optional.
+  assert.equal(weather.hours[2].cloud_cover, undefined);
+});
+
+test('drops a cloud cover outside the 0-100 range', () => {
+  const fixture = buildForecastFixture();
+  // Not a percentage we understand: dropped rather than clamped to a guess.
+  fixture.forecast[1].clouds = 120;
+  fixture.forecast[2].clouds = -1;
+  const weather = buildWeather(fixture, { nowSeconds: NOON });
+  assert.equal(weather.hours[0].cloud_cover, undefined);
+  assert.equal(weather.hours[1].cloud_cover, undefined);
+  assert.equal(weather.cloud_cover, undefined);
+});
+
 test('aggregates the daily wind from the hourly entries of each day', () => {
   const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON });
   // The day's wind is its peak SUSTAINED speed (4 then 5), never its peak gust:

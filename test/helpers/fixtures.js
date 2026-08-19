@@ -37,6 +37,7 @@ function buildForecastFixture(overrides = {}) {
         sea_level: 1013,
         wind: { speed: 3.5, gust: 8, direction: 220 },
         rain: { '1h': 0 },
+        clouds: 40,
         weather: { icon: 'p2j', desc: 'Peu nuageux' },
       },
       {
@@ -45,6 +46,7 @@ function buildForecastFixture(overrides = {}) {
         humidity: 44,
         wind: { speed: 4, gust: 0, direction: -1 }, // variable wind: dropped
         rain: { '1h': 9.2 }, // above the pouring threshold
+        clouds: 100,
         weather: { icon: 'p10j', desc: 'Pluie modérée' },
       },
       {

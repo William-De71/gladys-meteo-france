@@ -4,7 +4,8 @@
 // The MF payload carries:
 //   - `position`          { lat, lon, dept, timezone, ... }
 //   - `forecast[]`        hourly entries (the FULL current day, past hours
-//                         included) with T.value, weather, wind, rain['1h']...
+//                         included) with T.value, weather, wind, clouds,
+//                         rain['1h']...
 //   - `daily_forecast[]`  daily entries with T.min/T.max, weather12H (which can
 //                         be null on some days), precipitation['24h'], uv, sun_*
 //   - `probability_forecast[]` precipitation probabilities, per 3h-6h slices
@@ -368,6 +369,15 @@ function buildHours(hourly, probabilities, units, nowSeconds) {
         if (isNumber(entry.humidity)) {
           hour.humidity = entry.humidity;
         }
+        // MF publishes the cloud cover as `clouds`, already a 0-100 percentage
+        // like the pivot wants. It carries what the condition enum cannot say:
+        // "Ciel voilé" and "Eclaircies" both map to `partly-cloudy` but sit at
+        // 30% and 40-75% of cover. Out-of-range values are dropped rather than
+        // clamped — a percentage outside 0-100 is a payload we do not
+        // understand, not a value to guess at.
+        if (isNumber(entry.clouds) && entry.clouds >= 0 && entry.clouds <= 100) {
+          hour.cloud_cover = entry.clouds;
+        }
         if (entry.T && isNumber(entry.T.windchill)) {
           hour.apparent_temperature = convertTemperature(entry.T.windchill, units);
         }
@@ -579,6 +589,7 @@ function buildWeather(data, { units = 'metric', nowSeconds = Math.floor(Date.now
     'wind_speed',
     'wind_direction',
     'wind_gust',
+    'cloud_cover',
     'is_day',
   ];
   carried.forEach((field) => {
