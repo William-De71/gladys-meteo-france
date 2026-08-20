@@ -1,3 +1,8 @@
+## [1.1.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.0.5...v1.1.0) (2026-08-20)
+
+### Continuous Integration
+
+* generate the changelog automatically on every release ([caa96bb](https://github.com/William-De71/gladys-meteo-france/commit/caa96bb2c0f5bc7f52b685be11dc7a84cfa70bb0))
 
 ## [1.0.5](https://github.com/William-De71/gladys-meteo-france/compare/v1.0.4...v1.0.5) (2026-08-19)
 
