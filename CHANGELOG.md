@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/William-De71/gladys-meteo-france/compare/v1.1.0...v1.1.1) (2026-08-22)
+
+### Bug Fixes
+
+* summarise a day's icon from its hours, not from the midday snapshot ([fe8b9c3](https://github.com/William-De71/gladys-meteo-france/commit/fe8b9c3aa0609d65a297dfe7ce81f9e77d8c24d0))
+
 ## [1.1.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.0.5...v1.1.0) (2026-08-20)
 
 ### Continuous Integration
