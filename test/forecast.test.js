@@ -197,18 +197,47 @@ test('falls back to the midday hour when weather12H is null', () => {
   assert.equal(tomorrow.temperature_min, 15);
   assert.equal(tomorrow.temperature_max, 28);
   // weather12H is null tomorrow: the condition comes from the hourly entry
-  // closest to midday ('p3j' -> partly-cloudy).
+  // closest to midday ("Ciel voilé" -> partly-cloudy).
   assert.equal(tomorrow.weather, 'partly-cloudy');
 });
 
-test('keeps a day without any hourly entry, minus the aggregated fields', () => {
+test('summarises a day from its hours, not from the midday snapshot', () => {
+  // MF answered `p1j`/"Ensoleillé" as weather12H on a day its own hourly
+  // entries carried "Pluie" — and its precipitation.24h said 2.6 mm. Printing
+  // that snapshot verbatim put a sun on a rainy day while meteofrance.com,
+  // which summarises the whole day, showed showers.
   const fixture = buildForecastFixture();
-  // Drop tomorrow's only hourly entry: the day must survive on its own data.
+  const tomorrowStart = NOON + 24 * 3600;
+  fixture.daily_forecast[1].weather12H = { icon: 'p1j', desc: 'Ensoleillé' };
+  fixture.forecast = fixture.forecast.filter((entry) => entry.dt < tomorrowStart);
+  fixture.forecast.push(
+    { dt: tomorrowStart, T: { value: 21 }, weather: { icon: 'p1j', desc: 'Ensoleillé' } },
+    { dt: tomorrowStart + 3600, T: { value: 22 }, weather: { icon: 'p14j', desc: 'Pluie' } },
+  );
+  assert.equal(buildWeather(fixture, { nowSeconds: NOON }).days[1].weather, 'rain');
+});
+
+test('keeps the most notable condition, whatever the hour it falls on', () => {
+  // The scale is about what describes a day, not about severity: a thunderstorm
+  // at any hour outranks the clear spells around it.
+  const fixture = buildForecastFixture();
+  const tomorrowStart = NOON + 24 * 3600;
+  fixture.forecast = fixture.forecast.filter((entry) => entry.dt < tomorrowStart);
+  fixture.forecast.push(
+    { dt: tomorrowStart, T: { value: 20 }, weather: { icon: 'p1j', desc: 'Ensoleillé' } },
+    { dt: tomorrowStart + 3600, T: { value: 24 }, weather: { icon: 'p28j', desc: 'Orages' } },
+    { dt: tomorrowStart + 7200, T: { value: 23 }, weather: { icon: 'p2j', desc: 'Eclaircies' } },
+  );
+  assert.equal(buildWeather(fixture, { nowSeconds: NOON }).days[1].weather, 'thunderstorm');
+});
+
+test('falls back on weather12H past the hourly window', () => {
+  // `forecast` runs ~4 days while `daily_forecast` runs 8: the far days have no
+  // hours to summarise, and the midday snapshot is all that is left.
+  const fixture = buildForecastFixture();
   fixture.forecast = fixture.forecast.filter((entry) => entry.dt < NOON + 24 * 3600);
-  const weather = buildWeather(fixture, { nowSeconds: NOON });
-  assert.equal(weather.days.length, 2);
-  assert.equal(weather.days[1].temperature_max, 28);
-  assert.equal(weather.days[1].weather, undefined);
+  fixture.daily_forecast[1].weather12H = { icon: 'p28j', desc: 'Orages' };
+  assert.equal(buildWeather(fixture, { nowSeconds: NOON }).days[1].weather, 'thunderstorm');
 });
 
 test('exposes the daily UV index and sun times of today', () => {

@@ -15,7 +15,7 @@
 // the `us` case converts here — the core never converts for us.
 // -----------------------------------------------------------------------------
 
-import { parseWeather } from './conditions.js';
+import { parseWeather, conditionSignificance } from './conditions.js';
 
 // Pivot caps (the core enforces them too, but sending less is cheaper).
 const MAX_HOURS = 24;
@@ -309,28 +309,37 @@ function assignWhenComplete(days, values, field) {
 }
 
 /**
- * @description Pick the hourly entry that best describes a day, used when
- * `weather12H` is null (it happens on the current and last days).
- * @param {Array<object>} hourly - The raw hourly entries.
- * @param {number} dayTimestamp - Start of the day, in seconds.
- * @returns {object|null} The entry closest to midday, or null.
+ * @description Summarise a day's sky from its hourly entries: the most notable
+ * condition of the day, not the one that happens to fall at midday.
+ *
+ * `weather12H` is a MIDDAY snapshot, not a summary of the day, and MF lets the
+ * two disagree: Paris answered `p1j`/"Ensoleillé" on a day its own hourly
+ * entries carried "Pluie" and "Averses" and its `precipitation.24h` said
+ * 2.6 mm. Rendering that snapshot verbatim printed a sun on a rainy day, while
+ * meteofrance.com — which summarises the whole day — showed showers.
+ * @param {Array<object>} dayEntries - The raw hourly entries of that local day.
+ * @returns {string|null} The most notable pivot condition, or null when the day
+ * carries no usable entry.
  * @example
- * findMiddayEntry(hourly, 1754265600);
+ * summariseDayCondition(entriesOfThatDay); // -> 'thunderstorm'
  */
-function findMiddayEntry(hourly, dayTimestamp) {
-  const midday = dayTimestamp + 12 * 3600;
-  return hourly.reduce((best, entry) => {
-    if (!isNumber(entry.dt) || !entry.weather) {
-      return best;
+function summariseDayCondition(dayEntries) {
+  let best = null;
+  dayEntries.forEach((entry) => {
+    if (!entry || !entry.weather) {
+      return;
     }
-    if (entry.dt < dayTimestamp || entry.dt >= dayTimestamp + 24 * 3600) {
-      return best;
+    const { condition } = parseWeather(entry.weather);
+    if (condition === 'unknown') {
+      return;
     }
-    if (best === null || Math.abs(entry.dt - midday) < Math.abs(best.dt - midday)) {
-      return entry;
+    // Ties keep the FIRST match: with equal significance the earlier hour is
+    // as good a summary as any, and stability makes the output predictable.
+    if (best === null || conditionSignificance(condition) > conditionSignificance(best)) {
+      best = condition;
     }
-    return best;
-  }, null);
+  });
+  return best;
 }
 
 /**
@@ -453,6 +462,12 @@ function assignHourlyProbabilities(hours, probabilities) {
  * buildDays(forecast.daily_forecast, forecast.forecast, probabilities, 'metric', 'Europe/Paris');
  */
 function buildDays(daily, hourly, probabilities, units, timezone) {
+  // Hourly entries indexed by LOCAL calendar day: the midday fallback below and
+  // the wind aggregation further down both read from it. The daily entry is
+  // keyed on its UTC date (`dayKey(dt, null)`), which is what makes a day
+  // marker stamped at 00:00 UTC meet the local day it actually describes.
+  const hourlyByDay = groupHourlyByDay(hourly, timezone);
+
   const kept = [];
   const days = daily
     .slice(0, MAX_DAYS)
@@ -468,15 +483,20 @@ function buildDays(daily, hourly, probabilities, units, timezone) {
         temperature_max: convertTemperature(temperatureMax, units),
         datetime,
       };
-      // weather12H is null on some days: fall back to the hourly entry closest
-      // to midday rather than dropping the condition entirely.
-      let weather = entry.weather12H;
-      if (!weather || !weather.icon) {
-        const middayEntry = findMiddayEntry(hourly, entry.dt);
-        weather = middayEntry ? middayEntry.weather : null;
+      // The day's condition is summarised from its HOURS whenever they are
+      // available: `weather12H` is only a midday snapshot, and MF lets it
+      // disagree with its own hourly entries (a sun on a day carrying "Pluie"
+      // and 2.6 mm). The hours are what meteofrance.com summarises to pick the
+      // icon it prints, so they are the better source when we have them.
+      const dayEntries = hourlyByDay.get(dayKey(entry.dt, null)) || [];
+      let condition = summariseDayCondition(dayEntries);
+      if (condition === null && entry.weather12H && entry.weather12H.icon) {
+        // Past the hourly window (it runs ~4 days, the daily one 8) the midday
+        // snapshot is all that is left — a partial answer beats none.
+        condition = parseWeather(entry.weather12H).condition;
       }
-      if (weather) {
-        day.weather = parseWeather(weather).condition;
+      if (condition !== null) {
+        day.weather = condition;
       }
       if (isNumber(entry.humidity && entry.humidity.max)) {
         day.humidity = entry.humidity.max;
@@ -504,7 +524,6 @@ function buildDays(daily, hourly, probabilities, units, timezone) {
   // aggregated from the hourly entries of the matching day. This MUST happen
   // here — the core truncates `hours` to a single day, so the widget could
   // never compute it for the later days.
-  const hourlyByDay = groupHourlyByDay(hourly, timezone);
   const probabilitiesByDay = groupHourlyByDay(probabilities, timezone);
   const entriesOf = (index, source) => source.get(dayKey(kept[index].dt, null)) || [];
 

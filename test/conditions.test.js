@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseWeather, conditionFromDescription } from '../src/conditions.js';
+import {
+  parseWeather,
+  conditionFromDescription,
+  conditionSignificance,
+} from '../src/conditions.js';
 
 test('maps a documented day icon code to its pivot condition', () => {
   assert.deepEqual(parseWeather({ icon: 'p1j', desc: 'Ensoleillé' }), {
@@ -35,11 +39,13 @@ test('trusts the description over a code table the API contradicts', () => {
 });
 
 test('falls back on the code table when the description says nothing', () => {
-  assert.deepEqual(parseWeather({ icon: 'p5j', desc: 'Phénomène inédit' }), {
+  assert.deepEqual(parseWeather({ icon: 'p3j', desc: 'Phénomène inédit' }), {
     condition: 'cloud',
     isDay: true,
   });
-  assert.deepEqual(parseWeather({ icon: 'p5j' }), { condition: 'cloud', isDay: true });
+  assert.deepEqual(parseWeather({ icon: 'p3j' }), { condition: 'cloud', isDay: true });
+  // p5 is "Brume" in the field, not the "Très nuageux / Couvert" of the legend.
+  assert.deepEqual(parseWeather({ icon: 'p5j' }), { condition: 'fog', isDay: true });
   // Neither signal is usable: never invent a condition.
   assert.deepEqual(parseWeather({ icon: 'p23j', desc: 'Phénomène inédit' }), {
     condition: 'unknown',
@@ -169,4 +175,16 @@ test('separates a covered sky from a merely broken one', () => {
   assert.equal(conditionFromDescription('Eclaircies'), 'partly-cloudy');
   // No pivot condition for a veiled sky: partly-cloudy is the closest family.
   assert.equal(conditionFromDescription('Ciel voilé'), 'partly-cloudy');
+});
+
+test('ranks precipitation above any clear sky when summarising a day', () => {
+  // Not a severity scale: it answers "which sky describes this day?". A day
+  // alternating sun and showers is a showery day, never a sunny one.
+  assert.ok(conditionSignificance('rain') > conditionSignificance('clear'));
+  assert.ok(conditionSignificance('rain') > conditionSignificance('partly-cloudy'));
+  assert.ok(conditionSignificance('thunderstorm') > conditionSignificance('rain'));
+  assert.ok(conditionSignificance('pouring') > conditionSignificance('rain'));
+  // 'unknown' must never win over a real sky.
+  assert.equal(conditionSignificance('unknown'), 0);
+  assert.equal(conditionSignificance('nonsense'), 0);
 });

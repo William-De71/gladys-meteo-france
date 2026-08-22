@@ -40,9 +40,11 @@
 const CONDITION_BY_CODE = {
   1: 'clear', // Ensoleillé / Ciel clair
   2: 'partly-cloudy', // Peu nuageux
-  3: 'cloud', // Nuageux: a mostly covered sky on MF's own legend
+  3: 'cloud', // Très nuageux (the legend says "Nuageux"; p3bis answers "Couvert")
   4: 'cloud', // Nuageux / Ciel voilé
-  5: 'cloud', // Très nuageux / Couvert
+  5: 'fog', // Brume: the legend reads "Très nuageux / Couvert", the API answers
+  // "Brume" on every p5 sampled in the field (and Home Assistant's own table
+  // classifies that wording as fog too). Code 3 covers the overcast family.
   6: 'fog', // Brouillard
   7: 'fog', // Brouillard givrant
   8: 'drizzle', // Rares averses
@@ -167,4 +169,51 @@ function parseWeather(weather) {
   return { condition: CONDITION_BY_CODE[Number(match[1])] || 'unknown', isDay };
 }
 
-export { parseWeather, conditionFromDescription, CONDITION_BY_CODE, KEYWORD_CONDITIONS };
+// How "notable" a condition is, used to summarise a whole day from its hours.
+//
+// This is NOT a severity scale for warnings — vigilance owns that. It answers
+// one question: of the skies a day goes through, which one does a forecast
+// print next to that day? A day alternating sun and showers is a showery day on
+// meteofrance.com, never a sunny one, so precipitation outranks any clear sky.
+//
+// Within precipitation the order follows intensity (drizzle < rain < pouring)
+// and then the phenomena that override it whatever their amount (snow, hail,
+// thunderstorm). Fog and cloud sit just above the clear skies: they describe a
+// dull day, but any rain that day describes it better.
+//
+// `unknown` is deliberately the lowest: it must never win over a real sky.
+const CONDITION_SIGNIFICANCE = {
+  unknown: 0,
+  clear: 1,
+  'partly-cloudy': 2,
+  cloud: 3,
+  wind: 4,
+  fog: 5,
+  drizzle: 6,
+  rain: 7,
+  pouring: 8,
+  sleet: 9,
+  snow: 10,
+  hail: 11,
+  thunderstorm: 12,
+};
+
+/**
+ * @description Rank a pivot condition on the day-summary scale.
+ * @param {string} condition - A pivot condition.
+ * @returns {number} Its significance, 0 for anything unrated.
+ * @example
+ * conditionSignificance('rain'); // -> 7
+ */
+function conditionSignificance(condition) {
+  return CONDITION_SIGNIFICANCE[condition] || 0;
+}
+
+export {
+  parseWeather,
+  conditionFromDescription,
+  conditionSignificance,
+  CONDITION_BY_CODE,
+  CONDITION_SIGNIFICANCE,
+  KEYWORD_CONDITIONS,
+};

@@ -15,6 +15,25 @@ An optional API key additionally unlocks the national vigilance map (see below).
 - **Official vigilance alerts**: the nine Météo France phenomena (violent wind, rain-flooding, thunderstorms, floods, snow-ice, heatwave, extreme cold, avalanches, coastal flooding), with the department name and the full official bulletin.
 - **Vigilance map** for today and tomorrow (requires the API key).
 
+## How a day's icon is picked
+
+A day's icon summarises the **most notable phenomenon** of that day, not the
+weather at midday.
+
+Météo France publishes two different things: the hour-by-hour forecast, and a
+summary stamped at midday. That summary describes the sky at one moment, so it
+can read "Ensoleillé" (sunny) on a day whose own hourly entries carry rain and
+several millimetres of rainfall. The integration therefore summarises the day
+from its hours, the way the Météo France website does, keeping the phenomenon
+that best characterises it: a shower outranks a sunny spell, a thunderstorm
+outranks a shower.
+
+Beyond the fourth day Météo France stops publishing hourly detail, so the icon
+falls back to the midday summary — the only thing left to go on.
+
+The icon may still differ from the Météo France app: Gladys ships a smaller icon
+set, and several distinct skies share the same picture there.
+
 ## Scenes triggered by vigilance alerts
 
 You can create a scene that runs when a vigilance alert is issued — for example, to receive an SMS on an orange-level alert.

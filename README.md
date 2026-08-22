@@ -63,7 +63,7 @@ The integration is split so that every piece is testable without a network:
 | File                       | Role                                        |
 | -------------------------- | ------------------------------------------- |
 | `src/meteo-france-api.js`  | HTTP calls only — no Gladys concept         |
-| `src/conditions.js`        | Météo France icon codes → pivot conditions  |
+| `src/conditions.js`        | MF icon codes → conditions, and how notable |
 | `src/forecast.js`          | Raw forecast payload → pivot weather format |
 | `src/vigilance.js`         | Raw vigilance payload → pivot CAP alerts    |
 | `src/vigilance-watcher.js` | Upstream poll and freshness nudge           |
