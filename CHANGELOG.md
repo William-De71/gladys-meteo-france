@@ -1,3 +1,5 @@
+## [1.2.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.1.1...v1.2.0) (2026-08-28)
+
 ## [1.1.1](https://github.com/William-De71/gladys-meteo-france/compare/v1.1.0...v1.1.1) (2026-08-22)
 
 ### Bug Fixes

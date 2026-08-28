@@ -6,8 +6,8 @@
     "en": "French weather forecasts and official vigilance alerts from Météo France.",
     "fr": "Prévisions météo et vigilance officielle Météo France pour la France."
   },
-  "version": "1.1.1",
-  "docker_image": "ghcr.io/william-de71/gladys-meteo-france:1.1.1",
+  "version": "1.2.0",
+  "docker_image": "ghcr.io/william-de71/gladys-meteo-france:1.2.0",
   "gladys_version": ">=5.0.0",
   "categories": ["environment"],
   "cover_image": "https://raw.githubusercontent.com/William-De71/gladys-meteo-france/main/cover.jpg",
