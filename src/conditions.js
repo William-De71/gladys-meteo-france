@@ -130,7 +130,11 @@ const KEYWORD_CONDITIONS = [
   { keywords: ['orage', 'storm', 'thunder'], condition: 'thunderstorm' },
   // Composites first: 'neige' alone would swallow them.
   { keywords: ['pluie et neige', 'neige et pluie', 'sleet'], condition: 'sleet' },
-  { keywords: ['neige', 'verglas', 'snow', 'freezing'], condition: 'snow' },
+  // 'verglas' and a bare 'freezing' used to sit here, from before the freezing
+  // family had rules of its own: the first is now caught above as
+  // `freezing-rain`, and the second sent "Freezing drizzle" -- which matches
+  // neither 'freezing rain' nor 'freezing fog' -- to snow.
+  { keywords: ['neige', 'snow'], condition: 'snow' },
   { keywords: ['bruine', 'drizzle'], condition: 'drizzle' },
   { keywords: ['pluie', 'averse', 'rain', 'shower'], condition: 'rain' },
   { keywords: ['brouillard', 'brume', 'fog', 'mist'], condition: 'fog' },
