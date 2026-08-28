@@ -46,8 +46,15 @@ test('falls back on the code table when the description says nothing', () => {
   assert.deepEqual(parseWeather({ icon: 'p3j' }), { condition: 'cloud', isDay: true });
   // p5 is "Brume" in the field, not the "Très nuageux / Couvert" of the legend.
   assert.deepEqual(parseWeather({ icon: 'p5j' }), { condition: 'fog', isDay: true });
-  // Neither signal is usable: never invent a condition.
+  // p23 is now in the table (heavy snow: 3 flakes on a dark cloud), so an
+  // unreadable wording degrades to its family instead of to 'unknown'.
   assert.deepEqual(parseWeather({ icon: 'p23j', desc: 'Phénomène inédit' }), {
+    condition: 'snow',
+    isDay: true,
+  });
+  // Neither signal is usable AND the code is absent from the table: only then
+  // is 'unknown' the honest answer.
+  assert.deepEqual(parseWeather({ icon: 'p99j', desc: 'Phénomène inédit' }), {
     condition: 'unknown',
     isDay: true,
   });
@@ -82,20 +89,20 @@ test('keeps the meteorology at night and only flips is_day', () => {
 });
 
 test('never looks up a bis code in the base table', () => {
-  // p14bis is "Averses" while its base code is "Neige": a bis code must never
-  // reach the table, even for a description no keyword matches.
+  // p14bis is "Averses", p14 is "Pluie": both are rain, and the description
+  // stays the primary signal.
   assert.deepEqual(parseWeather({ icon: 'p14bisj', desc: 'Averses' }), {
     condition: 'rain',
     isDay: true,
   });
-  // A `bis` code whose wording matches nothing now degrades to the family of
-  // its base code instead of to 'unknown': the dashboard paints 'unknown' as a
-  // red thermometer labelled "Indisponible", which is worse than a rough sky.
+  // A `bis` code whose wording matches nothing degrades to the family of its
+  // base code instead of to 'unknown': the dashboard paints 'unknown' as a red
+  // thermometer labelled "Indisponible", which is worse than a rough sky.
   assert.deepEqual(parseWeather({ icon: 'p14bisj', desc: 'Phénomène inédit' }), {
-    condition: 'snow',
+    condition: 'rain',
     isDay: true,
   });
-  // The base code still reports snow when the description agrees.
+  // A description still overrides the table when the two disagree.
   assert.deepEqual(parseWeather({ icon: 'p14j', desc: 'Neige' }), {
     condition: 'snow',
     isDay: true,
@@ -187,4 +194,64 @@ test('ranks precipitation above any clear sky when summarising a day', () => {
   // 'unknown' must never win over a real sky.
   assert.equal(conditionSignificance('unknown'), 0);
   assert.equal(conditionSignificance('nonsense'), 0);
+});
+
+test('parses the ter and quater suffixes the API really sends', () => {
+  // p18ter came back in a live payload: before the regex knew the suffix, this
+  // lost the day/night flag and any per-code fallback.
+  assert.deepEqual(parseWeather({ icon: 'p18terj', desc: 'Averses de neige faible' }), {
+    condition: 'snow',
+    isDay: true,
+  });
+  assert.deepEqual(parseWeather({ icon: 'p13quatern', desc: 'Pluie faible' }), {
+    condition: 'rain',
+    isDay: false,
+  });
+  // Suffix parsed, wording unusable: the base code still backstops it.
+  assert.deepEqual(parseWeather({ icon: 'p14tern', desc: 'Phénomène inédit' }), {
+    condition: 'rain',
+    isDay: false,
+  });
+});
+
+test('reads the freezing phenomena as their own conditions', () => {
+  // "Pluie verglaçante" holds 'pluie' and "Brouillard givrant" holds
+  // 'brouillard': both would be swallowed by the milder rule if the freezing
+  // keywords did not come first.
+  assert.deepEqual(parseWeather({ icon: 'p10j', desc: 'Pluie verglaçante' }), {
+    condition: 'freezing-rain',
+    isDay: true,
+  });
+  assert.deepEqual(parseWeather({ icon: 'p8n', desc: 'Brouillard givrant' }), {
+    condition: 'freezing-fog',
+    isDay: false,
+  });
+  // The code table alone reports them too, for a wording no keyword matches.
+  assert.deepEqual(parseWeather({ icon: 'p11j', desc: 'Phénomène inédit' }), {
+    condition: 'freezing-rain',
+    isDay: true,
+  });
+});
+
+test('reads the violent phenomena of the p30-p34 range', () => {
+  assert.deepEqual(parseWeather({ icon: 'p30j', desc: 'Averses de neige orageuses' }), {
+    condition: 'snow-thunderstorm',
+    isDay: true,
+  });
+  assert.deepEqual(parseWeather({ icon: 'p31j', desc: 'Tempête de sable' }), {
+    condition: 'sandstorm',
+    isDay: true,
+  });
+  assert.deepEqual(parseWeather({ icon: 'p32j', desc: 'Trombe marine' }), {
+    condition: 'tornado',
+    isDay: true,
+  });
+  assert.deepEqual(parseWeather({ icon: 'p34n', desc: 'Cyclone' }), {
+    condition: 'hurricane',
+    isDay: false,
+  });
+  // These codes carry no `desc` in any sampled payload: the table is what
+  // makes them readable at all.
+  assert.deepEqual(parseWeather({ icon: 'p33j' }), { condition: 'tornado', isDay: true });
+  assert.deepEqual(parseWeather({ icon: 'p34j' }), { condition: 'hurricane', isDay: true });
 });

@@ -32,40 +32,58 @@
 // -----------------------------------------------------------------------------
 
 // Base icon code -> pivot condition, consulted ONLY when the description
-// yields nothing. Kept as published even where the field contradicts it (14,
-// 12): with no description to go on, a documented guess still beats `unknown`.
-// Codes 22-24 are undocumented and left out on purpose rather than guessed;
-// 25 and 27-29 are undocumented too but the field pins them down — they arrive
-// with "Orage avec grêle", "Risque d'orages" and "Orages".
+// yields nothing.
+//
+// REBUILT from a full survey of the icon set (August 2026) rather than from
+// the published legend, which the field contradicts on almost every code. The
+// method: probe every `p<n>[bis|ter|quater]<j|n>.svg` on meteofrance.com to
+// list what exists (132 icons, 66 distinct codes, n up to 34), collect the
+// `desc` the API actually answers over 60 locations, then read the rendered
+// drawings for the codes no sampling reached. The full table lives in
+// `Externe-Integration/meteo-france-icons/meteo-france-icones.md`.
+//
+// Three findings the legend got wrong, and that a colour analysis alone could
+// not have caught either -- they are drawn as badges over the cloud:
+//   - 8 is a "GIV." badge: freezing FOG, not the legend's "Rares averses";
+//   - 10 and 11 carry a black-ice road sign: freezing RAIN, not plain rain;
+//   - 24 and 25 carry a "G" badge: hail.
+// Codes 30-34 are absent from every legend: thundery snow, sandstorm,
+// waterspout, tornado and cyclone.
 const CONDITION_BY_CODE = {
-  1: 'clear', // Ensoleillé / Ciel clair
-  2: 'partly-cloudy', // Peu nuageux
-  3: 'cloud', // Très nuageux (the legend says "Nuageux"; p3bis answers "Couvert")
-  4: 'cloud', // Nuageux / Ciel voilé
-  5: 'fog', // Brume: the legend reads "Très nuageux / Couvert", the API answers
-  // "Brume" on every p5 sampled in the field (and Home Assistant's own table
-  // classifies that wording as fog too). Code 3 covers the overcast family.
-  6: 'fog', // Brouillard
-  7: 'fog', // Brouillard givrant
-  8: 'drizzle', // Rares averses
+  1: 'clear', // Ensoleillé / Ciel clair (p1bis: Peu nuageux)
+  2: 'partly-cloudy', // Eclaircies (p2bis: Variable)
+  3: 'cloud', // Très nuageux (p3bis: Couvert)
+  4: 'partly-cloudy', // Ciel voilé: a thin veil over an otherwise bright sky
+  5: 'fog', // Brume
+  6: 'fog', // Brume (3 haze bars, where 7 draws 6)
+  7: 'fog', // Brouillard
+  8: 'freezing-fog', // Brouillard givrant ("GIV." badge)
   9: 'rain', // Pluie faible
-  10: 'rain', // Pluie modérée
-  11: 'rain', // Averses
-  12: 'thunderstorm', // Pluies orageuses
-  13: 'sleet', // Pluie et neige mêlées
-  14: 'snow', // Neige
-  15: 'snow', // Fortes chutes de neige
-  16: 'snow', // Neige
-  17: 'thunderstorm', // Orages
-  18: 'thunderstorm',
-  19: 'thunderstorm',
-  20: 'thunderstorm',
-  21: 'thunderstorm',
-  25: 'hail', // Orage avec grêle (observed as p25bis in the field)
-  26: 'thunderstorm', // Risque d'orages (confirmed by the API's own `desc`)
+  10: 'freezing-rain', // Pluie verglaçante (black-ice road sign)
+  11: 'freezing-rain', // Pluie verglaçante (black-ice road sign)
+  12: 'rain', // Pluie faible (p12bis: Averses faibles)
+  13: 'rain', // Pluie faible (p13bis: Averses faibles)
+  14: 'rain', // Pluie (p14bis: Averses, p14ter: Pluie modérée)
+  15: 'pouring', // Pluie forte (dark cloud, dense rain)
+  16: 'thunderstorm', // Averses orageuses
+  17: 'snow', // Neige faible (1 flake)
+  18: 'snow', // Averses de neige faible (1 flake)
+  19: 'sleet', // Pluie et neige (flakes AND drops)
+  20: 'sleet', // Pluie et neige (flakes AND drops)
+  21: 'snow', // Neige (2 flakes)
+  22: 'snow', // Averses de neige (2 flakes)
+  23: 'snow', // Neige forte (3 flakes, dark cloud)
+  24: 'hail', // Grêle ("G" badge; the base code adds a bolt, p24bis/ter do not)
+  25: 'hail', // Orage avec grêle ("G" badge + bolt)
+  26: 'thunderstorm', // Risque d'orages
   27: 'thunderstorm', // Risque d'orages
   28: 'thunderstorm', // Orages
   29: 'thunderstorm', // Orages
+  30: 'snow-thunderstorm', // Averses de neige orageuses (flakes + bolt)
+  31: 'sandstorm', // Tempête de sable
+  32: 'tornado', // Trombe marine
+  33: 'tornado', // Tornade
+  34: 'hurricane', // Cyclone
 };
 
 // Keyword fallback: guess the condition from the API's own description.
@@ -85,12 +103,38 @@ const CONDITION_BY_CODE = {
 // `lang=fr` on some entries and answers "Cloudy" / "Storms" / "Slight showers"
 // mid-payload. They cost one array entry each and spare a red thermometer.
 const KEYWORD_CONDITIONS = [
+  // The violent and the freezing phenomena come FIRST: each of their wordings
+  // contains a keyword of a milder family further down ("pluie verglaçante"
+  // holds 'pluie', "brouillard givrant" holds 'brouillard', "averses de neige
+  // orageuses" holds both 'neige' and 'orage'), so a later rule would swallow
+  // them and drop the very warning that sets them apart.
+  { keywords: ['cyclone', 'ouragan', 'hurricane'], condition: 'hurricane' },
+  { keywords: ['tornade', 'trombe', 'tornado', 'waterspout'], condition: 'tornado' },
+  { keywords: ['sable', 'poussière', 'poussiere', 'sandstorm', 'dust'], condition: 'sandstorm' },
+  {
+    keywords: ['verglaçante', 'verglacante', 'verglas', 'freezing rain'],
+    condition: 'freezing-rain',
+  },
+  {
+    keywords: ['brouillard givrant', 'brume givrante', 'freezing fog'],
+    condition: 'freezing-fog',
+  },
   // Hail before thunderstorm: "Orage avec grêle" carries both words.
   { keywords: ['grêle', 'grele', 'hail'], condition: 'hail' },
+  // A thundery snow shower is neither plain snow nor plain thunderstorm, and
+  // both of those keywords sit below.
+  {
+    keywords: ['neige orageuse', 'averses de neige orageuses', 'thundery snow'],
+    condition: 'snow-thunderstorm',
+  },
   { keywords: ['orage', 'storm', 'thunder'], condition: 'thunderstorm' },
   // Composites first: 'neige' alone would swallow them.
   { keywords: ['pluie et neige', 'neige et pluie', 'sleet'], condition: 'sleet' },
-  { keywords: ['neige', 'verglas', 'snow', 'freezing'], condition: 'snow' },
+  // 'verglas' and a bare 'freezing' used to sit here, from before the freezing
+  // family had rules of its own: the first is now caught above as
+  // `freezing-rain`, and the second sent "Freezing drizzle" -- which matches
+  // neither 'freezing rain' nor 'freezing fog' -- to snow.
+  { keywords: ['neige', 'snow'], condition: 'snow' },
   { keywords: ['bruine', 'drizzle'], condition: 'drizzle' },
   { keywords: ['pluie', 'averse', 'rain', 'shower'], condition: 'rain' },
   { keywords: ['brouillard', 'brume', 'fog', 'mist'], condition: 'fog' },
@@ -115,7 +159,11 @@ const KEYWORD_CONDITIONS = [
   { keywords: ['soleil', 'ensoleillé', 'ciel clair', 'clear', 'sun'], condition: 'clear' },
 ];
 
-const ICON_CODE_REGEX = /^p(\d+)(bis)?([jn])$/;
+// `bis`, `ter` and `quater` all appear in the icon set, and the API does send
+// them: `p18terj` came back in a real payload. Missing a suffix here sends the
+// code down the "unparsable" branch, which loses the day/night flag AND the
+// per-code fallback.
+const ICON_CODE_REGEX = /^p(\d+)(bis|ter|quater)?([jn])$/;
 
 /**
  * @description Guess a pivot condition from the API's French description, used
@@ -189,13 +237,22 @@ const CONDITION_SIGNIFICANCE = {
   cloud: 3,
   wind: 4,
   fog: 5,
-  drizzle: 6,
-  rain: 7,
-  pouring: 8,
-  sleet: 9,
-  snow: 10,
-  hail: 11,
-  thunderstorm: 12,
+  'freezing-fog': 6,
+  drizzle: 7,
+  rain: 8,
+  pouring: 9,
+  sleet: 10,
+  snow: 11,
+  'freezing-rain': 12,
+  hail: 13,
+  thunderstorm: 14,
+  'snow-thunderstorm': 15,
+  // The three that a day is named after whatever else it holds. Leaving them
+  // unrated scored them 0, below a clear sky, so an hour of cyclone could not
+  // win the day summary.
+  sandstorm: 16,
+  tornado: 17,
+  hurricane: 18,
 };
 
 /**
