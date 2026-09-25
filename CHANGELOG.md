@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.2.0...v1.3.0) (2026-09-25)
+
+### Features
+
+* scene triggers and actions for Gladys 5.1 ([3549339](https://github.com/William-De71/gladys-meteo-france/commit/3549339985d3232ae360160ebc580ce407dbae6a))
+
 ## [1.2.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.1.1...v1.2.0) (2026-08-28)
 
 ## [1.1.1](https://github.com/William-De71/gladys-meteo-france/compare/v1.1.0...v1.1.1) (2026-08-22)
