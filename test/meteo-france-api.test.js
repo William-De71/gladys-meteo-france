@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   getForecast,
+  getRain,
   getVigilance,
   getVigilanceMap,
   PUBLIC_TOKEN,
@@ -37,6 +38,17 @@ test('calls the forecast endpoint with the public token', async () => {
   assert.ok(url.includes('/forecast'));
   assert.ok(url.includes('lat=48.85'));
   assert.ok(url.includes('lon=2.35'));
+  assert.ok(url.includes(encodeURIComponent(PUBLIC_TOKEN)));
+});
+
+test('calls the rain nowcast endpoint with the public token', async () => {
+  const fetchImpl = buildFetch([{ ok: true, json: async () => ({ forecast: [] }) }]);
+  await getRain(48.85, 2.35, { language: 'en', fetchImpl });
+  const { url } = fetchImpl.calls[0];
+  assert.ok(url.includes('/rain?'));
+  assert.ok(url.includes('lat=48.85'));
+  assert.ok(url.includes('lon=2.35'));
+  assert.ok(url.includes('lang=en'));
   assert.ok(url.includes(encodeURIComponent(PUBLIC_TOKEN)));
 });
 

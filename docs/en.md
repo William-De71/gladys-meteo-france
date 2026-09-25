@@ -42,6 +42,51 @@ In the scene editor, add a **"Weather alert raised"** or **"Weather alert ended"
 
 Gladys checks for alerts every 30 minutes. This integration additionally watches the vigilance every 15 minutes and notifies Gladys as soon as it changes, so your scene runs within seconds instead of waiting for the next scheduled check.
 
+## Scenes: Météo France triggers
+
+On top of the vigilance alerts, the integration adds its own triggers to the scene editor (Gladys 5.1 or later), under **Météo France**:
+
+| Trigger                           | Fires when…                                                               | Filters                                     |
+| --------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------- |
+| **Rain expected within the hour** | the radar nowcast announces rain within the hour, where it announced none | house, intensity (light / moderate / heavy) |
+| **Rain stopped**                  | the rain under way stops                                                  | house                                       |
+| **Frost forecast**                | the next 24 hours go down to 0 °C, or to -5 °C                            | house, level                                |
+| **Heat forecast**                 | the next 24 hours go up to 30 °C, or to 35 °C                             | house, level                                |
+| **Strong wind forecast**          | the gusts of the next 24 hours reach 60, 80 or 100 km/h                   | house, level                                |
+
+Examples: close the skylights and retract the awning on **Rain expected within the hour**, switch the heating to frost protection on **Frost forecast**, close the south shutters the day before a **Heat forecast**.
+
+Each trigger hands the following actions a ready-to-send **Summary** ("Moderate rain expected in 15 min.", "Frost forecast: 28 °F expected tomorrow at 06:00.") along with the figures (minutes until the rain, temperature, time of the peak…).
+
+Good to know:
+
+- **House**: leave the field empty to watch every house. To target one, type its name **exactly** as in Gladys.
+- **Level**: each level fires on its own. A "Frost forecast" scene set to 0 °C fires once when frost enters the forecast, not on every update. It re-arms once the forecast clearly moves back (2 °C above the threshold for frost and heat, 15 km/h below it for wind), so a forecast hesitating around 0 °C does not fire over and over.
+- **Rain within the hour** comes from the Météo France radar, checked every 5 minutes. It is not available everywhere (some mountain areas, overseas): both rain triggers then stay silent. The same rain trigger never repeats within 30 minutes, so a hesitating shower does not warn you three times.
+- **After a restart**, the first check is a baseline and fires nothing, like the Gladys vigilance alerts: a restart in the middle of a frost episode does not send the notification again.
+- **Location**: these triggers watch the weather continuously, so the integration needs the location of your houses — which is why the install screen asks for location access. A house without a location is not watched.
+
+## Scenes: Météo France actions
+
+Four actions read the weather in the middle of a scene. Their results can be used by the following actions, for instance in a message or a condition:
+
+| Action                             | What it returns                                                                                   |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Get the forecast of a day**      | min/max temperatures, sky, rain and probability, wind and gusts, UV, humidity, sunrise and sunset |
+| **Get the rain of the next hours** | dry or not, total rain, rainy hours, time of the first rain (over 1 to 24 h)                      |
+| **Get the rain within the hour**   | raining now, rain expected, intensity, minutes until the rain or until it stops                   |
+| **Get the vigilance**              | color and level, phenomena in force, department, official summary and full bulletin               |
+
+Each action also returns a one-sentence **Summary**, e.g. "Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%), gusts up to 55 km/h."
+
+Examples:
+
+- **Morning briefing**: a time trigger at 7 am, then _Get the forecast of a day_ (today) and _Get the vigilance_, then a message quoting both summaries.
+- **Smart watering**: before opening the valve, _Get the rain of the next hours_ over 12 h, then a condition on **Dry**.
+- **Laundry outside?**: _Get the rain within the hour_, then a condition on **Rain within the hour**.
+
+The **House** field is optional: left empty, the action uses the first located house. Temperatures, wind and rain follow the unit system of Gladys, and the texts its language (French or English). The **Available** output of _Get the rain within the hour_ tells whether the radar nowcast covers your house.
+
 ## Vigilance map (optional)
 
 Displaying the national vigilance map requires a personal API key, free of charge:

@@ -43,6 +43,51 @@ Dans l'éditeur de scène, ajoutez un déclencheur **« Alerte météo émise »
 
 Gladys vérifie les alertes toutes les 30 minutes. Cette intégration surveille en plus la vigilance toutes les 15 minutes et prévient Gladys dès qu'elle change : votre scène se déclenche donc en quelques secondes plutôt qu'en attendant la vérification suivante.
 
+## Scènes : déclencheurs Météo France
+
+En plus des alertes de vigilance, l'intégration ajoute ses propres déclencheurs dans l'éditeur de scène (Gladys 5.1 ou plus récent), dans la rubrique **Météo France** :
+
+| Déclencheur                | Se déclenche quand…                                                                   | Filtres                                      |
+| -------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Pluie imminente**        | la prévision radar annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas | maison, intensité (faible / modérée / forte) |
+| **Fin de la pluie**        | la pluie en cours s'arrête                                                            | maison                                       |
+| **Gel annoncé**            | les 24 prochaines heures descendent à 0 °C, ou à -5 °C                                | maison, niveau                               |
+| **Forte chaleur annoncée** | les 24 prochaines heures montent à 30 °C, ou à 35 °C                                  | maison, niveau                               |
+| **Vent fort annoncé**      | les rafales des 24 prochaines heures atteignent 60, 80 ou 100 km/h                    | maison, niveau                               |
+
+Exemples : fermer les velux et rentrer le store sur **Pluie imminente**, passer le chauffage en hors-gel sur **Gel annoncé**, fermer les volets côté sud la veille d'une **Forte chaleur annoncée**.
+
+Chaque déclencheur met à disposition des actions suivantes un **Résumé** prêt à envoyer (« Pluie modérée prévue dans 15 min. », « Gel annoncé : -2 °C prévus demain à 06:00. »), ainsi que les valeurs chiffrées (minutes avant la pluie, température, heure du pic…).
+
+Quelques points à connaître :
+
+- **Maison** : laissez le champ vide pour surveiller toutes vos maisons. Pour n'en viser qu'une, saisissez son nom **exactement** comme dans Gladys.
+- **Niveau** : chaque niveau se déclenche séparément. Une scène « Gel annoncé » réglée sur 0 °C se déclenche une fois quand le gel apparaît dans la prévision, pas à chaque mise à jour. Elle se réarme quand la prévision remonte nettement (2 °C au-dessus du seuil pour le gel et la chaleur, 15 km/h en dessous pour le vent), pour ne pas se déclencher en boucle sur une prévision qui hésite autour de 0 °C.
+- **Pluie dans l'heure** : elle vient du radar de Météo France, vérifié toutes les 5 minutes. Elle n'est pas disponible partout (certaines zones de montagne, l'outre-mer) : les deux déclencheurs de pluie restent alors silencieux. Un même déclencheur de pluie ne se répète pas avant 30 minutes, pour ne pas vous prévenir trois fois pour une averse qui hésite.
+- **Après un redémarrage**, la première vérification sert de référence et ne déclenche rien, comme pour les alertes de vigilance de Gladys : un redémarrage en plein épisode de gel ne vous renvoie pas la notification.
+- **Localisation** : ces déclencheurs surveillent la météo en continu. L'intégration a donc besoin de la position de vos maisons, et c'est pourquoi l'écran d'installation demande l'accès à la localisation. Une maison sans position n'est pas surveillée.
+
+## Scènes : actions Météo France
+
+Quatre actions permettent de lire la météo au milieu d'une scène. Leurs résultats sont utilisables dans les actions suivantes, par exemple dans un message ou une condition :
+
+| Action                                     | Ce qu'elle renvoie                                                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Obtenir les prévisions d'un jour**       | températures mini/maxi, ciel, pluie et probabilité, vent et rafales, UV, humidité, lever et coucher du soleil |
+| **Obtenir la pluie des prochaines heures** | temps sec ou non, cumul de pluie, nombre d'heures de pluie, heure de la première pluie (sur 1 à 24 h)         |
+| **Obtenir la pluie dans l'heure**          | pluie en cours, pluie prévue, intensité, minutes avant la pluie ou avant la fin de la pluie                   |
+| **Obtenir la vigilance**                   | couleur et niveau, phénomènes en cours, département, résumé officiel et bulletin complet                      |
+
+Chaque action renvoie aussi un **Résumé** en une phrase, par exemple « Demain : pluie, 14 à 21 °C, 4,2 mm de pluie (80 %), rafales à 55 km/h. »
+
+Exemples :
+
+- **Bulletin du matin** : un déclencheur horaire à 7 h, puis _Obtenir les prévisions d'un jour_ (aujourd'hui) et _Obtenir la vigilance_, puis un message qui reprend les deux résumés.
+- **Arrosage malin** : avant d'ouvrir la vanne, _Obtenir la pluie des prochaines heures_ sur 12 h, puis une condition sur **Temps sec**.
+- **Linge dehors ?** : _Obtenir la pluie dans l'heure_, puis une condition sur **Pluie dans l'heure**.
+
+Le champ **Maison** est facultatif : vide, l'action utilise la première maison localisée. Les températures, le vent et la pluie suivent le système d'unités de Gladys, et les textes sa langue (français ou anglais). La sortie **Disponible** de _Obtenir la pluie dans l'heure_ indique si la prévision radar couvre votre maison.
+
 ## Carte de vigilance (optionnel)
 
 L'affichage de la carte nationale nécessite une clé d'API personnelle, gratuite :

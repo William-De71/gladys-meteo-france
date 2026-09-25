@@ -101,6 +101,29 @@ async function getVigilance(department, { fetchImpl = fetch } = {}) {
 }
 
 /**
+ * @description Get the "rain within the hour" nowcast of a location: 5 to
+ * 10-minute slots over the next hour, each rated 1 (dry) to 4 (heavy rain).
+ * Only part of the territory is covered: the payload says so through
+ * `position.rain_product_available`.
+ * @param {number} latitude - Latitude.
+ * @param {number} longitude - Longitude.
+ * @param {object} [options] - Options.
+ * @param {string} [options.language] - Language of the slot descriptions.
+ * @param {typeof fetch} [options.fetchImpl] - fetch implementation (for tests).
+ * @returns {Promise<any>} Resolves with the raw nowcast payload.
+ * @example
+ * const rain = await getRain(48.85, 2.35);
+ */
+async function getRain(latitude, longitude, { language = 'fr', fetchImpl = fetch } = {}) {
+  const url = new URL(`${WEBSERVICE_URL}/rain`);
+  url.searchParams.set('lat', String(latitude));
+  url.searchParams.set('lon', String(longitude));
+  url.searchParams.set('lang', language);
+  url.searchParams.set('token', PUBLIC_TOKEN);
+  return getJson(url, { fetchImpl });
+}
+
+/**
  * @description Get the national vigilance map thumbnail as raw base64. This is
  * the ONLY call requiring the optional personal API key.
  * @param {string} apiKey - The personal Météo France API key.
@@ -140,4 +163,12 @@ async function getVigilanceMap(apiKey, day, { fetchImpl = fetch } = {}) {
   }
 }
 
-export { getForecast, getVigilance, getVigilanceMap, WEBSERVICE_URL, PUBLIC_API_URL, PUBLIC_TOKEN };
+export {
+  getForecast,
+  getRain,
+  getVigilance,
+  getVigilanceMap,
+  WEBSERVICE_URL,
+  PUBLIC_API_URL,
+  PUBLIC_TOKEN,
+};

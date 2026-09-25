@@ -654,9 +654,24 @@ function readDepartment(data) {
   return typeof department === 'string' && department.length > 0 ? department : null;
 }
 
+/**
+ * @description Read the IANA timezone out of a raw Météo France payload (the
+ * forecast and the rain nowcast carry the same `position` block).
+ * @param {object} data - The raw payload.
+ * @returns {string|null} The timezone (e.g. 'Europe/Paris'), or null.
+ * @example
+ * readTimezone(rawForecast); // -> 'Europe/Paris'
+ */
+function readTimezone(data) {
+  const timezone = data && data.position && data.position.timezone;
+  return typeof timezone === 'string' && timezone.length > 0 ? timezone : null;
+}
+
 export {
   buildWeather,
   readDepartment,
+  readTimezone,
+  dayKey,
   convertTemperature,
   convertWindSpeed,
   convertPrecipitation,
