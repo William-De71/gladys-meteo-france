@@ -40,6 +40,10 @@ for the weather of a house and it feeds the **dashboard weather widget**, the **
 | **Frost forecast** `frost_forecast`               | the next 24 hours reach 0 °C, -5 °C, or a custom threshold (-20 to 5 °C)                              | house, level, threshold |
 | **Heat forecast** `heat_forecast`                 | the next 24 hours reach 30 °C, 35 °C, or a custom threshold (20 to 45 °C)                             | house, level, threshold |
 | **Strong wind forecast** `wind_forecast`          | the gusts of the next 24 hours reach 60, 80, 100 km/h, or a custom threshold (20 to 150 km/h, step 5) | house, level, threshold |
+| **Black ice forecast** `ice_forecast`             | the next 24 hours reach the black ice risk / likely level (see `src/ice.js`)                          | house, level            |
+| **Snow forecast** `snow_forecast`                 | snow or sleet enters the next 24 hours (presence, never an amount)                                    | house                   |
+| **Storm forecast** `storm_forecast`               | a thunderstorm or hail enters the next 12 hours                                                       | house                   |
+| **High UV forecast** `uv_forecast`                | the daily UV index of the coming day reaches 6, 8, 11 or a custom threshold (1-11)                    | house, level, threshold |
 
 Every trigger carries a ready-to-send `summary` ("Moderate rain expected in 15 min.", "Frost forecast: -2 °C
 expected tomorrow at 06:00.") and its figures as scene variables: `{{triggerEvent.data.minutes_until_rain}}`,
@@ -57,18 +61,27 @@ A trigger is a **transition**, published once — never a state re-sent on every
 
 ### Scene actions
 
-| Action (key)                                             | Main outputs                                                                                  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Get the forecast of a day** `get_forecast`             | min/max temperatures, sky, rain and probability, wind, gusts, UV, sun times                   |
-| **Get the rain of the next hours** `get_rain_next_hours` | `dry`, total precipitation, rainy hours, time of the first rain (1-24 h)                      |
-| **Get the rain within the hour** `get_rain_next_hour`    | `available`, `raining`, `rain_expected`, intensity, minutes until rain / dry                  |
-| **Get the vigilance** `get_vigilance`                    | color and level, phenomena, department, official summary, full bulletin                       |
-| **Get the frost risk** `get_frost_risk`                  | `level` 0-2, worst hour, temperature, dew and frost points, humidity, clouds, wind, `reduced` |
+| Action (key)                                             | Main outputs                                                                                          |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Get the forecast of a day** `get_forecast`             | min/max temperatures, sky, rain and probability, wind, gusts, UV, sun times                           |
+| **Get the rain of the next hours** `get_rain_next_hours` | `dry`, total precipitation, rainy hours, time of the first rain (1-24 h)                              |
+| **Get the rain within the hour** `get_rain_next_hour`    | `available`, `raining`, `rain_expected`, intensity, minutes until rain / dry                          |
+| **Get the vigilance** `get_vigilance`                    | color and level, phenomena, department, official summary, full bulletin                               |
+| **Get the frost risk** `get_frost_risk`                  | `level` 0-2, worst hour, temperature, dew and frost points, humidity, clouds, wind, `reduced`         |
+| **Get the black ice risk** `get_ice_risk`                | `level` 0-2, onset time, temperature, `freezing_rain`, rain of the last 6 h, `freezing_probability`   |
+| **Get the forecast of an hour** `get_hour_forecast`      | an hour of today to the day after: temperature, feels like, sky, rain, wind, gusts, direction, clouds |
 
 Every action also returns a one-sentence `summary`, e.g. "Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%),
 gusts up to 55 km/h." A figure Météo France does not provide is left out, never sent as 0 — a 0 mm would read as
 "dry" in the conditions that follow. The actions are read-only and never fire a trigger, so a scene cannot loop
 through the integration.
+
+The hazard triggers (`src/hazard-triggers.js`) follow the same transition rules; ice / snow / storm add a 6-hour
+cooldown per trigger and level, and `uv_forecast` fires once per day and threshold, reading today's daily index
+before noon and tomorrow's after. MF's `probability_forecast[].freezing` is the chance of a temperature below 0 °C,
+not of black ice: `get_ice_risk` and `ice_forecast` look for water on a cold surface instead (freezing rain, rain at
+T ≤ 0 °C, or rain in the 6 previous hours at T ≤ -1 °C → likely; wet at T ≤ 1 °C → risk). The MF wind is in m/s
+(passed through to the pivot for metric, converted to km/h for the scenes).
 
 `get_frost_risk` (`src/frost.js`) reads the raw MF hours, not the pivot ones (rounded to the degree), from now until
 10:00 of the coming morning: dew point from temperature and humidity (Magnus), frost point from the dew point, then

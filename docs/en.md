@@ -53,6 +53,10 @@ On top of the vigilance alerts, the integration adds its own triggers to the sce
 | **Frost forecast**                | the next 24 hours go down to 0 °C, to -5 °C, or to a threshold of your choice (-20 to 5 °C)                   | house, level, custom threshold              |
 | **Heat forecast**                 | the next 24 hours go up to 30 °C, to 35 °C, or to a threshold of your choice (20 to 45 °C)                    | house, level, custom threshold              |
 | **Strong wind forecast**          | the gusts of the next 24 hours reach 60, 80, 100 km/h, or a threshold of your choice (20 to 150 km/h, step 5) | house, level, custom threshold              |
+| **Black ice forecast**            | the next 24 hours bring rain on a surface at or below freezing                                                | house, level (risk / likely)                |
+| **Snow forecast**                 | snow (or sleet) enters the next 24 hours                                                                      | house                                       |
+| **Storm forecast**                | a thunderstorm (or hail) enters the next 12 hours                                                             | house                                       |
+| **High UV forecast**              | the UV index of the coming day reaches 6, 8, 11, or a threshold of your choice (1 to 11)                      | house, level, custom threshold              |
 
 Examples: close the skylights and retract the awning on **Rain expected within the hour**, switch the heating to frost protection on **Frost forecast**, close the south shutters the day before a **Heat forecast**.
 
@@ -65,19 +69,23 @@ Good to know:
 - **Custom threshold**: for a value not in the list, pick the "Custom threshold" level and type the value in the field of the same name — say -10 °C for frost, 25 °C for heat or 40 km/h for wind. It must be a whole number (a multiple of 5 for wind) and is always in °C and km/h, whatever the unit system of Gladys. With "Custom threshold", always fill the field: left empty, the scene would fire at every degree crossed. With the other levels, leave it empty: a value there would keep the scene from firing.
 - **Rain within the hour** comes from the Météo France radar, checked every 5 minutes. It is not available everywhere (some mountain areas, overseas): both rain triggers then stay silent. The same rain trigger never repeats within 30 minutes, so a hesitating shower does not warn you three times.
 - **After a restart**, the first check is a baseline and fires nothing, like the Gladys vigilance alerts: a restart in the middle of a frost episode does not send the notification again.
+- **Black ice, snow, storm**: each fires once when the phenomenon enters the forecast, and re-arms once it has left it. A forecast hesitating from one update to the next does not warn you twice: the same trigger never repeats within 6 hours. Snow fires on its presence, not on an amount: the unit of Météo France's snow amounts is not documented.
+- **High UV**: Météo France only publishes one UV index per day. Before noon the trigger reads today's, after noon tomorrow's. So it fires once per day and level, usually around noon the day before (or later if the forecast goes up). The **Custom threshold** works as for frost.
 - **Location**: these triggers watch the weather continuously, so the integration needs the location of your houses — which is why the install screen asks for location access. A house without a location is not watched.
 
 ## Scenes: Météo France actions
 
-Five actions read the weather in the middle of a scene. Their results can be used by the following actions, for instance in a message or a condition:
+Seven actions read the weather in the middle of a scene. Their results can be used by the following actions, for instance in a message or a condition:
 
-| Action                             | What it returns                                                                                         |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Get the forecast of a day**      | min/max temperatures, sky, rain and probability, wind and gusts, UV, humidity, sunrise and sunset       |
-| **Get the rain of the next hours** | dry or not, total rain, rainy hours, time of the first rain (over 1 to 24 h)                            |
-| **Get the rain within the hour**   | raining now, rain expected, intensity, minutes until the rain or until it stops                         |
-| **Get the vigilance**              | color and level, phenomena in force, department, official summary and full bulletin                     |
-| **Get the frost risk**             | level (0 none, 1 risk, 2 likely), worst hour, temperature, dew and frost points, humidity, clouds, wind |
+| Action                             | What it returns                                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Get the forecast of a day**      | min/max temperatures, sky, rain and probability, wind and gusts, UV, humidity, sunrise and sunset                                |
+| **Get the rain of the next hours** | dry or not, total rain, rainy hours, time of the first rain (over 1 to 24 h)                                                     |
+| **Get the rain within the hour**   | raining now, rain expected, intensity, minutes until the rain or until it stops                                                  |
+| **Get the vigilance**              | color and level, phenomena in force, department, official summary and full bulletin                                              |
+| **Get the frost risk**             | level (0 none, 1 risk, 2 likely), worst hour, temperature, dew and frost points, humidity, clouds, wind                          |
+| **Get the black ice risk**         | level (0 none, 1 risk, 2 likely), onset time, temperature, freezing rain, rain of the last 6 hours, chance of frost              |
+| **Get the forecast of an hour**    | at an hour of today, tomorrow or the day after: temperature, feels like, sky, rain and chance, wind, gusts and direction, clouds |
 
 Each action also returns a one-sentence **Summary**, e.g. "Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%), gusts up to 55 km/h."
 
@@ -86,9 +94,15 @@ Examples:
 - **Morning briefing**: a time trigger at 7 am, then _Get the forecast of a day_ (today) and _Get the vigilance_, then a message quoting both summaries.
 - **Smart watering**: before opening the valve, _Get the rain of the next hours_ over 12 h, then a condition on **Dry**.
 - **Laundry outside?**: _Get the rain within the hour_, then a condition on **Rain within the hour**.
+- **Black ice alert**: the same scene as the frost alert, with _Get the black ice risk_.
+- **Morning commute**: at 9 pm, _Get the forecast of an hour_ (tomorrow, 8), then a message with the **Summary** ("Tomorrow at 08:00: partly cloudy, 11 °C (feels like 8 °C), south-west wind at 14 km/h, gusts up to 40 km/h, 1.2 mm of rain.").
 - **Frost alert**: a time trigger at 6 pm, then _Get the frost risk_, then "Continue only if" **Level** ≥ 1, then a message with the **Summary** ("Frost likely tomorrow morning: 0.4 °C around 06:00, frost point -2.1 °C.").
 
 **Frost risk**: Météo France publishes no dew point. The action computes it hour by hour from the temperature and the humidity, then derives the frost point. It looks from now until 10:00 of the coming morning (this morning before 10:00, tomorrow morning after) and keeps the worst hour. Frost likely: temperature ≤ 1 °C and frost point ≤ 0 °C, or temperature ≤ 0 °C and frost point ≤ -2 °C. Frost risk: temperature ≤ 3 °C and frost point ≤ 0 °C. Hoar frost forms under a clear sky and a light wind: an overcast sky (80% cloud cover or more) or a mean wind of 20 km/h or more lowers the level by one, as the **Lowered by the sky or the wind** output tells.
+
+**Black ice risk**: Météo France forecasts neither black ice nor the ground temperature, and its "chance of frost" is only the chance of a temperature below 0 °C (returned for information). So the action looks for water on a cold surface, hour by hour, over the same window as the frost risk. Black ice likely: freezing rain forecast, rain with a temperature ≤ 0 °C, or a wet surface (rain in the 6 previous hours) with a temperature ≤ -1 °C. Black ice risk: a wet surface and a temperature ≤ 1 °C. The air temperature stands for the ground one, hence the 1 °C margin.
+
+**Forecast of an hour**: until tomorrow Météo France forecasts hour by hour, past it by 3-hour steps. The action then takes the step covering the hour asked, and the **Time of the forecast** output tells which.
 
 The **House** field is optional: left empty, the action uses the first located house. Temperatures, wind and rain follow the unit system of Gladys, and the texts its language (French or English). The **Available** output of _Get the rain within the hour_ tells whether the radar nowcast covers your house.
 

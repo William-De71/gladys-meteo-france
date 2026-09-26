@@ -700,6 +700,479 @@
           }
         }
       ]
+    },
+    {
+      "key": "ice_forecast",
+      "label": {
+        "en": "Black ice forecast",
+        "fr": "Verglas annoncé"
+      },
+      "description": {
+        "en": "The next 24 hours bring rain on a surface at or below freezing. Fires once per episode.",
+        "fr": "Les 24 prochaines heures annoncent de la pluie sur une surface proche ou en dessous de 0 °C. Se déclenche une fois par épisode."
+      },
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+          },
+          "required": false
+        },
+        {
+          "key": "level",
+          "type": "select",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau"
+          },
+          "required": true,
+          "default": "risk",
+          "options": [
+            {
+              "value": "risk",
+              "label": {
+                "en": "Risk of black ice or more",
+                "fr": "Risque de verglas ou plus"
+              }
+            },
+            {
+              "value": "likely",
+              "label": {
+                "en": "Black ice likely",
+                "fr": "Verglas probable"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "level",
+          "type": "string",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau"
+          }
+        },
+        {
+          "key": "level_label",
+          "type": "string",
+          "label": {
+            "en": "Level label",
+            "fr": "Libellé du niveau"
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time",
+            "fr": "Heure"
+          },
+          "description": {
+            "en": "Local time, HH:MM.",
+            "fr": "Heure locale, HH:MM."
+          }
+        },
+        {
+          "key": "hours_until",
+          "type": "number",
+          "label": {
+            "en": "Hours until",
+            "fr": "Dans combien d'heures"
+          }
+        },
+        {
+          "key": "temperature",
+          "type": "number",
+          "label": {
+            "en": "Temperature",
+            "fr": "Température"
+          }
+        },
+        {
+          "key": "freezing_rain",
+          "type": "boolean",
+          "label": {
+            "en": "Freezing rain",
+            "fr": "Pluie verglaçante"
+          }
+        },
+        {
+          "key": "recent_rain",
+          "type": "number",
+          "label": {
+            "en": "Rain of the last 6 hours",
+            "fr": "Pluie des 6 dernières heures"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
+    },
+    {
+      "key": "snow_forecast",
+      "label": {
+        "en": "Snow forecast",
+        "fr": "Neige annoncée"
+      },
+      "description": {
+        "en": "Snow or sleet enters the forecast of the next 24 hours. Fires once per episode.",
+        "fr": "De la neige ou de la pluie et neige apparaît dans la prévision des 24 prochaines heures. Se déclenche une fois par épisode."
+      },
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+          },
+          "required": false
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time",
+            "fr": "Heure"
+          },
+          "description": {
+            "en": "Local time, HH:MM.",
+            "fr": "Heure locale, HH:MM."
+          }
+        },
+        {
+          "key": "hours_until",
+          "type": "number",
+          "label": {
+            "en": "Hours until",
+            "fr": "Dans combien d'heures"
+          }
+        },
+        {
+          "key": "condition",
+          "type": "string",
+          "label": {
+            "en": "Sky (key)",
+            "fr": "Ciel (clé)"
+          }
+        },
+        {
+          "key": "condition_label",
+          "type": "string",
+          "label": {
+            "en": "Sky",
+            "fr": "Ciel"
+          }
+        },
+        {
+          "key": "snow_probability",
+          "type": "number",
+          "label": {
+            "en": "Chance of snow (%)",
+            "fr": "Probabilité de neige (%)"
+          }
+        },
+        {
+          "key": "rain_snow_limit",
+          "type": "number",
+          "label": {
+            "en": "Rain-snow limit (m)",
+            "fr": "Limite pluie-neige (m)"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
+    },
+    {
+      "key": "storm_forecast",
+      "label": {
+        "en": "Storm forecast",
+        "fr": "Orage annoncé"
+      },
+      "description": {
+        "en": "A thunderstorm or hail enters the forecast of the next 12 hours. Fires once per episode.",
+        "fr": "Un orage ou de la grêle apparaît dans la prévision des 12 prochaines heures. Se déclenche une fois par épisode."
+      },
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+          },
+          "required": false
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time",
+            "fr": "Heure"
+          },
+          "description": {
+            "en": "Local time, HH:MM.",
+            "fr": "Heure locale, HH:MM."
+          }
+        },
+        {
+          "key": "hours_until",
+          "type": "number",
+          "label": {
+            "en": "Hours until",
+            "fr": "Dans combien d'heures"
+          }
+        },
+        {
+          "key": "condition",
+          "type": "string",
+          "label": {
+            "en": "Sky (key)",
+            "fr": "Ciel (clé)"
+          }
+        },
+        {
+          "key": "condition_label",
+          "type": "string",
+          "label": {
+            "en": "Sky",
+            "fr": "Ciel"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
+    },
+    {
+      "key": "uv_forecast",
+      "label": {
+        "en": "High UV forecast",
+        "fr": "UV élevé annoncé"
+      },
+      "description": {
+        "en": "The UV index of the coming day (today until noon, tomorrow after) reaches the chosen level. Fires once per day, usually around noon the day before.",
+        "fr": "L'indice UV de la journée à venir (aujourd'hui jusqu'à midi, demain ensuite) atteint le niveau choisi. Se déclenche une fois par jour, en général vers midi la veille."
+      },
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+          },
+          "required": false
+        },
+        {
+          "key": "level",
+          "type": "select",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau"
+          },
+          "description": {
+            "en": "Daily UV index forecast by Météo France. \"Custom threshold\" uses the value typed below.",
+            "fr": "Indice UV du jour prévu par Météo France. « Seuil personnalisé » utilise la valeur saisie en dessous."
+          },
+          "required": true,
+          "default": "uv_6",
+          "options": [
+            {
+              "value": "uv_6",
+              "label": {
+                "en": "6 or more (high)",
+                "fr": "6 ou plus (élevé)"
+              }
+            },
+            {
+              "value": "uv_8",
+              "label": {
+                "en": "8 or more (very high)",
+                "fr": "8 ou plus (très élevé)"
+              }
+            },
+            {
+              "value": "uv_11",
+              "label": {
+                "en": "11 or more (extreme)",
+                "fr": "11 ou plus (extrême)"
+              }
+            },
+            {
+              "value": "custom",
+              "label": {
+                "en": "Custom threshold",
+                "fr": "Seuil personnalisé"
+              }
+            }
+          ]
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Custom threshold",
+            "fr": "Seuil personnalisé"
+          },
+          "description": {
+            "en": "With \"Custom threshold\": UV index from 1 to 11, a whole number. Leave empty with the other levels.",
+            "fr": "Avec « Seuil personnalisé » : indice UV de 1 à 11, nombre entier. Laissez vide avec les autres niveaux."
+          },
+          "required": false,
+          "min": 1,
+          "max": 11,
+          "placeholder": {
+            "en": "5",
+            "fr": "5"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          }
+        },
+        {
+          "key": "level",
+          "type": "string",
+          "label": {
+            "en": "Level",
+            "fr": "Niveau"
+          }
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Threshold",
+            "fr": "Seuil"
+          }
+        },
+        {
+          "key": "uv_index",
+          "type": "number",
+          "label": {
+            "en": "UV index",
+            "fr": "Indice UV"
+          }
+        },
+        {
+          "key": "uv_label",
+          "type": "string",
+          "label": {
+            "en": "UV level",
+            "fr": "Niveau UV"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date",
+            "fr": "Date"
+          },
+          "description": {
+            "en": "YYYY-MM-DD.",
+            "fr": "AAAA-MM-JJ."
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
     }
   ],
   "scene_actions": [
@@ -1376,6 +1849,337 @@
           "description": {
             "en": "The level was lowered by one: overcast sky or steady wind.",
             "fr": "Le niveau a été abaissé d'un cran : ciel couvert ou vent soutenu."
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
+    },
+    {
+      "key": "get_ice_risk",
+      "label": {
+        "en": "Get the black ice risk",
+        "fr": "Obtenir le risque de verglas"
+      },
+      "description": {
+        "en": "Black ice risk of the coming morning, from now until 10:00: rain on a surface at or below freezing, hour by hour, including the rain of the 6 previous hours.",
+        "fr": "Risque de verglas de la prochaine matinée, de maintenant jusqu'à 10 h : pluie sur une surface proche ou en dessous de 0 °C, heure par heure, en comptant la pluie des 6 heures précédentes."
+      },
+      "timeout_seconds": 45,
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+          },
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "level",
+          "type": "number",
+          "label": {
+            "en": "Level (0 none, 1 risk, 2 likely)",
+            "fr": "Niveau (0 aucun, 1 risque, 2 probable)"
+          }
+        },
+        {
+          "key": "level_label",
+          "type": "string",
+          "label": {
+            "en": "Level label",
+            "fr": "Libellé du niveau"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date of the morning",
+            "fr": "Date de la matinée"
+          },
+          "description": {
+            "en": "YYYY-MM-DD.",
+            "fr": "AAAA-MM-JJ."
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time",
+            "fr": "Heure"
+          },
+          "description": {
+            "en": "When the ice sets in (the coldest hour without ice), local HH:MM.",
+            "fr": "Début du verglas (l'heure la plus froide sans verglas), heure locale HH:MM."
+          }
+        },
+        {
+          "key": "temperature",
+          "type": "number",
+          "label": {
+            "en": "Temperature",
+            "fr": "Température"
+          }
+        },
+        {
+          "key": "freezing_rain",
+          "type": "boolean",
+          "label": {
+            "en": "Freezing rain",
+            "fr": "Pluie verglaçante"
+          }
+        },
+        {
+          "key": "recent_rain",
+          "type": "number",
+          "label": {
+            "en": "Rain of the last 6 hours",
+            "fr": "Pluie des 6 dernières heures"
+          }
+        },
+        {
+          "key": "freezing_probability",
+          "type": "number",
+          "label": {
+            "en": "Chance of frost (%)",
+            "fr": "Probabilité de gel (%)"
+          },
+          "description": {
+            "en": "Météo France's chance of a temperature below 0 °C.",
+            "fr": "Probabilité Météo France d'une température négative."
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
+    },
+    {
+      "key": "get_hour_forecast",
+      "label": {
+        "en": "Get the forecast of an hour",
+        "fr": "Obtenir la météo d'une heure"
+      },
+      "description": {
+        "en": "The forecast at a given hour of today, tomorrow or the day after: temperature, feels like, sky, rain, wind and its direction.",
+        "fr": "La prévision à une heure donnée d'aujourd'hui, de demain ou d'après-demain : température, ressenti, ciel, pluie, vent et sa direction."
+      },
+      "timeout_seconds": 45,
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+          },
+          "required": false
+        },
+        {
+          "key": "day",
+          "type": "select",
+          "label": {
+            "en": "Day",
+            "fr": "Jour"
+          },
+          "required": false,
+          "default": "1",
+          "options": [
+            {
+              "value": "0",
+              "label": {
+                "en": "Today",
+                "fr": "Aujourd'hui"
+              }
+            },
+            {
+              "value": "1",
+              "label": {
+                "en": "Tomorrow",
+                "fr": "Demain"
+              }
+            },
+            {
+              "value": "2",
+              "label": {
+                "en": "In 2 days",
+                "fr": "Dans 2 jours"
+              }
+            }
+          ]
+        },
+        {
+          "key": "hour",
+          "type": "number",
+          "label": {
+            "en": "Hour",
+            "fr": "Heure"
+          },
+          "description": {
+            "en": "0 to 23, local time. Past tomorrow, Météo France forecasts by 3-hour steps: the step covering this hour is used.",
+            "fr": "De 0 à 23, heure locale. Au-delà de demain, Météo France prévoit par pas de 3 heures : le pas qui couvre cette heure est utilisé."
+          },
+          "required": false,
+          "default": 8,
+          "min": 0,
+          "max": 23
+        }
+      ],
+      "outputs": [
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date",
+            "fr": "Date"
+          },
+          "description": {
+            "en": "YYYY-MM-DD.",
+            "fr": "AAAA-MM-JJ."
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time of the forecast",
+            "fr": "Heure de la prévision"
+          },
+          "description": {
+            "en": "Local time, HH:MM.",
+            "fr": "Heure locale, HH:MM."
+          }
+        },
+        {
+          "key": "temperature",
+          "type": "number",
+          "label": {
+            "en": "Temperature",
+            "fr": "Température"
+          }
+        },
+        {
+          "key": "apparent_temperature",
+          "type": "number",
+          "label": {
+            "en": "Feels like",
+            "fr": "Ressenti"
+          }
+        },
+        {
+          "key": "humidity",
+          "type": "number",
+          "label": {
+            "en": "Humidity (%)",
+            "fr": "Humidité (%)"
+          }
+        },
+        {
+          "key": "condition",
+          "type": "string",
+          "label": {
+            "en": "Sky (key)",
+            "fr": "Ciel (clé)"
+          }
+        },
+        {
+          "key": "condition_label",
+          "type": "string",
+          "label": {
+            "en": "Sky",
+            "fr": "Ciel"
+          }
+        },
+        {
+          "key": "precipitation",
+          "type": "number",
+          "label": {
+            "en": "Rain",
+            "fr": "Pluie"
+          }
+        },
+        {
+          "key": "precipitation_probability",
+          "type": "number",
+          "label": {
+            "en": "Chance of rain (%)",
+            "fr": "Probabilité de pluie (%)"
+          }
+        },
+        {
+          "key": "wind_speed",
+          "type": "number",
+          "label": {
+            "en": "Wind speed",
+            "fr": "Vitesse du vent"
+          }
+        },
+        {
+          "key": "wind_gust",
+          "type": "number",
+          "label": {
+            "en": "Gusts",
+            "fr": "Rafales"
+          }
+        },
+        {
+          "key": "wind_direction",
+          "type": "number",
+          "label": {
+            "en": "Wind direction (°)",
+            "fr": "Direction du vent (°)"
+          },
+          "description": {
+            "en": "Where the wind blows from, 0 = north.",
+            "fr": "D'où vient le vent, 0 = nord."
+          }
+        },
+        {
+          "key": "wind_direction_label",
+          "type": "string",
+          "label": {
+            "en": "Wind direction",
+            "fr": "Direction du vent"
+          }
+        },
+        {
+          "key": "cloud_cover",
+          "type": "number",
+          "label": {
+            "en": "Cloud cover (%)",
+            "fr": "Couverture nuageuse (%)"
           }
         },
         {

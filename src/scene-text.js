@@ -74,6 +74,27 @@ const FROST_LABELS = {
   en: { 0: 'No frost', 1: 'Frost risk', 2: 'Frost likely' },
 };
 
+// Black ice risk level (see ice.js) -> human label.
+const ICE_LABELS = {
+  fr: { 0: 'Pas de verglas', 1: 'Risque de verglas', 2: 'Verglas probable' },
+  en: { 0: 'No black ice', 1: 'Black ice risk', 2: 'Black ice likely' },
+};
+
+// UV index bands of the WHO scale, lowest first: [minimum index, fr, en].
+const UV_BANDS = [
+  [0, 'faible', 'low'],
+  [3, 'modéré', 'moderate'],
+  [6, 'élevé', 'high'],
+  [8, 'très élevé', 'very high'],
+  [11, 'extrême', 'extreme'],
+];
+
+// The eight compass points, clockwise from north.
+const COMPASS_POINTS = {
+  fr: ['nord', 'nord-est', 'est', 'sud-est', 'sud', 'sud-ouest', 'ouest', 'nord-ouest'],
+  en: ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'],
+};
+
 // Units of the numbers we hand to a scene, per unit system.
 const UNIT_SYMBOLS = {
   metric: { temperature: '°C', wind: 'km/h', precipitation: 'mm' },
@@ -115,6 +136,32 @@ function formatNumber(value, language) {
   return value.toLocaleString(language === 'fr' ? 'fr-FR' : 'en-GB', {
     maximumFractionDigits: 2,
   });
+}
+
+/**
+ * @description Label of a UV index on the WHO scale.
+ * @param {number} index - The UV index.
+ * @param {string} language - 'fr' or 'en'.
+ * @returns {string} The label, e.g. 'très élevé'.
+ * @example
+ * uvLabel(8, 'fr'); // -> 'très élevé'
+ */
+function uvLabel(index, language) {
+  const band = [...UV_BANDS].reverse().find(([minimum]) => index >= minimum) || UV_BANDS[0];
+  return language === 'fr' ? band[1] : band[2];
+}
+
+/**
+ * @description Compass point a wind blows from.
+ * @param {number} degrees - The direction, in degrees (0 = north).
+ * @param {string} language - 'fr' or 'en'.
+ * @returns {string} The compass point, e.g. 'sud-ouest'.
+ * @example
+ * compassPoint(225, 'fr'); // -> 'sud-ouest'
+ */
+function compassPoint(degrees, language) {
+  const index = Math.round((((degrees % 360) + 360) % 360) / 45) % 8;
+  return COMPASS_POINTS[language === 'fr' ? 'fr' : 'en'][index];
 }
 
 /**
@@ -170,10 +217,13 @@ export {
   INTENSITY_LABELS,
   VIGILANCE_LABELS,
   FROST_LABELS,
+  ICE_LABELS,
   textLanguage,
   unitSymbols,
   formatNumber,
   formatLocalTime,
+  uvLabel,
+  compassPoint,
   formatDayName,
   capitalize,
 };

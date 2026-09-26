@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------------------
 // Scene watcher: polls Météo France for every located house and publishes the
-// scene triggers (see scene-triggers.js for what fires and why).
+// scene triggers (see scene-triggers.js and hazard-triggers.js for what fires
+// and why).
 //
 // Two cadences, matched to how fast each source changes:
 //   - the radar nowcast every 5 minutes: its slots are 5 minutes wide, and
@@ -24,7 +25,9 @@ import {
   readForecastExtremes,
   evaluateForecastLevels,
   buildForecastEventData,
+  SCENE_TRIGGERS,
 } from './scene-triggers.js';
+import { detectForecastHazards, buildHazardEventData } from './hazard-triggers.js';
 
 const RAIN_INTERVAL_MS = 5 * 60 * 1000;
 const FORECAST_INTERVAL_MS = 30 * 60 * 1000;
@@ -36,6 +39,16 @@ const RAIN_UNAVAILABLE_RETRY_MS = 6 * 60 * 60 * 1000;
 // radar nowcast can flicker at the edge of a shower ("rain in 55 min", then
 // dry, then rain again).
 const RAIN_COOLDOWN_MS = 30 * 60 * 1000;
+
+// The same ice / snow / storm trigger (and level) never fires twice for a
+// house within this delay: the forecast can drop a hazard for one run and
+// bring it back the next. UV needs none: each day fires once.
+const HAZARD_COOLDOWN_MS = 6 * 60 * 60 * 1000;
+const COOLDOWN_HAZARDS = [
+  SCENE_TRIGGERS.ICE_FORECAST,
+  SCENE_TRIGGERS.SNOW_FORECAST,
+  SCENE_TRIGGERS.STORM_FORECAST,
+];
 
 /**
  * @description Create the scene watcher.
@@ -64,7 +77,7 @@ function createSceneWatcher({
   rainIntervalMs = RAIN_INTERVAL_MS,
   forecastIntervalMs = FORECAST_INTERVAL_MS,
 }) {
-  // house id -> { nowcast, unavailableUntil, lastFired: Map, levels: Map }
+  // house id -> { nowcast, unavailableUntil, lastFired: Map, levels: Map, hazards: Map }
   const states = new Map();
   const timers = [];
 
@@ -78,7 +91,13 @@ function createSceneWatcher({
   function stateOf(house) {
     let state = states.get(house.id);
     if (state === undefined) {
-      state = { nowcast: null, unavailableUntil: 0, lastFired: new Map(), levels: new Map() };
+      state = {
+        nowcast: null,
+        unavailableUntil: 0,
+        lastFired: new Map(),
+        levels: new Map(),
+        hazards: new Map(),
+      };
       states.set(house.id, state);
     }
     return state;
@@ -175,6 +194,20 @@ function createSceneWatcher({
         const context = { timezone: readTimezone(data), units, language, nowSeconds };
         for (const event of events) {
           await safePublish(event.trigger, buildForecastEventData(event, house.name, context));
+          published += 1;
+        }
+        const hazards = detectForecastHazards(state.hazards, data, context);
+        for (const event of hazards) {
+          if (COOLDOWN_HAZARDS.includes(event.trigger)) {
+            const key = `${event.trigger}:${event.level || ''}`;
+            const lastFired = state.lastFired.get(key);
+            if (lastFired !== undefined && now() - lastFired < HAZARD_COOLDOWN_MS) {
+              logger.debug(`Scene event ${key} for house "${house.name}" skipped (cooldown)`);
+              continue;
+            }
+            state.lastFired.set(key, now());
+          }
+          await safePublish(event.trigger, buildHazardEventData(event, house.name, context));
           published += 1;
         }
       } catch (err) {

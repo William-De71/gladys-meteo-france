@@ -26,17 +26,26 @@ function rainPayload(levels, nowMs, available = 1) {
 
 /**
  * @description Build a raw forecast payload with one hour at a temperature.
- * @param {number} temperature - The temperature in °C.
+ * @param {number|object} hour - The temperature in °C, or { temperature, desc }.
  * @param {number} nowMs - The current time in ms.
  * @returns {object} A raw forecast payload.
  * @example
  * forecastPayload(-2, Date.now());
  */
-function forecastPayload(temperature, nowMs) {
+function forecastPayload(hour, nowMs) {
   const now = Math.floor(nowMs / 1000);
+  const { temperature, desc = 'Ciel clair' } =
+    typeof hour === 'number' ? { temperature: hour } : hour;
   return {
     position: { timezone: 'Europe/Paris' },
-    forecast: [{ dt: now + 3600, T: { value: temperature }, wind: { gust: 10 } }],
+    forecast: [
+      {
+        dt: now + 3600,
+        T: { value: temperature },
+        wind: { gust: 10 },
+        weather: { icon: 'p1j', desc },
+      },
+    ],
   };
 }
 
@@ -172,4 +181,25 @@ test('keeps polling when the core refuses an event', async () => {
   assert.equal(await watcher.pollRain(), 1);
   levels = [1];
   assert.equal(await watcher.pollRain(), 1); // rain_stopped
+});
+
+test('publishes a storm once, then waits 6 hours before the next one', async () => {
+  const clear = { temperature: 12 };
+  const storm = { temperature: 12, desc: 'Orages' };
+  const { watcher, published, clock } = buildWatcher({
+    forecast: [clear, storm, clear, storm, clear, storm],
+  });
+  const storms = () => published.filter((event) => event.key === 'storm_forecast').length;
+  await watcher.pollForecast(); // baseline
+  await watcher.pollForecast();
+  assert.equal(storms(), 1);
+  assert.equal(published[0].data.summary, "Orages annoncés aujourd'hui à 21:00.");
+  // Gone and back within the hour: the cooldown holds it.
+  await watcher.pollForecast();
+  await watcher.pollForecast();
+  assert.equal(storms(), 1);
+  clock.now += 7 * 3600 * 1000;
+  await watcher.pollForecast();
+  await watcher.pollForecast();
+  assert.equal(storms(), 2);
 });

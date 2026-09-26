@@ -8,9 +8,12 @@ import {
   MIN_RAIN_HOURS,
   MAX_RAIN_HOURS,
   DEFAULT_RAIN_HOURS,
+  MAX_HOUR_DAY_OFFSET,
+  DEFAULT_FORECAST_HOUR,
 } from '../src/scene-actions.js';
 import { SCENE_TRIGGERS, CUSTOM_LEVEL, FORECAST_LEVELS } from '../src/scene-triggers.js';
 import { RAIN_INTENSITIES } from '../src/rain.js';
+import { ICE_TRIGGER_LEVELS, UV_LEVELS } from '../src/hazard-triggers.js';
 
 const manifest = JSON.parse(
   readFileSync(new URL('../gladys-assistant-integration.json', import.meta.url), 'utf8'),
@@ -79,6 +82,36 @@ test('mirrors the bounds of the action fields', () => {
   assert.equal(hours.min, MIN_RAIN_HOURS);
   assert.equal(hours.max, MAX_RAIN_HOURS);
   assert.equal(hours.default, DEFAULT_RAIN_HOURS);
+});
+
+test('offers exactly the ice and UV levels the code fires', () => {
+  const triggers = byKey(manifest.scene_triggers);
+  const options = (key) =>
+    triggers
+      .get(key)
+      .fields.find((field) => field.key === 'level')
+      .options.map((option) => option.value);
+  assert.deepEqual(
+    options(SCENE_TRIGGERS.ICE_FORECAST),
+    ICE_TRIGGER_LEVELS.map(({ level }) => level),
+  );
+  assert.deepEqual(options(SCENE_TRIGGERS.UV_FORECAST), [
+    ...UV_LEVELS.levels.map(({ level }) => level),
+    CUSTOM_LEVEL,
+  ]);
+  const threshold = triggers
+    .get(SCENE_TRIGGERS.UV_FORECAST)
+    .fields.find((field) => field.key === 'threshold');
+  assert.equal(threshold.min, UV_LEVELS.thresholds.min);
+  assert.equal(threshold.max, UV_LEVELS.thresholds.max);
+});
+
+test('mirrors the bounds of the hour forecast fields', () => {
+  const fields = byKey(manifest.scene_actions).get(SCENE_ACTIONS.GET_HOUR_FORECAST).fields;
+  const day = fields.find((field) => field.key === 'day');
+  assert.equal(day.options.length, MAX_HOUR_DAY_OFFSET + 1);
+  const hour = fields.find((field) => field.key === 'hour');
+  assert.deepEqual([hour.min, hour.max, hour.default], [0, 23, DEFAULT_FORECAST_HOUR]);
 });
 
 test('asks for the house location the triggers need', () => {

@@ -127,8 +127,8 @@ test('gives the forecast of today, with local sun times', () => {
   assert.equal(outputs.sunrise, '06:30');
   assert.equal(outputs.sunset, '21:20');
   assert.equal(outputs.uv_index, 7);
-  // No rain, no notable gust: neither is mentioned.
-  assert.equal(outputs.summary, 'Today: sunny, 16 to 29 °C.');
+  // No rain, no notable gust: neither is mentioned; a high UV index is.
+  assert.equal(outputs.summary, 'Today: sunny, 16 to 29 °C, UV 7 (high).');
 });
 
 test('leaves out a figure the forecast does not carry', () => {

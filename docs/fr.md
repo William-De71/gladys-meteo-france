@@ -54,6 +54,10 @@ En plus des alertes de vigilance, l'intégration ajoute ses propres déclencheur
 | **Gel annoncé**            | les 24 prochaines heures descendent à 0 °C, à -5 °C, ou au seuil de votre choix (de -20 à 5 °C)                               | maison, niveau, seuil personnalisé           |
 | **Forte chaleur annoncée** | les 24 prochaines heures montent à 30 °C, à 35 °C, ou au seuil de votre choix (de 20 à 45 °C)                                 | maison, niveau, seuil personnalisé           |
 | **Vent fort annoncé**      | les rafales des 24 prochaines heures atteignent 60, 80, 100 km/h, ou le seuil de votre choix (de 20 à 150 km/h, par pas de 5) | maison, niveau, seuil personnalisé           |
+| **Verglas annoncé**        | les 24 prochaines heures annoncent de la pluie sur une surface proche ou en dessous de 0 °C                                   | maison, niveau (risque / probable)           |
+| **Neige annoncée**         | de la neige (ou de la pluie et neige) apparaît dans les 24 prochaines heures                                                  | maison                                       |
+| **Orage annoncé**          | un orage (ou de la grêle) apparaît dans les 12 prochaines heures                                                              | maison                                       |
+| **UV élevé annoncé**       | l'indice UV de la journée à venir atteint 6, 8, 11, ou le seuil de votre choix (de 1 à 11)                                    | maison, niveau, seuil personnalisé           |
 
 Exemples : fermer les velux et rentrer le store sur **Pluie imminente**, passer le chauffage en hors-gel sur **Gel annoncé**, fermer les volets côté sud la veille d'une **Forte chaleur annoncée**.
 
@@ -66,19 +70,23 @@ Quelques points à connaître :
 - **Seuil personnalisé** : pour une autre valeur que celles de la liste, choisissez le niveau « Seuil personnalisé » et saisissez la valeur dans le champ du même nom, par exemple -10 °C pour le gel, 25 °C pour la chaleur ou 40 km/h pour le vent. La valeur doit être un nombre entier (un multiple de 5 pour le vent) et s'exprime toujours en °C et en km/h. Avec « Seuil personnalisé », remplissez toujours le champ : laissé vide, la scène se déclencherait à chaque degré franchi. Avec les autres niveaux, laissez-le vide : une valeur saisie empêcherait la scène de se déclencher.
 - **Pluie dans l'heure** : elle vient du radar de Météo France, vérifié toutes les 5 minutes. Elle n'est pas disponible partout (certaines zones de montagne, l'outre-mer) : les deux déclencheurs de pluie restent alors silencieux. Un même déclencheur de pluie ne se répète pas avant 30 minutes, pour ne pas vous prévenir trois fois pour une averse qui hésite.
 - **Après un redémarrage**, la première vérification sert de référence et ne déclenche rien, comme pour les alertes de vigilance de Gladys : un redémarrage en plein épisode de gel ne vous renvoie pas la notification.
+- **Verglas, neige, orage** : chacun se déclenche une fois quand le phénomène apparaît dans la prévision, puis se réarme quand il en disparaît. Une prévision qui hésite d'une mise à jour à l'autre ne vous prévient pas deux fois : un même déclencheur ne se répète pas avant 6 heures. La neige se déclenche sur sa présence et non sur une quantité, l'unité des cumuls de neige de Météo France n'étant pas documentée.
+- **UV élevé** : Météo France ne publie qu'un indice UV par jour. Avant midi, le déclencheur regarde l'indice du jour ; après midi, celui du lendemain. Il se déclenche donc une fois par jour et par niveau, en général vers midi la veille (ou plus tard si la prévision augmente). Le **Seuil personnalisé** fonctionne comme pour le gel.
 - **Localisation** : ces déclencheurs surveillent la météo en continu. L'intégration a donc besoin de la position de vos maisons, et c'est pourquoi l'écran d'installation demande l'accès à la localisation. Une maison sans position n'est pas surveillée.
 
 ## Scènes : actions Météo France
 
-Cinq actions permettent de lire la météo au milieu d'une scène. Leurs résultats sont utilisables dans les actions suivantes, par exemple dans un message ou une condition :
+Sept actions permettent de lire la météo au milieu d'une scène. Leurs résultats sont utilisables dans les actions suivantes, par exemple dans un message ou une condition :
 
-| Action                                     | Ce qu'elle renvoie                                                                                                               |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Obtenir les prévisions d'un jour**       | températures mini/maxi, ciel, pluie et probabilité, vent et rafales, UV, humidité, lever et coucher du soleil                    |
-| **Obtenir la pluie des prochaines heures** | temps sec ou non, cumul de pluie, nombre d'heures de pluie, heure de la première pluie (sur 1 à 24 h)                            |
-| **Obtenir la pluie dans l'heure**          | pluie en cours, pluie prévue, intensité, minutes avant la pluie ou avant la fin de la pluie                                      |
-| **Obtenir la vigilance**                   | couleur et niveau, phénomènes en cours, département, résumé officiel et bulletin complet                                         |
-| **Obtenir le risque de givre**             | niveau (0 aucun, 1 risque, 2 probable), heure la plus critique, température, points de rosée et de givre, humidité, nuages, vent |
+| Action                                     | Ce qu'elle renvoie                                                                                                                        |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Obtenir les prévisions d'un jour**       | températures mini/maxi, ciel, pluie et probabilité, vent et rafales, UV, humidité, lever et coucher du soleil                             |
+| **Obtenir la pluie des prochaines heures** | temps sec ou non, cumul de pluie, nombre d'heures de pluie, heure de la première pluie (sur 1 à 24 h)                                     |
+| **Obtenir la pluie dans l'heure**          | pluie en cours, pluie prévue, intensité, minutes avant la pluie ou avant la fin de la pluie                                               |
+| **Obtenir la vigilance**                   | couleur et niveau, phénomènes en cours, département, résumé officiel et bulletin complet                                                  |
+| **Obtenir le risque de givre**             | niveau (0 aucun, 1 risque, 2 probable), heure la plus critique, température, points de rosée et de givre, humidité, nuages, vent          |
+| **Obtenir le risque de verglas**           | niveau (0 aucun, 1 risque, 2 probable), heure de début, température, pluie verglaçante, pluie des 6 dernières heures, probabilité de gel  |
+| **Obtenir la météo d'une heure**           | à une heure d'aujourd'hui, demain ou après-demain : température, ressenti, ciel, pluie et probabilité, vent, rafales et direction, nuages |
 
 Chaque action renvoie aussi un **Résumé** en une phrase, par exemple « Demain : pluie, 14 à 21 °C, 4,2 mm de pluie (80 %), rafales à 55 km/h. »
 
@@ -87,9 +95,15 @@ Exemples :
 - **Bulletin du matin** : un déclencheur horaire à 7 h, puis _Obtenir les prévisions d'un jour_ (aujourd'hui) et _Obtenir la vigilance_, puis un message qui reprend les deux résumés.
 - **Arrosage malin** : avant d'ouvrir la vanne, _Obtenir la pluie des prochaines heures_ sur 12 h, puis une condition sur **Temps sec**.
 - **Linge dehors ?** : _Obtenir la pluie dans l'heure_, puis une condition sur **Pluie dans l'heure**.
+- **Alerte verglas** : même scène que l'alerte givre, avec _Obtenir le risque de verglas_.
+- **Trajet du matin** : à 21 h, _Obtenir la météo d'une heure_ (demain, 8 h), puis un message avec le **Résumé** (« Demain à 08:00 : éclaircies, 11 °C (ressenti 8 °C), vent de sud-ouest à 14 km/h, rafales à 40 km/h, 1,2 mm de pluie. »).
 - **Alerte givre** : un déclencheur horaire à 18 h, puis _Obtenir le risque de givre_, puis « Continuer seulement si » **Niveau** ≥ 1, puis un message avec le **Résumé** (« Givre probable demain matin : 0,4 °C vers 06:00, point de givre -2,1 °C. »).
 
 **Risque de givre** : Météo France ne publie pas de point de rosée. L'action le calcule heure par heure à partir de la température et de l'humidité, puis en déduit le point de givre. Elle regarde de maintenant jusqu'à 10 h de la prochaine matinée (ce matin avant 10 h, demain matin après) et retient l'heure la plus critique. Givre probable : température ≤ 1 °C et point de givre ≤ 0 °C, ou température ≤ 0 °C et point de givre ≤ -2 °C. Risque de givre : température ≤ 3 °C et point de givre ≤ 0 °C. Le givre se forme par ciel dégagé et vent faible : un ciel couvert (80 % de nuages ou plus) ou un vent moyen de 20 km/h ou plus abaisse le niveau d'un cran, ce qu'indique la sortie **Atténué par le ciel ou le vent**.
+
+**Risque de verglas** : Météo France ne prévoit ni verglas ni température du sol, et sa « probabilité de gel » n'est que la probabilité d'une température négative (elle est renvoyée à titre indicatif). L'action cherche donc de l'eau sur une surface froide, heure par heure, sur la même fenêtre que le givre. Verglas probable : pluie verglaçante annoncée, pluie avec une température ≤ 0 °C, ou sol mouillé (pluie dans les 6 heures précédentes) avec une température ≤ -1 °C. Risque de verglas : sol mouillé et température ≤ 1 °C. La température de l'air remplace celle du sol, d'où la marge de 1 °C.
+
+**Météo d'une heure** : jusqu'à demain, Météo France prévoit heure par heure ; au-delà, par pas de 3 heures. L'action prend alors le pas qui couvre l'heure demandée, et la sortie **Heure de la prévision** indique lequel.
 
 Le champ **Maison** est facultatif : vide, l'action utilise la première maison localisée. Les températures, le vent et la pluie suivent le système d'unités de Gladys, et les textes sa langue (français ou anglais). La sortie **Disponible** de _Obtenir la pluie dans l'heure_ indique si la prévision radar couvre votre maison.
 

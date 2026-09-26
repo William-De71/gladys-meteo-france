@@ -145,10 +145,32 @@ function evaluateHour(entry) {
 }
 
 /**
- * @description Frost risk of the coming morning: every hour from the one under
- * way until 10:00 of the morning to come (this morning before 10:00, tomorrow
- * morning after), and the worst of them — the highest level, then the coldest
- * hour, then the earliest.
+ * @description The coming morning: from the hour under way until 10:00 of the
+ * morning to come (this morning before 10:00, tomorrow morning after).
+ * @param {number} nowSeconds - Current time in seconds.
+ * @param {string|null} timezone - The IANA timezone of the place.
+ * @returns {{date: string, today: boolean, includes: Function}} The date of
+ * the morning, whether it is today, and `includes(dt)` for a raw entry moment.
+ * @example
+ * readMorningWindow(now, 'Europe/Paris').includes(entry.dt);
+ */
+function readMorningWindow(nowSeconds, timezone) {
+  const today = localHour(nowSeconds, timezone) < MORNING_END_HOUR;
+  const date = dayKey(today ? nowSeconds : nowSeconds + 86400, timezone);
+  const includes = (dt) => {
+    if (!isNumber(dt) || dt < nowSeconds - 1800) {
+      return false;
+    }
+    const key = dayKey(dt, timezone);
+    return key < date || (key === date && localHour(dt, timezone) < MORNING_END_HOUR);
+  };
+  return { date, today, includes };
+}
+
+/**
+ * @description Frost risk of the coming morning (see readMorningWindow), and
+ * the worst of its hours — the highest level, then the coldest hour, then the
+ * earliest.
  * @param {object} data - The raw forecast payload.
  * @param {string|null} timezone - The IANA timezone of the place.
  * @param {number} [nowSeconds] - Current time in seconds (for tests).
@@ -158,15 +180,10 @@ function evaluateHour(entry) {
  * evaluateFrostRisk(rawForecast, 'Europe/Paris');
  */
 function evaluateFrostRisk(data, timezone, nowSeconds = Math.floor(Date.now() / 1000)) {
-  const today = localHour(nowSeconds, timezone) < MORNING_END_HOUR;
-  const date = dayKey(today ? nowSeconds : nowSeconds + 86400, timezone);
+  const { date, today, includes } = readMorningWindow(nowSeconds, timezone);
   const hourly = Array.isArray(data && data.forecast) ? data.forecast : [];
   const hours = hourly
-    .filter((entry) => entry && isNumber(entry.dt) && entry.dt >= nowSeconds - 1800)
-    .filter((entry) => {
-      const key = dayKey(entry.dt, timezone);
-      return key < date || (key === date && localHour(entry.dt, timezone) < MORNING_END_HOUR);
-    })
+    .filter((entry) => entry && includes(entry.dt))
     .map(evaluateHour)
     .filter((hour) => hour !== null);
   if (hours.length === 0) {
@@ -193,5 +210,6 @@ export {
   frostPoint,
   classifyFrost,
   evaluateHour,
+  readMorningWindow,
   evaluateFrostRisk,
 };

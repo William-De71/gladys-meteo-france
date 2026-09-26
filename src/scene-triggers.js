@@ -7,6 +7,7 @@
 //
 //   - rain_expected / rain_stopped come from the radar nowcast: the hour turns
 //     from dry to rainy, the rain under way stops;
+//   - ice / snow / storm / UV: see hazard-triggers.js;
 //   - frost / heat / wind watch a ladder of thresholds (every degree, every
 //     5 km/h). Each threshold of each house is its own little state machine:
 //     it fires when the next 24 hours start to reach it, and re-arms only
@@ -49,6 +50,11 @@ const SCENE_TRIGGERS = {
   FROST_FORECAST: 'frost_forecast',
   HEAT_FORECAST: 'heat_forecast',
   WIND_FORECAST: 'wind_forecast',
+  // Watched in hazard-triggers.js.
+  ICE_FORECAST: 'ice_forecast',
+  SNOW_FORECAST: 'snow_forecast',
+  STORM_FORECAST: 'storm_forecast',
+  UV_FORECAST: 'uv_forecast',
 };
 
 // How far ahead the forecast triggers look.
@@ -367,4 +373,5 @@ export {
   forecastThresholds,
   evaluateForecastLevels,
   buildForecastEventData,
+  describeMoment,
 };

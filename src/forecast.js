@@ -722,5 +722,6 @@ export {
   convertSceneWindSpeed,
   pivotToSceneWindSpeed,
   convertPrecipitation,
+  findProbability,
   POURING_THRESHOLD_MM_PER_HOUR,
 };

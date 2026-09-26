@@ -18,13 +18,15 @@
 //                              instead of within the 30-minute floor.
 //
 // And the scene editor gets Météo France's own cards (Gladys 5.1):
-//   - onSceneAction(key)       five read-only actions: the forecast of a day,
-//                              the rain over the next hours, the rain within
-//                              the hour, the vigilance, the frost risk of the
-//                              coming morning (see scene-actions.js, frost.js);
-//   - publishSceneEvent(key)   five triggers: rain expected / stopped from the
-//                              radar nowcast, frost / heat / wind forecast
-//                              (see scene-triggers.js and scene-watcher.js).
+//   - onSceneAction(key)       read-only actions: the forecast of a day or of
+//                              an hour, the rain over the next hours, the rain
+//                              within the hour, the vigilance, the frost and
+//                              black ice risks of the coming morning (see
+//                              scene-actions.js, frost.js, ice.js);
+//   - publishSceneEvent(key)   triggers: rain expected / stopped from the radar
+//                              nowcast, frost / heat / wind, black ice, snow,
+//                              storm and UV forecast (see scene-triggers.js,
+//                              hazard-triggers.js and scene-watcher.js).
 //   The triggers watch the weather on their own, so they need the houses:
 //   hence `location: true` and getHouses() (see houses.js).
 //
@@ -57,6 +59,8 @@ import {
   buildRainNowcastOutputs,
   buildVigilanceOutputs,
   buildFrostRiskOutputs,
+  buildIceRiskOutputs,
+  buildHourForecastOutputs,
 } from './src/scene-actions.js';
 import { createSceneWatcher } from './src/scene-watcher.js';
 
@@ -87,7 +91,8 @@ const forecastCache = createForecastCache();
 // weather path gets its coordinates from the core).
 const houses = createHouseRegistry({ fetchHouses: () => gladys.getHouses(), logger });
 
-// Scene triggers: rain within the hour, frost, heat and wind forecast.
+// Scene triggers: rain within the hour, frost, heat, wind, black ice, snow,
+// storm and UV forecast.
 const sceneWatcher = createSceneWatcher({
   houses,
   fetchRain: (latitude, longitude) =>
@@ -244,7 +249,7 @@ gladys.onWeatherGetImage(async (key) => {
 });
 
 // --- Scene actions -----------------------------------------------------------
-// Five read-only actions. Each targets a house of Gladys (the first located
+// Read-only actions. Each targets a house of Gladys (the first located
 // one when the "House" field is empty) and returns scalars for the following
 // actions of the scene. Throwing fails the action only: the scene carries on.
 
@@ -317,6 +322,24 @@ gladys.onSceneAction(SCENE_ACTIONS.GET_FROST_RISK, async (fields) => {
   const house = await resolveHouse(fields.house);
   const { forecast, timezone } = await loadHouseWeather(house);
   return buildFrostRiskOutputs({ data: forecast, timezone, ...preferences });
+});
+
+gladys.onSceneAction(SCENE_ACTIONS.GET_ICE_RISK, async (fields) => {
+  const house = await resolveHouse(fields.house);
+  const { forecast, timezone } = await loadHouseWeather(house);
+  return buildIceRiskOutputs({ data: forecast, timezone, ...preferences });
+});
+
+gladys.onSceneAction(SCENE_ACTIONS.GET_HOUR_FORECAST, async (fields) => {
+  const house = await resolveHouse(fields.house);
+  const { forecast, timezone } = await loadHouseWeather(house);
+  return buildHourForecastOutputs({
+    data: forecast,
+    timezone,
+    ...preferences,
+    day: fields.day,
+    hour: fields.hour,
+  });
 });
 
 // --- Configuration -----------------------------------------------------------
