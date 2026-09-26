@@ -7,11 +7,18 @@
 //
 //   - rain_expected / rain_stopped come from the radar nowcast: the hour turns
 //     from dry to rainy, the rain under way stops;
-//   - frost / heat / wind are FIXED levels (0 °C, -5 °C, 30 °C...) declared as
-//     select options. Each level of each house is its own little state
-//     machine: it fires when the next 24 hours start to reach it, and re-arms
-//     only once the forecast is back clear of it BY A MARGIN — a forecast
-//     hovering around 0 °C from one run to the next must not fire every hour.
+//   - frost / heat / wind watch a ladder of thresholds (every degree, every
+//     5 km/h). Each threshold of each house is its own little state machine:
+//     it fires when the next 24 hours start to reach it, and re-arms only
+//     once the forecast is back clear of it BY A MARGIN — a forecast hovering
+//     around 0 °C from one run to the next must not fire every hour.
+//
+// A custom threshold is still an equality for the core: the scene picks the
+// "custom" level and types a value in the `threshold` field, and the
+// integration publishes one "custom" event per threshold crossed, carrying
+// that threshold. The fixed levels (0 °C, -5 °C, 30 °C...) are the shortcuts
+// of the select: the crossing of their threshold also publishes an event
+// carrying the level key.
 //
 // The first evaluation of a house is a baseline and never fires, like the
 // core's own weather-alert check: a restart during an ongoing frost episode
@@ -42,15 +49,22 @@ const SCENE_TRIGGERS = {
 // How far ahead the forecast triggers look.
 const FORECAST_WINDOW_SECONDS = 24 * 3600;
 
+// The option of the `level` select that hands over to the `threshold` field.
+// A published value: never renamed.
+const CUSTOM_LEVEL = 'custom';
+
 // Forecast levels. `metric` is the forecast figure the level reads (always
 // metric: the raw MF payload is), `below` says which side of the threshold is
-// the alert, `margin` is how far back the forecast must go to re-arm it. Level
+// the alert, `margin` is how far back the forecast must go to re-arm it.
+// `thresholds` is the ladder watched, the bounds of the `threshold` field;
+// `levels` are the fixed shortcuts, whose thresholds sit on the ladder. Level
 // keys are published values of the `level` field: never renamed.
 const FORECAST_LEVELS = {
   [SCENE_TRIGGERS.FROST_FORECAST]: {
     metric: 'temperature_min',
     below: true,
     margin: 2,
+    thresholds: { min: -20, max: 5, step: 1 },
     levels: [
       { level: 'frost', threshold: 0 },
       { level: 'hard_frost', threshold: -5 },
@@ -60,6 +74,7 @@ const FORECAST_LEVELS = {
     metric: 'temperature_max',
     below: false,
     margin: 2,
+    thresholds: { min: 20, max: 45, step: 1 },
     levels: [
       { level: 'heat_30', threshold: 30 },
       { level: 'heat_35', threshold: 35 },
@@ -69,6 +84,7 @@ const FORECAST_LEVELS = {
     metric: 'wind_gust',
     below: false,
     margin: 15,
+    thresholds: { min: 20, max: 150, step: 5 },
     levels: [
       { level: 'gust_60', threshold: 60 },
       { level: 'gust_80', threshold: 80 },
@@ -76,6 +92,11 @@ const FORECAST_LEVELS = {
     ],
   },
 };
+
+// A custom frost threshold this low reads "hard frost", like the fixed level.
+const HARD_FROST_THRESHOLD = FORECAST_LEVELS[SCENE_TRIGGERS.FROST_FORECAST].levels.find(
+  ({ level }) => level === 'hard_frost',
+).threshold;
 
 /**
  * @description The rain triggers a new nowcast fires, given the previous one.
@@ -185,25 +206,44 @@ function readForecastExtremes(data, nowSeconds = Math.floor(Date.now() / 1000)) 
 }
 
 /**
- * @description Run the forecast level state machines of one house over new
- * extremes. `states` is mutated: it is the memory of the house.
- * @param {Map<string, string>} states - `${trigger}:${level}` -> 'reached' | 'clear'.
+ * @description The ladder of thresholds a forecast trigger watches, from the
+ * mildest to the most severe (the order the forecast crosses them in).
+ * @param {object} config - A FORECAST_LEVELS entry.
+ * @returns {Array<number>} The thresholds.
+ * @example
+ * forecastThresholds(FORECAST_LEVELS.wind_forecast); // -> [20, 25, ..., 150]
+ */
+function forecastThresholds({ below, thresholds: { min, max, step } }) {
+  const ladder = [];
+  for (let threshold = min; threshold <= max; threshold += step) {
+    ladder.push(threshold);
+  }
+  return below ? ladder.reverse() : ladder;
+}
+
+/**
+ * @description Run the forecast threshold state machines of one house over
+ * new extremes. `states` is mutated: it is the memory of the house. A
+ * threshold newly reached yields its "custom" event, preceded by the event of
+ * the fixed level sitting on it, if any.
+ * @param {Map<string, string>} states - `${trigger}:${threshold}` -> 'reached' | 'clear'.
  * @param {object} extremes - The readForecastExtremes() result.
- * @returns {Array<{trigger: string, level: string, value: number, dt: number}>}
- * The levels newly reached.
+ * @returns {Array<{trigger: string, level: string, threshold: number, value: number, dt: number}>}
+ * The events to publish.
  * @example
  * evaluateForecastLevels(new Map(), extremes); // -> [] (baseline)
  */
 function evaluateForecastLevels(states, extremes) {
   const reached = [];
-  Object.entries(FORECAST_LEVELS).forEach(([trigger, { metric, below, margin, levels }]) => {
+  Object.entries(FORECAST_LEVELS).forEach(([trigger, config]) => {
+    const { metric, below, margin, levels } = config;
     const extreme = extremes[metric];
     if (extreme === null || extreme === undefined) {
       // No figure this run: keep the memory as it is.
       return;
     }
-    levels.forEach(({ level, threshold }) => {
-      const key = `${trigger}:${level}`;
+    forecastThresholds(config).forEach((threshold) => {
+      const key = `${trigger}:${threshold}`;
       const isReached = below ? extreme.value <= threshold : extreme.value >= threshold;
       const isClear = below
         ? extreme.value > threshold + margin
@@ -216,7 +256,12 @@ function evaluateForecastLevels(states, extremes) {
       }
       if (previous === 'clear' && isReached) {
         states.set(key, 'reached');
-        reached.push({ trigger, level, value: extreme.value, dt: extreme.dt });
+        const event = { trigger, threshold, value: extreme.value, dt: extreme.dt };
+        const fixed = levels.find((candidate) => candidate.threshold === threshold);
+        if (fixed !== undefined) {
+          reached.push({ ...event, level: fixed.level });
+        }
+        reached.push({ ...event, level: CUSTOM_LEVEL });
       } else if (previous === 'reached' && isClear) {
         states.set(key, 'clear');
       }
@@ -245,9 +290,10 @@ function describeMoment(dt, timezone, language, nowSeconds) {
 }
 
 /**
- * @description Data of a forecast trigger: the house and the level (matched
- * against the "House" and "Level" filters), and the figures as scene
- * variables, in the unit system of the instance.
+ * @description Data of a forecast trigger: the house, the level and the
+ * threshold (matched against the "House", "Level" and "Custom threshold"
+ * filters, the threshold always metric like the field), and the figures as
+ * scene variables, in the unit system of the instance.
  * @param {object} event - An evaluateForecastLevels() entry.
  * @param {string} house - The house name.
  * @param {object} context - { timezone, units, language, nowSeconds }.
@@ -266,6 +312,7 @@ function buildForecastEventData(
   const data = {
     house,
     level: event.level,
+    threshold: event.threshold,
     time: formatLocalTime(event.dt, timezone),
     hours_until: Math.max(0, Math.round((event.dt - nowSeconds) / 3600)),
   };
@@ -284,7 +331,7 @@ function buildForecastEventData(
   const degrees = `${temperature} ${symbols.temperature}`;
   if (event.trigger === SCENE_TRIGGERS.FROST_FORECAST) {
     data.temperature_min = temperature;
-    const hard = event.level === 'hard_frost';
+    const hard = event.threshold <= HARD_FROST_THRESHOLD;
     if (lang === 'fr') {
       data.summary = `${hard ? 'Gel fort' : 'Gel'} annoncé : ${degrees} prévus ${moment}.`;
     } else {
@@ -303,11 +350,13 @@ function buildForecastEventData(
 
 export {
   SCENE_TRIGGERS,
+  CUSTOM_LEVEL,
   FORECAST_LEVELS,
   FORECAST_WINDOW_SECONDS,
   detectRainTriggers,
   buildRainEventData,
   readForecastExtremes,
+  forecastThresholds,
   evaluateForecastLevels,
   buildForecastEventData,
 };

@@ -270,8 +270,8 @@
             "fr": "Niveau"
           },
           "description": {
-            "en": "Lowest temperature expected in the next 24 hours.",
-            "fr": "Température la plus basse prévue dans les 24 prochaines heures."
+            "en": "Lowest temperature expected in the next 24 hours. \"Custom threshold\" uses the value typed below.",
+            "fr": "Température la plus basse prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous."
           },
           "required": true,
           "default": "frost",
@@ -289,8 +289,34 @@
                 "en": "-5 °C (23 °F) or below",
                 "fr": "-5 °C ou moins"
               }
+            },
+            {
+              "value": "custom",
+              "label": {
+                "en": "Custom threshold",
+                "fr": "Seuil personnalisé"
+              }
             }
           ]
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Custom threshold (°C)",
+            "fr": "Seuil personnalisé (°C)"
+          },
+          "description": {
+            "en": "With \"Custom threshold\": lowest temperature expected in the next 24 hours, in whole degrees Celsius from -20 to 5. Leave empty with the other levels.",
+            "fr": "Avec « Seuil personnalisé » : température la plus basse prévue dans les 24 prochaines heures, en degrés Celsius entiers de -20 à 5. Laissez vide avec les autres niveaux."
+          },
+          "required": false,
+          "min": -20,
+          "max": 5,
+          "placeholder": {
+            "en": "-3",
+            "fr": "-3"
+          }
         }
       ],
       "variables": [
@@ -308,6 +334,18 @@
           "label": {
             "en": "Level",
             "fr": "Niveau"
+          }
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Threshold (°C)",
+            "fr": "Seuil (°C)"
+          },
+          "description": {
+            "en": "The threshold crossed, as set in the trigger.",
+            "fr": "Le seuil franchi, tel que réglé dans le déclencheur."
           }
         },
         {
@@ -384,8 +422,8 @@
             "fr": "Niveau"
           },
           "description": {
-            "en": "Highest temperature expected in the next 24 hours.",
-            "fr": "Température la plus haute prévue dans les 24 prochaines heures."
+            "en": "Highest temperature expected in the next 24 hours. \"Custom threshold\" uses the value typed below.",
+            "fr": "Température la plus haute prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous."
           },
           "required": true,
           "default": "heat_30",
@@ -403,8 +441,34 @@
                 "en": "35 °C (95 °F) or above",
                 "fr": "35 °C ou plus"
               }
+            },
+            {
+              "value": "custom",
+              "label": {
+                "en": "Custom threshold",
+                "fr": "Seuil personnalisé"
+              }
             }
           ]
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Custom threshold (°C)",
+            "fr": "Seuil personnalisé (°C)"
+          },
+          "description": {
+            "en": "With \"Custom threshold\": highest temperature expected in the next 24 hours, in whole degrees Celsius from 20 to 45. Leave empty with the other levels.",
+            "fr": "Avec « Seuil personnalisé » : température la plus haute prévue dans les 24 prochaines heures, en degrés Celsius entiers de 20 à 45. Laissez vide avec les autres niveaux."
+          },
+          "required": false,
+          "min": 20,
+          "max": 45,
+          "placeholder": {
+            "en": "25",
+            "fr": "25"
+          }
         }
       ],
       "variables": [
@@ -422,6 +486,18 @@
           "label": {
             "en": "Level",
             "fr": "Niveau"
+          }
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Threshold (°C)",
+            "fr": "Seuil (°C)"
+          },
+          "description": {
+            "en": "The threshold crossed, as set in the trigger.",
+            "fr": "Le seuil franchi, tel que réglé dans le déclencheur."
           }
         },
         {
@@ -498,8 +574,8 @@
             "fr": "Niveau"
           },
           "description": {
-            "en": "Strongest gust expected in the next 24 hours.",
-            "fr": "Rafale la plus forte prévue dans les 24 prochaines heures."
+            "en": "Strongest gust expected in the next 24 hours. \"Custom threshold\" uses the value typed below.",
+            "fr": "Rafale la plus forte prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous."
           },
           "required": true,
           "default": "gust_60",
@@ -524,8 +600,34 @@
                 "en": "Gusts of 100 km/h (62 mph) or more",
                 "fr": "Rafales de 100 km/h ou plus"
               }
+            },
+            {
+              "value": "custom",
+              "label": {
+                "en": "Custom threshold",
+                "fr": "Seuil personnalisé"
+              }
             }
           ]
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Custom threshold (km/h)",
+            "fr": "Seuil personnalisé (km/h)"
+          },
+          "description": {
+            "en": "With \"Custom threshold\": strongest gust expected in the next 24 hours, in km/h from 20 to 150, a multiple of 5. Leave empty with the other levels.",
+            "fr": "Avec « Seuil personnalisé » : rafale la plus forte prévue dans les 24 prochaines heures, en km/h de 20 à 150, par pas de 5. Laissez vide avec les autres niveaux."
+          },
+          "required": false,
+          "min": 20,
+          "max": 150,
+          "placeholder": {
+            "en": "40",
+            "fr": "40"
+          }
         }
       ],
       "variables": [
@@ -543,6 +645,18 @@
           "label": {
             "en": "Level",
             "fr": "Niveau"
+          }
+        },
+        {
+          "key": "threshold",
+          "type": "number",
+          "label": {
+            "en": "Threshold (km/h)",
+            "fr": "Seuil (km/h)"
+          },
+          "description": {
+            "en": "The threshold crossed, as set in the trigger.",
+            "fr": "Le seuil franchi, tel que réglé dans le déclencheur."
           }
         },
         {

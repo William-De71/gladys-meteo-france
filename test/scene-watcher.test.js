@@ -140,8 +140,16 @@ test('publishes a forecast level once reached, not on the baseline', async () =>
   await watcher.pollForecast();
   await watcher.pollForecast();
   assert.deepEqual(
-    published.map((event) => `${event.key}:${event.data.level}`),
-    ['frost_forecast:frost'],
+    published.map((event) => `${event.key}:${event.data.level}:${event.data.threshold}`),
+    [
+      'frost_forecast:custom:4',
+      'frost_forecast:custom:3',
+      'frost_forecast:custom:2',
+      'frost_forecast:custom:1',
+      'frost_forecast:frost:0',
+      'frost_forecast:custom:0',
+      'frost_forecast:custom:-1',
+    ],
   );
   assert.equal(published[0].data.temperature_min, -1);
 });

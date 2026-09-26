@@ -7,6 +7,9 @@ import {
   readForecastExtremes,
   evaluateForecastLevels,
   buildForecastEventData,
+  forecastThresholds,
+  CUSTOM_LEVEL,
+  FORECAST_LEVELS,
 } from '../src/scene-triggers.js';
 
 // 2026-08-04T18:00:00Z, 20:00 in Paris.
@@ -121,39 +124,74 @@ test('fires no forecast level on the first run, which is a baseline', () => {
   assert.deepEqual(evaluateForecastLevels(states, extremes(-6, 36, 110)), []);
 });
 
-test('fires each level once when the forecast reaches it', () => {
+test('fires each fixed level once when the forecast reaches it', () => {
   const states = new Map();
   evaluateForecastLevels(states, extremes(5, 20, 30));
   const fired = evaluateForecastLevels(states, extremes(-6, 20, 85));
   assert.deepEqual(
-    fired.map((event) => `${event.trigger}:${event.level}`),
+    fired
+      .filter((event) => event.level !== CUSTOM_LEVEL)
+      .map((event) => `${event.trigger}:${event.level}:${event.threshold}`),
     [
-      'frost_forecast:frost',
-      'frost_forecast:hard_frost',
-      'wind_forecast:gust_60',
-      'wind_forecast:gust_80',
+      'frost_forecast:frost:0',
+      'frost_forecast:hard_frost:-5',
+      'wind_forecast:gust_60:60',
+      'wind_forecast:gust_80:80',
     ],
   );
   // Still reached on the next run: nothing new.
   assert.deepEqual(evaluateForecastLevels(states, extremes(-4, 20, 70)), []);
 });
 
-test('re-arms a level only once the forecast is clear of it by the margin', () => {
+test('fires a custom event for every threshold crossed, mildest first', () => {
   const states = new Map();
   evaluateForecastLevels(states, extremes(5, 20, 30));
-  assert.equal(evaluateForecastLevels(states, extremes(-0.5, 20, 30)).length, 1);
+  const fired = evaluateForecastLevels(states, extremes(-2.5, 20, 52));
+  const custom = (trigger) =>
+    fired
+      .filter((event) => event.trigger === trigger && event.level === CUSTOM_LEVEL)
+      .map((event) => event.threshold);
+  // -2.5 °C reaches -2 but not -3; 52 km/h reaches 50 but not 55.
+  assert.deepEqual(custom('frost_forecast'), [4, 3, 2, 1, 0, -1, -2]);
+  assert.deepEqual(custom('wind_forecast'), [35, 40, 45, 50]);
+  // The fixed level comes right before the custom event of its threshold.
+  const zero = fired.filter((event) => event.threshold === 0).map((event) => event.level);
+  assert.deepEqual(zero, ['frost', CUSTOM_LEVEL]);
+  fired.forEach((event) =>
+    assert.equal(event.dt, NOW + (event.trigger === 'wind_forecast' ? 3600 : 36000)),
+  );
+});
+
+test('watches every degree and every 5 km/h, the fixed levels on the ladder', () => {
+  Object.values(FORECAST_LEVELS).forEach((config) => {
+    const ladder = forecastThresholds(config);
+    const { min, max, step } = config.thresholds;
+    assert.equal(ladder.length, (max - min) / step + 1);
+    assert.deepEqual(ladder[0], config.below ? max : min);
+    config.levels.forEach(({ threshold }) => assert.ok(ladder.includes(threshold)));
+  });
+  assert.equal(FORECAST_LEVELS.wind_forecast.thresholds.step, 5);
+});
+
+test('re-arms a threshold only once the forecast is clear of it by the margin', () => {
+  const states = new Map();
+  const frostAtZero = (fired) =>
+    fired.filter((event) => event.trigger === 'frost_forecast' && event.threshold === 0).length;
+  evaluateForecastLevels(states, extremes(5, 20, 30));
+  assert.equal(frostAtZero(evaluateForecastLevels(states, extremes(-0.5, 20, 30))), 2);
   // Hovering around 0 °C: not clear by 2 °C, so no second event.
   evaluateForecastLevels(states, extremes(1, 20, 30));
-  assert.equal(evaluateForecastLevels(states, extremes(-1, 20, 30)).length, 0);
+  assert.equal(frostAtZero(evaluateForecastLevels(states, extremes(-1, 20, 30))), 0);
   // Back well above 0 °C, then frost again: a new episode.
   evaluateForecastLevels(states, extremes(4, 20, 30));
-  assert.equal(evaluateForecastLevels(states, extremes(-1, 20, 30)).length, 1);
+  assert.equal(frostAtZero(evaluateForecastLevels(states, extremes(-1, 20, 30))), 2);
 });
 
 test('builds the data of a frost event in the unit system of the instance', () => {
   const event = {
     trigger: 'frost_forecast',
     level: 'frost',
+    threshold: 0,
     value: -2.4,
     dt: NOW + 10 * 3600,
   };
@@ -161,6 +199,7 @@ test('builds the data of a frost event in the unit system of the instance', () =
   assert.deepEqual(buildForecastEventData(event, 'Maison', context), {
     house: 'Maison',
     level: 'frost',
+    threshold: 0,
     time: '06:00',
     hours_until: 10,
     temperature_min: -2,
@@ -174,17 +213,56 @@ test('builds the data of a frost event in the unit system of the instance', () =
 test('builds the data of heat and wind events', () => {
   const context = { timezone: 'Europe/Paris', units: 'metric', language: 'fr', nowSeconds: NOW };
   const heat = buildForecastEventData(
-    { trigger: 'heat_forecast', level: 'heat_35', value: 36.2, dt: NOW + 3600 },
+    { trigger: 'heat_forecast', level: 'heat_35', threshold: 35, value: 36.2, dt: NOW + 3600 },
     'Maison',
     context,
   );
   assert.equal(heat.temperature_max, 36);
   assert.equal(heat.summary, "Forte chaleur annoncée : 36 °C prévus aujourd'hui à 21:00.");
   const wind = buildForecastEventData(
-    { trigger: 'wind_forecast', level: 'gust_80', value: 85, dt: NOW + 3600 },
+    { trigger: 'wind_forecast', level: 'gust_80', threshold: 80, value: 85, dt: NOW + 3600 },
     'Maison',
     context,
   );
   assert.equal(wind.wind_gust, 85);
   assert.equal(wind.summary, "Vent fort annoncé : rafales à 85 km/h prévues aujourd'hui à 21:00.");
+});
+
+test('builds the data of a custom threshold event', () => {
+  const context = { timezone: 'Europe/Paris', units: 'metric', language: 'fr', nowSeconds: NOW };
+  const mild = buildForecastEventData(
+    {
+      trigger: 'frost_forecast',
+      level: CUSTOM_LEVEL,
+      threshold: -3,
+      value: -3.2,
+      dt: NOW + 10 * 3600,
+    },
+    'Maison',
+    context,
+  );
+  assert.equal(mild.level, 'custom');
+  assert.equal(mild.threshold, -3);
+  assert.equal(mild.summary, 'Gel annoncé : -3 °C prévus demain à 06:00.');
+  // As low as the hard frost level: worded like it.
+  const hard = buildForecastEventData(
+    {
+      trigger: 'frost_forecast',
+      level: CUSTOM_LEVEL,
+      threshold: -10,
+      value: -10.4,
+      dt: NOW + 10 * 3600,
+    },
+    'Maison',
+    context,
+  );
+  assert.equal(hard.summary, 'Gel fort annoncé : -10 °C prévus demain à 06:00.');
+  // The threshold stays metric (the filter is), the figures follow the instance.
+  const us = buildForecastEventData(
+    { trigger: 'wind_forecast', level: CUSTOM_LEVEL, threshold: 40, value: 42, dt: NOW + 3600 },
+    'Maison',
+    { ...context, units: 'us' },
+  );
+  assert.equal(us.threshold, 40);
+  assert.notEqual(us.wind_gust, 42);
 });

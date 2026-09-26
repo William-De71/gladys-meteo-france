@@ -33,13 +33,13 @@ for the weather of a house and it feeds the **dashboard weather widget**, the **
 
 ### Scene triggers
 
-| Trigger (key)                                     | Fires when                                                                | Filters          |
-| ------------------------------------------------- | ------------------------------------------------------------------------- | ---------------- |
-| **Rain expected within the hour** `rain_expected` | the radar nowcast announces rain within the hour, where it announced none | house, intensity |
-| **Rain stopped** `rain_stopped`                   | the rain under way stops                                                  | house            |
-| **Frost forecast** `frost_forecast`               | the next 24 hours reach 0 °C or -5 °C                                     | house, level     |
-| **Heat forecast** `heat_forecast`                 | the next 24 hours reach 30 °C or 35 °C                                    | house, level     |
-| **Strong wind forecast** `wind_forecast`          | the gusts of the next 24 hours reach 60, 80 or 100 km/h                   | house, level     |
+| Trigger (key)                                     | Fires when                                                                                            | Filters                 |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------- |
+| **Rain expected within the hour** `rain_expected` | the radar nowcast announces rain within the hour, where it announced none                             | house, intensity        |
+| **Rain stopped** `rain_stopped`                   | the rain under way stops                                                                              | house                   |
+| **Frost forecast** `frost_forecast`               | the next 24 hours reach 0 °C, -5 °C, or a custom threshold (-20 to 5 °C)                              | house, level, threshold |
+| **Heat forecast** `heat_forecast`                 | the next 24 hours reach 30 °C, 35 °C, or a custom threshold (20 to 45 °C)                             | house, level, threshold |
+| **Strong wind forecast** `wind_forecast`          | the gusts of the next 24 hours reach 60, 80, 100 km/h, or a custom threshold (20 to 150 km/h, step 5) | house, level, threshold |
 
 Every trigger carries a ready-to-send `summary` ("Moderate rain expected in 15 min.", "Frost forecast: -2 °C
 expected tomorrow at 06:00.") and its figures as scene variables: `{{triggerEvent.data.minutes_until_rain}}`,
@@ -49,6 +49,9 @@ A trigger is a **transition**, published once — never a state re-sent on every
 
 - a forecast level fires when it enters the next 24 hours, and re-arms only once the forecast is clear of it by a
   margin (2 °C, 15 km/h), so a forecast hovering around 0 °C does not fire every hour;
+- the core matcher only compares equality, so a custom threshold is an event of its own: the forecast triggers watch
+  every degree (every 5 km/h for the wind) and publish, per threshold crossed, a `level: "custom"` event carrying
+  `threshold` (always °C / km/h), preceded by the fixed-level event when one sits on that threshold;
 - a rain trigger never repeats within 30 minutes for a house, the radar flickering at the edge of a shower;
 - the first poll after a start is a **baseline** and fires nothing, like the core's own weather-alert check.
 

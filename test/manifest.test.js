@@ -9,7 +9,7 @@ import {
   MAX_RAIN_HOURS,
   DEFAULT_RAIN_HOURS,
 } from '../src/scene-actions.js';
-import { SCENE_TRIGGERS, FORECAST_LEVELS } from '../src/scene-triggers.js';
+import { SCENE_TRIGGERS, CUSTOM_LEVEL, FORECAST_LEVELS } from '../src/scene-triggers.js';
 import { RAIN_INTENSITIES } from '../src/rain.js';
 
 const manifest = JSON.parse(
@@ -38,10 +38,23 @@ test('offers exactly the forecast levels the code evaluates', () => {
     const field = triggers.get(key).fields.find((candidate) => candidate.key === 'level');
     assert.deepEqual(
       field.options.map((option) => option.value),
-      levels.map(({ level }) => level),
+      [...levels.map(({ level }) => level), CUSTOM_LEVEL],
     );
     // Required with a default: an empty level would fire every level at once.
     assert.equal(field.required, true);
+  });
+});
+
+test('bounds the custom threshold by the ladder the code watches', () => {
+  const triggers = byKey(manifest.scene_triggers);
+  Object.entries(FORECAST_LEVELS).forEach(([key, { thresholds }]) => {
+    const trigger = triggers.get(key);
+    const field = trigger.fields.find((candidate) => candidate.key === 'threshold');
+    assert.equal(field.type, 'number');
+    assert.equal(field.required, false);
+    assert.equal(field.min, thresholds.min);
+    assert.equal(field.max, thresholds.max);
+    assert.ok(trigger.variables.some((variable) => variable.key === 'threshold'));
   });
 });
 

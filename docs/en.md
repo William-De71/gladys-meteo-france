@@ -46,13 +46,13 @@ Gladys checks for alerts every 30 minutes. This integration additionally watches
 
 On top of the vigilance alerts, the integration adds its own triggers to the scene editor (Gladys 5.1 or later), under **Météo France**:
 
-| Trigger                           | Fires when…                                                               | Filters                                     |
-| --------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------- |
-| **Rain expected within the hour** | the radar nowcast announces rain within the hour, where it announced none | house, intensity (light / moderate / heavy) |
-| **Rain stopped**                  | the rain under way stops                                                  | house                                       |
-| **Frost forecast**                | the next 24 hours go down to 0 °C, or to -5 °C                            | house, level                                |
-| **Heat forecast**                 | the next 24 hours go up to 30 °C, or to 35 °C                             | house, level                                |
-| **Strong wind forecast**          | the gusts of the next 24 hours reach 60, 80 or 100 km/h                   | house, level                                |
+| Trigger                           | Fires when…                                                                                                   | Filters                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **Rain expected within the hour** | the radar nowcast announces rain within the hour, where it announced none                                     | house, intensity (light / moderate / heavy) |
+| **Rain stopped**                  | the rain under way stops                                                                                      | house                                       |
+| **Frost forecast**                | the next 24 hours go down to 0 °C, to -5 °C, or to a threshold of your choice (-20 to 5 °C)                   | house, level, custom threshold              |
+| **Heat forecast**                 | the next 24 hours go up to 30 °C, to 35 °C, or to a threshold of your choice (20 to 45 °C)                    | house, level, custom threshold              |
+| **Strong wind forecast**          | the gusts of the next 24 hours reach 60, 80, 100 km/h, or a threshold of your choice (20 to 150 km/h, step 5) | house, level, custom threshold              |
 
 Examples: close the skylights and retract the awning on **Rain expected within the hour**, switch the heating to frost protection on **Frost forecast**, close the south shutters the day before a **Heat forecast**.
 
@@ -62,6 +62,7 @@ Good to know:
 
 - **House**: leave the field empty to watch every house. To target one, type its name **exactly** as in Gladys.
 - **Level**: each level fires on its own. A "Frost forecast" scene set to 0 °C fires once when frost enters the forecast, not on every update. It re-arms once the forecast clearly moves back (2 °C above the threshold for frost and heat, 15 km/h below it for wind), so a forecast hesitating around 0 °C does not fire over and over.
+- **Custom threshold**: for a value not in the list, pick the "Custom threshold" level and type the value in the field of the same name — say -10 °C for frost, 25 °C for heat or 40 km/h for wind. It must be a whole number (a multiple of 5 for wind) and is always in °C and km/h, whatever the unit system of Gladys. With "Custom threshold", always fill the field: left empty, the scene would fire at every degree crossed. With the other levels, leave it empty: a value there would keep the scene from firing.
 - **Rain within the hour** comes from the Météo France radar, checked every 5 minutes. It is not available everywhere (some mountain areas, overseas): both rain triggers then stay silent. The same rain trigger never repeats within 30 minutes, so a hesitating shower does not warn you three times.
 - **After a restart**, the first check is a baseline and fires nothing, like the Gladys vigilance alerts: a restart in the middle of a frost episode does not send the notification again.
 - **Location**: these triggers watch the weather continuously, so the integration needs the location of your houses — which is why the install screen asks for location access. A house without a location is not watched.

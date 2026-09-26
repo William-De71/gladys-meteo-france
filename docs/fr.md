@@ -47,13 +47,13 @@ Gladys vérifie les alertes toutes les 30 minutes. Cette intégration surveille 
 
 En plus des alertes de vigilance, l'intégration ajoute ses propres déclencheurs dans l'éditeur de scène (Gladys 5.1 ou plus récent), dans la rubrique **Météo France** :
 
-| Déclencheur                | Se déclenche quand…                                                                   | Filtres                                      |
-| -------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Pluie imminente**        | la prévision radar annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas | maison, intensité (faible / modérée / forte) |
-| **Fin de la pluie**        | la pluie en cours s'arrête                                                            | maison                                       |
-| **Gel annoncé**            | les 24 prochaines heures descendent à 0 °C, ou à -5 °C                                | maison, niveau                               |
-| **Forte chaleur annoncée** | les 24 prochaines heures montent à 30 °C, ou à 35 °C                                  | maison, niveau                               |
-| **Vent fort annoncé**      | les rafales des 24 prochaines heures atteignent 60, 80 ou 100 km/h                    | maison, niveau                               |
+| Déclencheur                | Se déclenche quand…                                                                                                           | Filtres                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Pluie imminente**        | la prévision radar annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas                                         | maison, intensité (faible / modérée / forte) |
+| **Fin de la pluie**        | la pluie en cours s'arrête                                                                                                    | maison                                       |
+| **Gel annoncé**            | les 24 prochaines heures descendent à 0 °C, à -5 °C, ou au seuil de votre choix (de -20 à 5 °C)                               | maison, niveau, seuil personnalisé           |
+| **Forte chaleur annoncée** | les 24 prochaines heures montent à 30 °C, à 35 °C, ou au seuil de votre choix (de 20 à 45 °C)                                 | maison, niveau, seuil personnalisé           |
+| **Vent fort annoncé**      | les rafales des 24 prochaines heures atteignent 60, 80, 100 km/h, ou le seuil de votre choix (de 20 à 150 km/h, par pas de 5) | maison, niveau, seuil personnalisé           |
 
 Exemples : fermer les velux et rentrer le store sur **Pluie imminente**, passer le chauffage en hors-gel sur **Gel annoncé**, fermer les volets côté sud la veille d'une **Forte chaleur annoncée**.
 
@@ -63,6 +63,7 @@ Quelques points à connaître :
 
 - **Maison** : laissez le champ vide pour surveiller toutes vos maisons. Pour n'en viser qu'une, saisissez son nom **exactement** comme dans Gladys.
 - **Niveau** : chaque niveau se déclenche séparément. Une scène « Gel annoncé » réglée sur 0 °C se déclenche une fois quand le gel apparaît dans la prévision, pas à chaque mise à jour. Elle se réarme quand la prévision remonte nettement (2 °C au-dessus du seuil pour le gel et la chaleur, 15 km/h en dessous pour le vent), pour ne pas se déclencher en boucle sur une prévision qui hésite autour de 0 °C.
+- **Seuil personnalisé** : pour une autre valeur que celles de la liste, choisissez le niveau « Seuil personnalisé » et saisissez la valeur dans le champ du même nom, par exemple -10 °C pour le gel, 25 °C pour la chaleur ou 40 km/h pour le vent. La valeur doit être un nombre entier (un multiple de 5 pour le vent) et s'exprime toujours en °C et en km/h. Avec « Seuil personnalisé », remplissez toujours le champ : laissé vide, la scène se déclencherait à chaque degré franchi. Avec les autres niveaux, laissez-le vide : une valeur saisie empêcherait la scène de se déclencher.
 - **Pluie dans l'heure** : elle vient du radar de Météo France, vérifié toutes les 5 minutes. Elle n'est pas disponible partout (certaines zones de montagne, l'outre-mer) : les deux déclencheurs de pluie restent alors silencieux. Un même déclencheur de pluie ne se répète pas avant 30 minutes, pour ne pas vous prévenir trois fois pour une averse qui hésite.
 - **Après un redémarrage**, la première vérification sert de référence et ne déclenche rien, comme pour les alertes de vigilance de Gladys : un redémarrage en plein épisode de gel ne vous renvoie pas la notification.
 - **Localisation** : ces déclencheurs surveillent la météo en continu. L'intégration a donc besoin de la position de vos maisons, et c'est pourquoi l'écran d'installation demande l'accès à la localisation. Une maison sans position n'est pas surveillée.
