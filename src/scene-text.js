@@ -68,6 +68,12 @@ const VIGILANCE_LABELS = {
   en: { green: 'green', yellow: 'yellow', orange: 'orange', red: 'red' },
 };
 
+// Frost risk level (see frost.js) -> human label.
+const FROST_LABELS = {
+  fr: { 0: 'Pas de givre', 1: 'Risque de givre', 2: 'Givre probable' },
+  en: { 0: 'No frost', 1: 'Frost risk', 2: 'Frost likely' },
+};
+
 // Units of the numbers we hand to a scene, per unit system.
 const UNIT_SYMBOLS = {
   metric: { temperature: '°C', wind: 'km/h', precipitation: 'mm' },
@@ -163,6 +169,7 @@ export {
   CONDITION_LABELS,
   INTENSITY_LABELS,
   VIGILANCE_LABELS,
+  FROST_LABELS,
   textLanguage,
   unitSymbols,
   formatNumber,

@@ -70,14 +70,15 @@ Quelques points à connaître :
 
 ## Scènes : actions Météo France
 
-Quatre actions permettent de lire la météo au milieu d'une scène. Leurs résultats sont utilisables dans les actions suivantes, par exemple dans un message ou une condition :
+Cinq actions permettent de lire la météo au milieu d'une scène. Leurs résultats sont utilisables dans les actions suivantes, par exemple dans un message ou une condition :
 
-| Action                                     | Ce qu'elle renvoie                                                                                            |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| **Obtenir les prévisions d'un jour**       | températures mini/maxi, ciel, pluie et probabilité, vent et rafales, UV, humidité, lever et coucher du soleil |
-| **Obtenir la pluie des prochaines heures** | temps sec ou non, cumul de pluie, nombre d'heures de pluie, heure de la première pluie (sur 1 à 24 h)         |
-| **Obtenir la pluie dans l'heure**          | pluie en cours, pluie prévue, intensité, minutes avant la pluie ou avant la fin de la pluie                   |
-| **Obtenir la vigilance**                   | couleur et niveau, phénomènes en cours, département, résumé officiel et bulletin complet                      |
+| Action                                     | Ce qu'elle renvoie                                                                                                               |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Obtenir les prévisions d'un jour**       | températures mini/maxi, ciel, pluie et probabilité, vent et rafales, UV, humidité, lever et coucher du soleil                    |
+| **Obtenir la pluie des prochaines heures** | temps sec ou non, cumul de pluie, nombre d'heures de pluie, heure de la première pluie (sur 1 à 24 h)                            |
+| **Obtenir la pluie dans l'heure**          | pluie en cours, pluie prévue, intensité, minutes avant la pluie ou avant la fin de la pluie                                      |
+| **Obtenir la vigilance**                   | couleur et niveau, phénomènes en cours, département, résumé officiel et bulletin complet                                         |
+| **Obtenir le risque de givre**             | niveau (0 aucun, 1 risque, 2 probable), heure la plus critique, température, points de rosée et de givre, humidité, nuages, vent |
 
 Chaque action renvoie aussi un **Résumé** en une phrase, par exemple « Demain : pluie, 14 à 21 °C, 4,2 mm de pluie (80 %), rafales à 55 km/h. »
 
@@ -86,6 +87,9 @@ Exemples :
 - **Bulletin du matin** : un déclencheur horaire à 7 h, puis _Obtenir les prévisions d'un jour_ (aujourd'hui) et _Obtenir la vigilance_, puis un message qui reprend les deux résumés.
 - **Arrosage malin** : avant d'ouvrir la vanne, _Obtenir la pluie des prochaines heures_ sur 12 h, puis une condition sur **Temps sec**.
 - **Linge dehors ?** : _Obtenir la pluie dans l'heure_, puis une condition sur **Pluie dans l'heure**.
+- **Alerte givre** : un déclencheur horaire à 18 h, puis _Obtenir le risque de givre_, puis « Continuer seulement si » **Niveau** ≥ 1, puis un message avec le **Résumé** (« Givre probable demain matin : 0,4 °C vers 06:00, point de givre -2,1 °C. »).
+
+**Risque de givre** : Météo France ne publie pas de point de rosée. L'action le calcule heure par heure à partir de la température et de l'humidité, puis en déduit le point de givre. Elle regarde de maintenant jusqu'à 10 h de la prochaine matinée (ce matin avant 10 h, demain matin après) et retient l'heure la plus critique. Givre probable : température ≤ 1 °C et point de givre ≤ 0 °C, ou température ≤ 0 °C et point de givre ≤ -2 °C. Risque de givre : température ≤ 3 °C et point de givre ≤ 0 °C. Le givre se forme par ciel dégagé et vent faible : un ciel couvert (80 % de nuages ou plus) ou un vent moyen de 20 km/h ou plus abaisse le niveau d'un cran, ce qu'indique la sortie **Atténué par le ciel ou le vent**.
 
 Le champ **Maison** est facultatif : vide, l'action utilise la première maison localisée. Les températures, le vent et la pluie suivent le système d'unités de Gladys, et les textes sa langue (français ou anglais). La sortie **Disponible** de _Obtenir la pluie dans l'heure_ indique si la prévision radar couvre votre maison.
 

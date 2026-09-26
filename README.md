@@ -57,17 +57,23 @@ A trigger is a **transition**, published once — never a state re-sent on every
 
 ### Scene actions
 
-| Action (key)                                             | Main outputs                                                                 |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **Get the forecast of a day** `get_forecast`             | min/max temperatures, sky, rain and probability, wind, gusts, UV, sun times  |
-| **Get the rain of the next hours** `get_rain_next_hours` | `dry`, total precipitation, rainy hours, time of the first rain (1-24 h)     |
-| **Get the rain within the hour** `get_rain_next_hour`    | `available`, `raining`, `rain_expected`, intensity, minutes until rain / dry |
-| **Get the vigilance** `get_vigilance`                    | color and level, phenomena, department, official summary, full bulletin      |
+| Action (key)                                             | Main outputs                                                                                  |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Get the forecast of a day** `get_forecast`             | min/max temperatures, sky, rain and probability, wind, gusts, UV, sun times                   |
+| **Get the rain of the next hours** `get_rain_next_hours` | `dry`, total precipitation, rainy hours, time of the first rain (1-24 h)                      |
+| **Get the rain within the hour** `get_rain_next_hour`    | `available`, `raining`, `rain_expected`, intensity, minutes until rain / dry                  |
+| **Get the vigilance** `get_vigilance`                    | color and level, phenomena, department, official summary, full bulletin                       |
+| **Get the frost risk** `get_frost_risk`                  | `level` 0-2, worst hour, temperature, dew and frost points, humidity, clouds, wind, `reduced` |
 
 Every action also returns a one-sentence `summary`, e.g. "Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%),
 gusts up to 55 km/h." A figure Météo France does not provide is left out, never sent as 0 — a 0 mm would read as
 "dry" in the conditions that follow. The actions are read-only and never fire a trigger, so a scene cannot loop
 through the integration.
+
+`get_frost_risk` (`src/frost.js`) reads the raw MF hours, not the pivot ones (rounded to the degree), from now until
+10:00 of the coming morning: dew point from temperature and humidity (Magnus), frost point from the dew point, then
+the level (2: T ≤ 1 and Tf ≤ 0, or T ≤ 0 and Tf ≤ -2; 1: T ≤ 3 and Tf ≤ 0), lowered by one under an overcast sky
+(≥ 80 %) or a steady wind (≥ 20 km/h). The worst hour wins.
 
 Scene texts follow the language of Gladys (French or English) and the figures its unit system, as the core sent
 them in its last weather request.

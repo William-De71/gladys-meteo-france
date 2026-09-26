@@ -69,14 +69,15 @@ Good to know:
 
 ## Scenes: Météo France actions
 
-Four actions read the weather in the middle of a scene. Their results can be used by the following actions, for instance in a message or a condition:
+Five actions read the weather in the middle of a scene. Their results can be used by the following actions, for instance in a message or a condition:
 
-| Action                             | What it returns                                                                                   |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **Get the forecast of a day**      | min/max temperatures, sky, rain and probability, wind and gusts, UV, humidity, sunrise and sunset |
-| **Get the rain of the next hours** | dry or not, total rain, rainy hours, time of the first rain (over 1 to 24 h)                      |
-| **Get the rain within the hour**   | raining now, rain expected, intensity, minutes until the rain or until it stops                   |
-| **Get the vigilance**              | color and level, phenomena in force, department, official summary and full bulletin               |
+| Action                             | What it returns                                                                                         |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Get the forecast of a day**      | min/max temperatures, sky, rain and probability, wind and gusts, UV, humidity, sunrise and sunset       |
+| **Get the rain of the next hours** | dry or not, total rain, rainy hours, time of the first rain (over 1 to 24 h)                            |
+| **Get the rain within the hour**   | raining now, rain expected, intensity, minutes until the rain or until it stops                         |
+| **Get the vigilance**              | color and level, phenomena in force, department, official summary and full bulletin                     |
+| **Get the frost risk**             | level (0 none, 1 risk, 2 likely), worst hour, temperature, dew and frost points, humidity, clouds, wind |
 
 Each action also returns a one-sentence **Summary**, e.g. "Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%), gusts up to 55 km/h."
 
@@ -85,6 +86,9 @@ Examples:
 - **Morning briefing**: a time trigger at 7 am, then _Get the forecast of a day_ (today) and _Get the vigilance_, then a message quoting both summaries.
 - **Smart watering**: before opening the valve, _Get the rain of the next hours_ over 12 h, then a condition on **Dry**.
 - **Laundry outside?**: _Get the rain within the hour_, then a condition on **Rain within the hour**.
+- **Frost alert**: a time trigger at 6 pm, then _Get the frost risk_, then "Continue only if" **Level** ≥ 1, then a message with the **Summary** ("Frost likely tomorrow morning: 0.4 °C around 06:00, frost point -2.1 °C.").
+
+**Frost risk**: Météo France publishes no dew point. The action computes it hour by hour from the temperature and the humidity, then derives the frost point. It looks from now until 10:00 of the coming morning (this morning before 10:00, tomorrow morning after) and keeps the worst hour. Frost likely: temperature ≤ 1 °C and frost point ≤ 0 °C, or temperature ≤ 0 °C and frost point ≤ -2 °C. Frost risk: temperature ≤ 3 °C and frost point ≤ 0 °C. Hoar frost forms under a clear sky and a light wind: an overcast sky (80% cloud cover or more) or a mean wind of 20 km/h or more lowers the level by one, as the **Lowered by the sky or the wind** output tells.
 
 The **House** field is optional: left empty, the action uses the first located house. Temperatures, wind and rain follow the unit system of Gladys, and the texts its language (French or English). The **Available** output of _Get the rain within the hour_ tells whether the radar nowcast covers your house.
 

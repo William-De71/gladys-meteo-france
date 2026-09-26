@@ -1238,6 +1238,159 @@
           }
         }
       ]
+    },
+    {
+      "key": "get_frost_risk",
+      "label": {
+        "en": "Get the frost risk",
+        "fr": "Obtenir le risque de givre"
+      },
+      "description": {
+        "en": "Hoar frost risk of the coming morning, from now until 10:00: computed hour by hour from the temperature and the humidity, lowered by an overcast sky or a steady wind.",
+        "fr": "Risque de givre de la prochaine matinée, de maintenant jusqu'à 10 h : calculé heure par heure à partir de la température et de l'humidité, atténué par un ciel couvert ou un vent soutenu."
+      },
+      "timeout_seconds": 45,
+      "fields": [
+        {
+          "key": "house",
+          "type": "string",
+          "label": {
+            "en": "House",
+            "fr": "Maison"
+          },
+          "description": {
+            "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+          },
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "level",
+          "type": "number",
+          "label": {
+            "en": "Level (0 none, 1 risk, 2 likely)",
+            "fr": "Niveau (0 aucun, 1 risque, 2 probable)"
+          }
+        },
+        {
+          "key": "level_label",
+          "type": "string",
+          "label": {
+            "en": "Level label",
+            "fr": "Libellé du niveau"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date of the morning",
+            "fr": "Date de la matinée"
+          },
+          "description": {
+            "en": "YYYY-MM-DD.",
+            "fr": "AAAA-MM-JJ."
+          }
+        },
+        {
+          "key": "time",
+          "type": "string",
+          "label": {
+            "en": "Time of the worst hour",
+            "fr": "Heure la plus critique"
+          },
+          "description": {
+            "en": "Local time, HH:MM.",
+            "fr": "Heure locale, HH:MM."
+          }
+        },
+        {
+          "key": "temperature",
+          "type": "number",
+          "label": {
+            "en": "Temperature",
+            "fr": "Température"
+          },
+          "description": {
+            "en": "At the worst hour.",
+            "fr": "À l'heure la plus critique."
+          }
+        },
+        {
+          "key": "dew_point",
+          "type": "number",
+          "label": {
+            "en": "Dew point",
+            "fr": "Point de rosée"
+          },
+          "description": {
+            "en": "At the worst hour.",
+            "fr": "À l'heure la plus critique."
+          }
+        },
+        {
+          "key": "frost_point",
+          "type": "number",
+          "label": {
+            "en": "Frost point",
+            "fr": "Point de givre"
+          },
+          "description": {
+            "en": "At the worst hour.",
+            "fr": "À l'heure la plus critique."
+          }
+        },
+        {
+          "key": "humidity",
+          "type": "number",
+          "label": {
+            "en": "Humidity (%)",
+            "fr": "Humidité (%)"
+          }
+        },
+        {
+          "key": "cloud_cover",
+          "type": "number",
+          "label": {
+            "en": "Cloud cover (%)",
+            "fr": "Couverture nuageuse (%)"
+          }
+        },
+        {
+          "key": "wind_speed",
+          "type": "number",
+          "label": {
+            "en": "Wind speed",
+            "fr": "Vitesse du vent"
+          }
+        },
+        {
+          "key": "reduced",
+          "type": "boolean",
+          "label": {
+            "en": "Lowered by the sky or the wind",
+            "fr": "Atténué par le ciel ou le vent"
+          },
+          "description": {
+            "en": "The level was lowered by one: overcast sky or steady wind.",
+            "fr": "Le niveau a été abaissé d'un cran : ciel couvert ou vent soutenu."
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé"
+          },
+          "description": {
+            "en": "A sentence ready to put in a message.",
+            "fr": "Une phrase prête à mettre dans un message."
+          }
+        }
+      ]
     }
   ]
 }

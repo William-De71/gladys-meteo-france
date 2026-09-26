@@ -1,9 +1,10 @@
 // -----------------------------------------------------------------------------
 // Outputs of the scene actions (manifest `scene_actions`).
 //
-// Four read-only actions, so a scene can act on the weather without a
+// Five read-only actions, so a scene can act on the weather without a
 // dedicated core feature: the forecast of a day, the rain over the next hours,
-// the rain within the hour, and the vigilance. Each returns scalars only — the
+// the rain within the hour, the vigilance, and the frost risk of the coming
+// morning. Each returns scalars only — the
 // SDK contract — and always a `summary` sentence ready to put in a message.
 //
 // An unknown figure is left out, never sent as 0: a 0 mm or a 0 % would read
@@ -13,12 +14,14 @@
 // Every builder is pure: the caller fetches, the builder shapes.
 // -----------------------------------------------------------------------------
 
-import { dayKey } from './forecast.js';
+import { dayKey, convertWindSpeed } from './forecast.js';
+import { evaluateFrostRisk } from './frost.js';
 import { PHENOMENON_NAMES, departmentName, parseSummary, parseBulletin } from './vigilance.js';
 import {
   CONDITION_LABELS,
   INTENSITY_LABELS,
   VIGILANCE_LABELS,
+  FROST_LABELS,
   textLanguage,
   unitSymbols,
   formatNumber,
@@ -33,6 +36,7 @@ const SCENE_ACTIONS = {
   GET_RAIN_NEXT_HOURS: 'get_rain_next_hours',
   GET_RAIN_NEXT_HOUR: 'get_rain_next_hour',
   GET_VIGILANCE: 'get_vigilance',
+  GET_FROST_RISK: 'get_frost_risk',
 };
 
 // Bounds of the `hours` field of get_rain_next_hours, mirrored from the
@@ -405,8 +409,99 @@ function buildVigilanceOutputs(warningData, department, language) {
   return outputs;
 }
 
+/**
+ * @description Convert a temperature from °C to the unit system, keeping one
+ * decimal: the frost figures sit too close to the thresholds for whole degrees.
+ * @param {number} celsius - The temperature, in °C.
+ * @param {string} units - 'metric' or 'us'.
+ * @returns {number} The converted temperature.
+ * @example
+ * convertPrecise(-0.46, 'metric'); // -> -0.5
+ */
+function convertPrecise(celsius, units) {
+  const value = units === 'us' ? celsius * (9 / 5) + 32 : celsius;
+  return Math.round(value * 10) / 10 + 0;
+}
+
+/**
+ * @description Outputs of get_frost_risk: the hoar frost risk of the coming
+ * morning, read on its worst hour (see frost.js).
+ * @param {object} params - Parameters.
+ * @param {object} params.data - The raw forecast payload (MF units).
+ * @param {string|null} params.timezone - The IANA timezone of the place.
+ * @param {string} params.units - 'metric' or 'us'.
+ * @param {string} params.language - The language of the instance.
+ * @param {number} [params.nowSeconds] - Current time in seconds (for tests).
+ * @returns {object} The outputs.
+ * @throws {Error} When the forecast does not reach the morning.
+ * @example
+ * buildFrostRiskOutputs({ data, timezone: 'Europe/Paris', units: 'metric', language: 'fr' });
+ */
+function buildFrostRiskOutputs({
+  data,
+  timezone,
+  units,
+  language,
+  nowSeconds = Math.floor(Date.now() / 1000),
+}) {
+  const lang = textLanguage(language);
+  const symbols = unitSymbols(units);
+  const { date, today, worst } = evaluateFrostRisk(data, timezone, nowSeconds);
+  const outputs = {
+    level: worst.level,
+    level_label: FROST_LABELS[lang][worst.level],
+    date,
+    time: formatLocalTime(worst.dt, timezone),
+    temperature: convertPrecise(worst.temperature, units),
+    dew_point: convertPrecise(worst.dewPoint, units),
+    frost_point: convertPrecise(worst.frostPoint, units),
+    humidity: worst.humidity,
+    reduced: worst.reduced,
+  };
+  if (worst.cloudCover !== null) {
+    outputs.cloud_cover = worst.cloudCover;
+  }
+  if (worst.windSpeed !== null) {
+    outputs.wind_speed = convertWindSpeed(worst.windSpeed, units);
+  }
+
+  const degrees = (value) => `${formatNumber(value, lang)} ${symbols.temperature}`;
+  let when;
+  if (lang === 'fr') {
+    when = today ? 'ce matin' : 'demain matin';
+  } else {
+    when = today ? 'this morning' : 'tomorrow morning';
+  }
+  // "Givre probable demain matin : 0,4 °C vers 06:00, point de givre -2,1 °C."
+  if (worst.level > 0) {
+    outputs.summary =
+      lang === 'fr'
+        ? `${outputs.level_label} ${when} : ${degrees(outputs.temperature)} vers ${outputs.time}, point de givre ${degrees(outputs.frost_point)}.`
+        : `${outputs.level_label} ${when}: ${degrees(outputs.temperature)} around ${outputs.time}, frost point ${degrees(outputs.frost_point)}.`;
+  } else {
+    outputs.summary =
+      lang === 'fr'
+        ? `Pas de givre attendu ${when} : minimum ${degrees(outputs.temperature)} vers ${outputs.time}.`
+        : `No frost expected ${when}: low of ${degrees(outputs.temperature)} around ${outputs.time}.`;
+  }
+  if (worst.reduced) {
+    const causes = {
+      fr: { sky: 'le ciel couvert', wind: 'le vent', both: 'le ciel couvert et le vent' },
+      en: { sky: 'the overcast sky', wind: 'the wind', both: 'the overcast sky and the wind' },
+    }[lang];
+    let cause = causes.wind;
+    if (worst.overcast) {
+      cause = worst.windy ? causes.both : causes.sky;
+    }
+    outputs.summary +=
+      lang === 'fr' ? ` Risque atténué par ${cause}.` : ` Risk lowered by ${cause}.`;
+  }
+  return outputs;
+}
+
 export {
   SCENE_ACTIONS,
+  buildFrostRiskOutputs,
   buildForecastOutputs,
   buildRainHoursOutputs,
   buildRainNowcastOutputs,

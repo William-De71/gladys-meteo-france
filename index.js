@@ -18,9 +18,10 @@
 //                              instead of within the 30-minute floor.
 //
 // And the scene editor gets Météo France's own cards (Gladys 5.1):
-//   - onSceneAction(key)       four read-only actions: the forecast of a day,
+//   - onSceneAction(key)       five read-only actions: the forecast of a day,
 //                              the rain over the next hours, the rain within
-//                              the hour, the vigilance (see scene-actions.js);
+//                              the hour, the vigilance, the frost risk of the
+//                              coming morning (see scene-actions.js, frost.js);
 //   - publishSceneEvent(key)   five triggers: rain expected / stopped from the
 //                              radar nowcast, frost / heat / wind forecast
 //                              (see scene-triggers.js and scene-watcher.js).
@@ -55,6 +56,7 @@ import {
   buildRainHoursOutputs,
   buildRainNowcastOutputs,
   buildVigilanceOutputs,
+  buildFrostRiskOutputs,
 } from './src/scene-actions.js';
 import { createSceneWatcher } from './src/scene-watcher.js';
 
@@ -208,8 +210,9 @@ async function loadWeather({ latitude, longitude, language, units }) {
 
   // The department travels with the payload so a cache hit can still refresh
   // the watcher TTL without re-reading the forecast; the timezone lets the
-  // scene actions print local times.
-  const entry = { weather, department, timezone: readTimezone(data) };
+  // scene actions print local times; the raw payload keeps the MF figures the
+  // pivot rounds, for the frost risk.
+  const entry = { weather, department, timezone: readTimezone(data), forecast: data };
   forecastCache.set(cacheKey, entry, config.cacheDuration);
   return entry;
 }
@@ -241,7 +244,7 @@ gladys.onWeatherGetImage(async (key) => {
 });
 
 // --- Scene actions -----------------------------------------------------------
-// Four read-only actions. Each targets a house of Gladys (the first located
+// Five read-only actions. Each targets a house of Gladys (the first located
 // one when the "House" field is empty) and returns scalars for the following
 // actions of the scene. Throwing fails the action only: the scene carries on.
 
@@ -308,6 +311,12 @@ gladys.onSceneAction(SCENE_ACTIONS.GET_VIGILANCE, async (fields) => {
   // vigilance right after a change must not get the previous one.
   const warningData = await getVigilance(department);
   return buildVigilanceOutputs(warningData, department, preferences.language);
+});
+
+gladys.onSceneAction(SCENE_ACTIONS.GET_FROST_RISK, async (fields) => {
+  const house = await resolveHouse(fields.house);
+  const { forecast, timezone } = await loadHouseWeather(house);
+  return buildFrostRiskOutputs({ data: forecast, timezone, ...preferences });
 });
 
 // --- Configuration -----------------------------------------------------------
