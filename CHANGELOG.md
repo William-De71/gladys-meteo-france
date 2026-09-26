@@ -1,3 +1,15 @@
+## [1.4.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.3.0...v1.4.0) (2026-09-26)
+
+### Features
+
+* black ice, snow, storm and UV triggers, ice risk and hourly forecast actions ([8d94a6b](https://github.com/William-De71/gladys-meteo-france/commit/8d94a6b5b0a9d5fd8136998e5c6ca36316465fbe))
+* custom threshold for the frost, heat and wind triggers ([750a3fa](https://github.com/William-De71/gladys-meteo-france/commit/750a3fada14f5ae7b90717992b7c820474e0d8ed))
+* frost risk scene action ([918eaf4](https://github.com/William-De71/gladys-meteo-france/commit/918eaf4269f8c8bcd9f61688365429843b6d83b2))
+
+### Bug Fixes
+
+* read the Météo France wind in m/s, not km/h ([ef1b3f8](https://github.com/William-De71/gladys-meteo-france/commit/ef1b3f81f97f1e73d4f13c163e0b3762e9f153f3))
+
 ## [1.3.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.2.0...v1.3.0) (2026-09-25)
 
 ### Features
