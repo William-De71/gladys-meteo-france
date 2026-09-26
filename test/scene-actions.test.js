@@ -47,7 +47,8 @@ function buildWeather(overrides = {}) {
         weather: 'rain',
         precipitation: 4.2,
         precipitation_probability: 80,
-        wind_gust: 55,
+        // The pivot wind is in m/s for metric: 15.3 m/s is 55 km/h.
+        wind_gust: 15.3,
       },
     ],
     ...overrides,
@@ -107,6 +108,7 @@ test('gives the forecast of tomorrow, with a summary', () => {
   assert.equal(outputs.condition, 'rain');
   assert.equal(outputs.condition_label, 'Pluie');
   assert.equal(outputs.precipitation, 4.2);
+  assert.equal(outputs.wind_gust, 55);
   assert.equal(
     outputs.summary,
     'Demain : pluie, 14 à 21 °C, 4,2 mm de pluie (80 %), rafales à 55 km/h.',

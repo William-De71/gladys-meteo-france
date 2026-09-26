@@ -20,7 +20,7 @@
 // Every function here is pure.
 // -----------------------------------------------------------------------------
 
-import { dayKey } from './forecast.js';
+import { dayKey, toKilometersPerHour } from './forecast.js';
 import { formatLocalTime } from './scene-text.js';
 
 const FROST_LEVELS = { NONE: 0, RISK: 1, LIKELY: 2 };
@@ -122,7 +122,9 @@ function evaluateHour(entry) {
   const frost = frostPoint(dew, temperature);
   const baseLevel = classifyFrost(temperature, frost);
   const cloudCover = isNumber(entry.clouds) ? entry.clouds : null;
-  const windSpeed = entry.wind && isNumber(entry.wind.speed) ? entry.wind.speed : null;
+  // MF gives the wind in m/s, the threshold is in km/h.
+  const windSpeed =
+    entry.wind && isNumber(entry.wind.speed) ? toKilometersPerHour(entry.wind.speed) : null;
   const overcast = cloudCover !== null && cloudCover >= OVERCAST_CLOUD_COVER;
   const windy = windSpeed !== null && windSpeed >= STEADY_WIND_KMH;
   const reduced = baseLevel > FROST_LEVELS.NONE && (overcast || windy);

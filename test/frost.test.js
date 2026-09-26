@@ -21,7 +21,7 @@ const TIMEZONE = 'Europe/Paris';
  * @description Build a raw MF hourly entry.
  * @param {number} dt - The moment, in seconds.
  * @param {number} temperature - The temperature, in °C.
- * @param {object} [overrides] - humidity, clouds, wind speed.
+ * @param {object} [overrides] - humidity, clouds, wind speed (m/s, like MF).
  * @returns {object} The entry.
  * @example
  * hour(DAWN, 0.5, { humidity: 95 });
@@ -72,10 +72,14 @@ test('lowers the level by one under an overcast sky or a steady wind', () => {
   const overcast = evaluateHour(hour(DAWN, 0.5, { clouds: 90 }));
   assert.equal(overcast.level, FROST_LEVELS.RISK);
   assert.deepEqual([overcast.reduced, overcast.overcast, overcast.windy], [true, true, false]);
-  const both = evaluateHour(hour(DAWN, 0.5, { clouds: 90, wind: 25 }));
+  // 7 m/s is 25.2 km/h.
+  const both = evaluateHour(hour(DAWN, 0.5, { clouds: 90, wind: 7 }));
   // One step down, not two.
   assert.equal(both.level, FROST_LEVELS.RISK);
   assert.deepEqual([both.overcast, both.windy], [true, true]);
+  // MF gives m/s: 5 m/s (18 km/h) is not steady, 6 m/s (21.6 km/h) is.
+  assert.equal(evaluateHour(hour(DAWN, 0.5, { wind: 5 })).windy, false);
+  assert.equal(evaluateHour(hour(DAWN, 0.5, { wind: 6 })).windy, true);
   // Nothing to lower on a mild hour.
   assert.equal(evaluateHour(hour(DAWN, 12, { clouds: 90 })).reduced, false);
 });
@@ -134,7 +138,8 @@ test('gives the frost risk outputs, with a summary', () => {
   assert.equal(outputs.temperature, 0.4);
   assert.equal(outputs.humidity, 95);
   assert.equal(outputs.cloud_cover, 10);
-  assert.equal(outputs.wind_speed, 5);
+  // 5 m/s from MF, 18 km/h for the scene.
+  assert.equal(outputs.wind_speed, 18);
   assert.equal(outputs.reduced, false);
   assert.equal(
     outputs.summary,
@@ -143,7 +148,7 @@ test('gives the frost risk outputs, with a summary', () => {
 });
 
 test('says why the risk was lowered, and converts to the US units', () => {
-  const data = payload({ 12: { temperature: 0.4, clouds: 90, wind: 30 } });
+  const data = payload({ 12: { temperature: 0.4, clouds: 90, wind: 8 } });
   const outputs = buildFrostRiskOutputs({
     data,
     timezone: TIMEZONE,

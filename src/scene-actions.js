@@ -14,7 +14,7 @@
 // Every builder is pure: the caller fetches, the builder shapes.
 // -----------------------------------------------------------------------------
 
-import { dayKey, convertWindSpeed } from './forecast.js';
+import { dayKey, convertSceneWindSpeed, pivotToSceneWindSpeed } from './forecast.js';
 import { evaluateFrostRisk } from './frost.js';
 import { PHENOMENON_NAMES, departmentName, parseSummary, parseBulletin } from './vigilance.js';
 import {
@@ -183,6 +183,12 @@ function buildForecastOutputs({
   optional.forEach((field) => {
     if (isNumber(entry[field])) {
       outputs[field] = entry[field];
+    }
+  });
+  // The pivot carries the wind in m/s for metric; a scene reads km/h.
+  ['wind_speed', 'wind_gust'].forEach((field) => {
+    if (isNumber(outputs[field])) {
+      outputs[field] = pivotToSceneWindSpeed(outputs[field], units);
     }
   });
   if (entry.sunrise) {
@@ -462,7 +468,7 @@ function buildFrostRiskOutputs({
     outputs.cloud_cover = worst.cloudCover;
   }
   if (worst.windSpeed !== null) {
-    outputs.wind_speed = convertWindSpeed(worst.windSpeed, units);
+    outputs.wind_speed = convertSceneWindSpeed(worst.windSpeed, units);
   }
 
   const degrees = (value) => `${formatNumber(value, lang)} ${symbols.temperature}`;

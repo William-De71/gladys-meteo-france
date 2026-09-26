@@ -252,8 +252,8 @@ test('converts every measure to the us unit system', () => {
   const weather = buildWeather(buildForecastFixture(), { nowSeconds: NOON, units: 'us' });
   // 24.3 °C -> 75.74 °F, rounded to 76
   assert.equal(weather.temperature, 76);
-  // MF answers in km/h, not m/s: 3.5 km/h -> 2.2 mph
-  assert.equal(weather.wind_speed, 2.2);
+  // MF answers in m/s: 3.5 m/s -> 7.8 mph
+  assert.equal(weather.wind_speed, 7.8);
   // 9.2 mm -> 0.36 in
   assert.equal(weather.hours[1].precipitation, 0.36);
   // 26 °C -> 78.8 °F, rounded to 79

@@ -27,7 +27,12 @@
 // Every function here is pure; scene-watcher.js owns the polling and state.
 // -----------------------------------------------------------------------------
 
-import { convertTemperature, convertWindSpeed, dayKey } from './forecast.js';
+import {
+  convertTemperature,
+  convertSceneWindSpeed,
+  toKilometersPerHour,
+  dayKey,
+} from './forecast.js';
 import { describeNowcast } from './scene-actions.js';
 import {
   INTENSITY_LABELS,
@@ -54,7 +59,7 @@ const FORECAST_WINDOW_SECONDS = 24 * 3600;
 const CUSTOM_LEVEL = 'custom';
 
 // Forecast levels. `metric` is the forecast figure the level reads (always
-// metric: the raw MF payload is), `below` says which side of the threshold is
+// metric: °C, and km/h for the wind, converted from the m/s of MF), `below` says which side of the threshold is
 // the alert, `margin` is how far back the forecast must go to re-arm it.
 // `thresholds` is the ladder watched, the bounds of the `threshold` field;
 // `levels` are the fixed shortcuts, whose thresholds sit on the ladder. Level
@@ -166,8 +171,8 @@ function buildRainEventData(key, house, nowcast, language) {
 }
 
 /**
- * @description Extremes of the next 24 hours of a raw forecast payload, in MF
- * units (°C, km/h), with the moment each is reached.
+ * @description Extremes of the next 24 hours of a raw forecast payload, in °C
+ * and km/h (MF gives the wind in m/s), with the moment each is reached.
  * @param {object} data - The raw forecast payload.
  * @param {number} [nowSeconds] - Current time in seconds (for tests).
  * @returns {{temperature_min: {value: number, dt: number}|null,
@@ -199,7 +204,10 @@ function readForecastExtremes(data, nowSeconds = Math.floor(Date.now() / 1000)) 
     temperature_min: extreme(temperature, (a, b) => a < b),
     temperature_max: extreme(temperature, (a, b) => a > b),
     wind_gust: extreme(
-      (entry) => entry.wind && entry.wind.gust,
+      (entry) =>
+        entry.wind && typeof entry.wind.gust === 'number'
+          ? toKilometersPerHour(entry.wind.gust)
+          : null,
       (a, b) => a > b,
     ),
   };
@@ -318,7 +326,7 @@ function buildForecastEventData(
   };
 
   if (event.trigger === SCENE_TRIGGERS.WIND_FORECAST) {
-    data.wind_gust = convertWindSpeed(event.value, units);
+    data.wind_gust = convertSceneWindSpeed(event.value, units);
     const gust = `${formatNumber(data.wind_gust, lang)} ${symbols.wind}`;
     data.summary =
       lang === 'fr'

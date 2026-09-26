@@ -10,7 +10,7 @@
 //                         be null on some days), precipitation['24h'], uv, sun_*
 //   - `probability_forecast[]` precipitation probabilities, per 3h-6h slices
 //
-// Unit handling: MF always answers in METRIC (°C, km/h, mm, hPa). The pivot
+// Unit handling: MF always answers in METRIC (°C, m/s, mm, hPa). The pivot
 // contract says the integration must answer in the REQUESTED unit system, so
 // the `us` case converts here — the core never converts for us.
 // -----------------------------------------------------------------------------
@@ -49,24 +49,68 @@ function convertTemperature(celsius, units) {
   return Math.round(celsius * (9 / 5) + 32) + 0;
 }
 
+// km/h in one m/s.
+const KMH_PER_MS = 3.6;
+
 /**
- * @description Convert a wind speed from km/h (what MF returns) to the
- * requested unit system: km/h for metric, mph for us.
+ * @description Convert a wind speed from m/s (what MF returns) to the pivot
+ * unit system: m/s for metric, mph for us.
  *
- * The unit is km/h, NOT m/s: the mobile webservice answers with the very
- * numbers meteofrance.com prints next to a wind arrow. Reading them as m/s
- * made the `us` conversion overstate the wind by a factor of ~3.6.
+ * The unit is m/s, NOT km/h: the payload carries 5 where meteofrance.com
+ * prints 20 km/h, and gusts of 12 where it prints 40-45 km/h. The pivot wants
+ * m/s in metric too — the Gladys widget multiplies by 3.6 to print km/h.
+ * @param {number} metersPerSecond - The speed in m/s.
+ * @param {string} units - 'metric' or 'us'.
+ * @returns {number} The converted speed (mph rounded to one decimal).
+ * @example
+ * convertWindSpeed(5, 'us'); // -> 11.2
+ */
+function convertWindSpeed(metersPerSecond, units) {
+  if (units !== 'us') {
+    return metersPerSecond;
+  }
+  return Math.round(metersPerSecond * 2.236936 * 10) / 10;
+}
+
+/**
+ * @description Convert a raw MF wind speed from m/s to km/h, the unit the
+ * scene thresholds and texts speak.
+ * @param {number} metersPerSecond - The speed in m/s.
+ * @returns {number} The speed in km/h.
+ * @example
+ * toKilometersPerHour(5); // -> 18
+ */
+function toKilometersPerHour(metersPerSecond) {
+  return metersPerSecond * KMH_PER_MS;
+}
+
+/**
+ * @description Convert a wind speed from km/h to the unit a scene reads: whole
+ * km/h for metric, mph for us.
  * @param {number} kilometersPerHour - The speed in km/h.
  * @param {string} units - 'metric' or 'us'.
- * @returns {number} The converted speed, rounded to one decimal.
+ * @returns {number} The converted speed.
  * @example
- * convertWindSpeed(10, 'us'); // -> 6.2
+ * convertSceneWindSpeed(43.2, 'metric'); // -> 43
  */
-function convertWindSpeed(kilometersPerHour, units) {
+function convertSceneWindSpeed(kilometersPerHour, units) {
   if (units !== 'us') {
-    return kilometersPerHour;
+    return Math.round(kilometersPerHour);
   }
   return Math.round(kilometersPerHour * 0.621371 * 10) / 10;
+}
+
+/**
+ * @description Convert a pivot wind speed (m/s for metric, mph for us) to the
+ * unit a scene reads (km/h for metric, mph for us).
+ * @param {number} value - The pivot speed.
+ * @param {string} units - 'metric' or 'us'.
+ * @returns {number} The converted speed.
+ * @example
+ * pivotToSceneWindSpeed(5, 'metric'); // -> 18
+ */
+function pivotToSceneWindSpeed(value, units) {
+  return units === 'us' ? value : convertSceneWindSpeed(toKilometersPerHour(value), units);
 }
 
 /**
@@ -674,6 +718,9 @@ export {
   dayKey,
   convertTemperature,
   convertWindSpeed,
+  toKilometersPerHour,
+  convertSceneWindSpeed,
+  pivotToSceneWindSpeed,
   convertPrecipitation,
   POURING_THRESHOLD_MM_PER_HOUR,
 };

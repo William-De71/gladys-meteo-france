@@ -105,18 +105,20 @@ test('builds the data of rain_stopped, saying whether more is coming', () => {
 test('reads the extremes of the next 24 hours only', () => {
   const data = {
     forecast: [
-      { dt: NOW - 7200, T: { value: -10 }, wind: { gust: 150 } }, // past
-      { dt: NOW, T: { value: 12 }, wind: { gust: 20 } },
+      { dt: NOW - 7200, T: { value: -10 }, wind: { gust: 40 } }, // past
+      { dt: NOW, T: { value: 12 }, wind: { gust: 5 } },
       { dt: NOW + 6 * 3600, T: { value: -1.5 }, wind: { gust: 0 } },
-      { dt: NOW + 18 * 3600, T: { value: 24 }, wind: { gust: 65 } },
-      { dt: NOW + 30 * 3600, T: { value: 40 }, wind: { gust: 120 } }, // too far
+      { dt: NOW + 18 * 3600, T: { value: 24 }, wind: { gust: 12 } },
+      { dt: NOW + 30 * 3600, T: { value: 40 }, wind: { gust: 33 } }, // too far
       { dt: NOW + 3600, T: {} },
     ],
   };
   const result = readForecastExtremes(data, NOW);
   assert.deepEqual(result.temperature_min, { value: -1.5, dt: NOW + 6 * 3600 });
   assert.deepEqual(result.temperature_max, { value: 24, dt: NOW + 18 * 3600 });
-  assert.deepEqual(result.wind_gust, { value: 65, dt: NOW + 18 * 3600 });
+  // MF gives the gusts in m/s, the thresholds are in km/h: 12 m/s is 43.2 km/h.
+  assert.equal(Math.round(result.wind_gust.value * 10) / 10, 43.2);
+  assert.equal(result.wind_gust.dt, NOW + 18 * 3600);
 });
 
 test('fires no forecast level on the first run, which is a baseline', () => {
