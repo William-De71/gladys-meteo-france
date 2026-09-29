@@ -692,7 +692,10 @@ function buildHourForecastOutputs({
   if (isNumber(wind.speed)) {
     outputs.wind_speed = convertSceneWindSpeed(toKilometersPerHour(wind.speed), units);
   }
-  if (isNumber(wind.gust) && wind.gust > 0) {
+  // A 0 gust is MF saying "no notable gust" — what it answers on a calm day,
+  // hour after hour — so it is sent as a 0, as get_forecast does: leaving it
+  // out left the variable empty in the scene.
+  if (isNumber(wind.gust) && wind.gust >= 0) {
     outputs.wind_gust = convertSceneWindSpeed(toKilometersPerHour(wind.gust), units);
   }
   // MF uses -1 for "variable wind": not a bearing.
@@ -725,12 +728,14 @@ function buildHourForecastOutputs({
     const speed = `${formatNumber(outputs.wind_speed, lang)} ${symbols.wind}`;
     const from = outputs.wind_direction_label && compassPoint(outputs.wind_direction, lang);
     if (lang === 'fr') {
-      parts.push(from ? `vent de ${from} à ${speed}` : `vent à ${speed}`);
+      // "vent d'est", "vent d'ouest": French elides "de" before a vowel.
+      const of = from && /^[aeiou]/.test(from) ? `d'${from}` : `de ${from}`;
+      parts.push(from ? `vent ${of} à ${speed}` : `vent à ${speed}`);
     } else {
       parts.push(from ? `${from} wind at ${speed}` : `wind at ${speed}`);
     }
   }
-  if (isNumber(outputs.wind_gust)) {
+  if (isNumber(outputs.wind_gust) && outputs.wind_gust > 0) {
     const gust = `${formatNumber(outputs.wind_gust, lang)} ${symbols.wind}`;
     parts.push(lang === 'fr' ? `rafales à ${gust}` : `gusts up to ${gust}`);
   }

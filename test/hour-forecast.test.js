@@ -83,6 +83,30 @@ test('takes the 3-hour step covering the hour past the hourly forecast', () => {
   );
 });
 
+test('sends a 0 gust on a calm hour, and keeps it out of the summary', () => {
+  // Tomorrow 09:00 (index 15): MF answers a 0 gust, as on any calm hour.
+  const outputs = build({ day: '1', hour: 9 });
+  assert.equal(outputs.wind_gust, 0);
+  assert.doesNotMatch(outputs.summary, /rafales/);
+});
+
+test('elides "de" before a compass point starting with a vowel', () => {
+  const data = payload();
+  data.forecast.forEach((entry) => {
+    entry.wind.direction = 90;
+  });
+  const outputs = buildHourForecastOutputs({
+    data,
+    timezone: TIMEZONE,
+    units: 'metric',
+    language: 'fr',
+    day: '1',
+    hour: 8,
+    nowSeconds: EVENING,
+  });
+  assert.match(outputs.summary, /vent d'est à 14 km\/h/);
+});
+
 test('fails when the forecast does not reach that day', () => {
   assert.throws(
     () =>
