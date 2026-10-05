@@ -245,8 +245,8 @@
         "fr": "Gel annoncé"
       },
       "description": {
-        "en": "The forecast of the next 24 hours reaches the chosen frost level. Fires once per episode.",
-        "fr": "La prévision des 24 prochaines heures atteint le niveau de gel choisi. Se déclenche une fois par épisode."
+        "en": "The forecast of the next 24 hours reaches the chosen frost level. Fires once per night, usually the day before.",
+        "fr": "La prévision des 24 prochaines heures atteint le niveau de gel choisi. Se déclenche une fois par nuit, en général la veille."
       },
       "fields": [
         {
@@ -397,8 +397,8 @@
         "fr": "Forte chaleur annoncée"
       },
       "description": {
-        "en": "The forecast of the next 24 hours reaches the chosen heat level. Fires once per episode.",
-        "fr": "La prévision des 24 prochaines heures atteint le niveau de chaleur choisi. Se déclenche une fois par épisode."
+        "en": "The forecast of the next 24 hours reaches the chosen heat level. Fires once per day, usually the day before.",
+        "fr": "La prévision des 24 prochaines heures atteint le niveau de chaleur choisi. Se déclenche une fois par jour, en général la veille."
       },
       "fields": [
         {

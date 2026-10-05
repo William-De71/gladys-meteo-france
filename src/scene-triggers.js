@@ -9,10 +9,16 @@
 //     from dry to rainy, the rain under way stops;
 //   - ice / snow / storm / UV: see hazard-triggers.js;
 //   - frost / heat / wind watch a ladder of thresholds (every degree, every
-//     5 km/h). Each threshold of each house is its own little state machine:
-//     it fires when the next 24 hours start to reach it, and re-arms only
-//     once the forecast is back clear of it BY A MARGIN — a forecast hovering
-//     around 0 °C from one run to the next must not fire every hour.
+//     5 km/h);
+//   - frost and heat fire once per DAY and threshold: the coldest night
+//     (noon to noon) or the hottest day (midnight to midnight) entering the
+//     next 24 hours, so usually the day before. An episode would be the wrong
+//     unit here: a mild threshold (20 °C in summer, 5 °C in winter) can stay
+//     reached for weeks, and the shutters close every day of a heatwave;
+//   - wind fires once per EPISODE: each threshold of each house is its own
+//     little state machine, firing when the next 24 hours start to reach it
+//     and re-arming only once the forecast is back clear of it BY A MARGIN —
+//     a forecast hovering around a threshold must not fire every hour.
 //
 // A custom threshold is still an equality for the core: the scene picks the
 // "custom" level and types a value in the `threshold` field, and the
@@ -22,8 +28,8 @@
 // carrying the level key.
 //
 // The first evaluation of a house is a baseline and never fires, like the
-// core's own weather-alert check: a restart during an ongoing frost episode
-// must not re-send every notification.
+// core's own weather-alert check: a restart during a frosty night or a windy
+// episode must not re-send every notification.
 //
 // Every function here is pure; scene-watcher.js owns the polling and state.
 // -----------------------------------------------------------------------------
@@ -65,8 +71,11 @@ const FORECAST_WINDOW_SECONDS = 24 * 3600;
 const CUSTOM_LEVEL = 'custom';
 
 // Forecast levels. `metric` is the forecast figure the level reads (always
-// metric: °C, and km/h for the wind, converted from the m/s of MF), `below` says which side of the threshold is
-// the alert, `margin` is how far back the forecast must go to re-arm it.
+// metric: °C, and km/h for the wind, converted from the m/s of MF), `below`
+// says which side of the threshold is the alert. A daily level has a
+// `dayStartHour`, the local hour its day starts at (noon for a night of
+// frost); an episode level has a `margin`, how far back the forecast must go
+// to re-arm it.
 // `thresholds` is the ladder watched, the bounds of the `threshold` field;
 // `levels` are the fixed shortcuts, whose thresholds sit on the ladder. Level
 // keys are published values of the `level` field: never renamed.
@@ -74,7 +83,7 @@ const FORECAST_LEVELS = {
   [SCENE_TRIGGERS.FROST_FORECAST]: {
     metric: 'temperature_min',
     below: true,
-    margin: 2,
+    dayStartHour: 12,
     thresholds: { min: -20, max: 5, step: 1 },
     levels: [
       { level: 'frost', threshold: 0 },
@@ -84,7 +93,7 @@ const FORECAST_LEVELS = {
   [SCENE_TRIGGERS.HEAT_FORECAST]: {
     metric: 'temperature_max',
     below: false,
-    margin: 2,
+    dayStartHour: 0,
     thresholds: { min: 20, max: 45, step: 1 },
     levels: [
       { level: 'heat_30', threshold: 30 },
@@ -178,37 +187,57 @@ function buildRainEventData(key, house, nowcast, language) {
 
 /**
  * @description Extremes of the next 24 hours of a raw forecast payload, in °C
- * and km/h (MF gives the wind in m/s), with the moment each is reached.
+ * and km/h (MF gives the wind in m/s), with the moment each is reached. The
+ * temperatures are split by day (see `dayStartHour`), in time order: one
+ * extreme for each day the window touches.
  * @param {object} data - The raw forecast payload.
  * @param {number} [nowSeconds] - Current time in seconds (for tests).
- * @returns {{temperature_min: {value: number, dt: number}|null,
- *   temperature_max: {value: number, dt: number}|null,
+ * @param {string|null} [timezone] - The IANA timezone of the place.
+ * @returns {{temperature_min: Array<{day: string, value: number, dt: number}>,
+ *   temperature_max: Array<{day: string, value: number, dt: number}>,
  *   wind_gust: {value: number, dt: number}|null}} The extremes.
  * @example
- * readForecastExtremes(rawForecast);
+ * readForecastExtremes(rawForecast, now, 'Europe/Paris');
  */
-function readForecastExtremes(data, nowSeconds = Math.floor(Date.now() / 1000)) {
+function readForecastExtremes(data, nowSeconds = Math.floor(Date.now() / 1000), timezone = null) {
   const hourly = Array.isArray(data && data.forecast) ? data.forecast : [];
   // The hour under way counts (30-minute grace, like the pivot hours).
-  const window = hourly.filter(
-    (entry) =>
-      entry &&
-      Number.isFinite(entry.dt) &&
-      entry.dt >= nowSeconds - 1800 &&
-      entry.dt < nowSeconds + FORECAST_WINDOW_SECONDS,
-  );
+  const window = hourly
+    .filter(
+      (entry) =>
+        entry &&
+        Number.isFinite(entry.dt) &&
+        entry.dt >= nowSeconds - 1800 &&
+        entry.dt < nowSeconds + FORECAST_WINDOW_SECONDS,
+    )
+    .sort((a, b) => a.dt - b.dt);
+  const isBetter = (value, best, better) =>
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    (best === undefined || better(value, best.value));
   const extreme = (read, better) =>
     window.reduce((best, entry) => {
       const value = read(entry);
-      if (typeof value !== 'number' || !Number.isFinite(value)) {
-        return best;
-      }
-      return best === null || better(value, best.value) ? { value, dt: entry.dt } : best;
+      return isBetter(value, best === null ? undefined : best, better)
+        ? { value, dt: entry.dt }
+        : best;
     }, null);
   const temperature = (entry) => entry.T && entry.T.value;
+  const daily = (trigger, better) => {
+    const shift = FORECAST_LEVELS[trigger].dayStartHour * 3600;
+    const days = new Map();
+    window.forEach((entry) => {
+      const value = temperature(entry);
+      const day = dayKey(entry.dt - shift, timezone);
+      if (isBetter(value, days.get(day), better)) {
+        days.set(day, { day, value, dt: entry.dt });
+      }
+    });
+    return [...days.values()];
+  };
   return {
-    temperature_min: extreme(temperature, (a, b) => a < b),
-    temperature_max: extreme(temperature, (a, b) => a > b),
+    temperature_min: daily(SCENE_TRIGGERS.FROST_FORECAST, (a, b) => a < b),
+    temperature_max: daily(SCENE_TRIGGERS.HEAT_FORECAST, (a, b) => a > b),
     wind_gust: extreme(
       (entry) =>
         entry.wind && typeof entry.wind.gust === 'number'
@@ -236,11 +265,128 @@ function forecastThresholds({ below, thresholds: { min, max, step } }) {
 }
 
 /**
- * @description Run the forecast threshold state machines of one house over
- * new extremes. `states` is mutated: it is the memory of the house. A
- * threshold newly reached yields its "custom" event, preceded by the event of
- * the fixed level sitting on it, if any.
- * @param {Map<string, string>} states - `${trigger}:${threshold}` -> 'reached' | 'clear'.
+ * @description Whether a forecast figure reaches a threshold.
+ * @param {object} config - A FORECAST_LEVELS entry.
+ * @param {number} value - The forecast figure.
+ * @param {number} threshold - The threshold.
+ * @returns {boolean} True when reached.
+ * @example
+ * reaches(FORECAST_LEVELS.frost_forecast, -1, 0); // -> true
+ */
+function reaches({ below }, value, threshold) {
+  return below ? value <= threshold : value >= threshold;
+}
+
+/**
+ * @description The events of a threshold newly reached: its "custom" event,
+ * preceded by the event of the fixed level sitting on it, if any.
+ * @param {string} trigger - The trigger key.
+ * @param {object} config - Its FORECAST_LEVELS entry.
+ * @param {number} threshold - The threshold reached.
+ * @param {{value: number, dt: number}} extreme - The figure reaching it.
+ * @returns {Array<object>} The events.
+ * @example
+ * thresholdEvents('heat_forecast', config, 30, { value: 31, dt });
+ */
+function thresholdEvents(trigger, { levels }, threshold, { value, dt }) {
+  const event = { trigger, threshold, value, dt };
+  const fixed = levels.find((candidate) => candidate.threshold === threshold);
+  return [
+    ...(fixed === undefined ? [] : [{ ...event, level: fixed.level }]),
+    { ...event, level: CUSTOM_LEVEL },
+  ];
+}
+
+/**
+ * @description Daily levels: every threshold each day of the window reaches
+ * for the first time. `states` is mutated; the first run is a baseline.
+ * @param {Map<string, string>} states - The memory of the house.
+ * @param {string} trigger - The trigger key.
+ * @param {object} config - Its FORECAST_LEVELS entry.
+ * @param {Array<{day: string, value: number, dt: number}>} days - The extremes by day.
+ * @returns {Array<object>} The events.
+ * @example
+ * evaluateDailyLevels(new Map(), 'heat_forecast', config, days); // -> [] (baseline)
+ */
+function evaluateDailyLevels(states, trigger, config, days) {
+  if (days.length === 0) {
+    // No figure this run: keep the memory as it is.
+    return [];
+  }
+  // Forget the days the window has left.
+  const firstDay = days[0].day;
+  [...states.keys()]
+    .filter((key) => {
+      const [prefix, day] = key.split(':');
+      return prefix === trigger && /^\d{4}-\d{2}-\d{2}$/.test(day) && day < firstDay;
+    })
+    .forEach((key) => states.delete(key));
+  const baselineKey = `${trigger}:baseline`;
+  const baseline = !states.has(baselineKey);
+  states.set(baselineKey, 'done');
+  const events = [];
+  days.forEach((extreme) => {
+    forecastThresholds(config)
+      .filter((threshold) => reaches(config, extreme.value, threshold))
+      .forEach((threshold) => {
+        const key = `${trigger}:${extreme.day}:${threshold}`;
+        if (states.has(key)) {
+          return;
+        }
+        states.set(key, 'fired');
+        if (!baseline) {
+          events.push(...thresholdEvents(trigger, config, threshold, extreme));
+        }
+      });
+  });
+  return events;
+}
+
+/**
+ * @description Episode levels: one state machine per threshold, firing when
+ * the forecast reaches it and re-arming once it is clear by the margin.
+ * `states` is mutated; the first run is a baseline.
+ * @param {Map<string, string>} states - The memory of the house.
+ * @param {string} trigger - The trigger key.
+ * @param {object} config - Its FORECAST_LEVELS entry.
+ * @param {{value: number, dt: number}|null} extreme - The extreme of the window.
+ * @returns {Array<object>} The events.
+ * @example
+ * evaluateEpisodeLevels(new Map(), 'wind_forecast', config, extreme); // -> [] (baseline)
+ */
+function evaluateEpisodeLevels(states, trigger, config, extreme) {
+  if (extreme === null || extreme === undefined) {
+    // No figure this run: keep the memory as it is.
+    return [];
+  }
+  const { below, margin } = config;
+  const events = [];
+  forecastThresholds(config).forEach((threshold) => {
+    const key = `${trigger}:${threshold}`;
+    const isReached = reaches(config, extreme.value, threshold);
+    const isClear = below ? extreme.value > threshold + margin : extreme.value < threshold - margin;
+    const previous = states.get(key);
+    if (previous === undefined) {
+      // Baseline: remember, never fire.
+      states.set(key, isReached ? 'reached' : 'clear');
+      return;
+    }
+    if (previous === 'clear' && isReached) {
+      states.set(key, 'reached');
+      events.push(...thresholdEvents(trigger, config, threshold, extreme));
+    } else if (previous === 'reached' && isClear) {
+      states.set(key, 'clear');
+    }
+  });
+  return events;
+}
+
+/**
+ * @description Run the forecast levels of one house over new extremes.
+ * `states` is mutated: it is the memory of the house. A threshold newly
+ * reached yields its "custom" event, preceded by the event of the fixed level
+ * sitting on it, if any.
+ * @param {Map<string, string>} states - The memory of the house.
  * @param {object} extremes - The readForecastExtremes() result.
  * @returns {Array<{trigger: string, level: string, threshold: number, value: number, dt: number}>}
  * The events to publish.
@@ -248,40 +394,12 @@ function forecastThresholds({ below, thresholds: { min, max, step } }) {
  * evaluateForecastLevels(new Map(), extremes); // -> [] (baseline)
  */
 function evaluateForecastLevels(states, extremes) {
-  const reached = [];
-  Object.entries(FORECAST_LEVELS).forEach(([trigger, config]) => {
-    const { metric, below, margin, levels } = config;
-    const extreme = extremes[metric];
-    if (extreme === null || extreme === undefined) {
-      // No figure this run: keep the memory as it is.
-      return;
-    }
-    forecastThresholds(config).forEach((threshold) => {
-      const key = `${trigger}:${threshold}`;
-      const isReached = below ? extreme.value <= threshold : extreme.value >= threshold;
-      const isClear = below
-        ? extreme.value > threshold + margin
-        : extreme.value < threshold - margin;
-      const previous = states.get(key);
-      if (previous === undefined) {
-        // Baseline: remember, never fire.
-        states.set(key, isReached ? 'reached' : 'clear');
-        return;
-      }
-      if (previous === 'clear' && isReached) {
-        states.set(key, 'reached');
-        const event = { trigger, threshold, value: extreme.value, dt: extreme.dt };
-        const fixed = levels.find((candidate) => candidate.threshold === threshold);
-        if (fixed !== undefined) {
-          reached.push({ ...event, level: fixed.level });
-        }
-        reached.push({ ...event, level: CUSTOM_LEVEL });
-      } else if (previous === 'reached' && isClear) {
-        states.set(key, 'clear');
-      }
-    });
+  return Object.entries(FORECAST_LEVELS).flatMap(([trigger, config]) => {
+    const extreme = extremes[config.metric];
+    return config.dayStartHour === undefined
+      ? evaluateEpisodeLevels(states, trigger, config, extreme)
+      : evaluateDailyLevels(states, trigger, config, extreme || []);
   });
-  return reached;
 }
 
 /**

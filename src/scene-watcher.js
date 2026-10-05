@@ -190,8 +190,12 @@ function createSceneWatcher({
       try {
         const data = await fetchForecast(house.latitude, house.longitude);
         const nowSeconds = Math.floor(now() / 1000);
-        const events = evaluateForecastLevels(state.levels, readForecastExtremes(data, nowSeconds));
-        const context = { timezone: readTimezone(data), units, language, nowSeconds };
+        const timezone = readTimezone(data);
+        const events = evaluateForecastLevels(
+          state.levels,
+          readForecastExtremes(data, nowSeconds, timezone),
+        );
+        const context = { timezone, units, language, nowSeconds };
         for (const event of events) {
           await safePublish(event.trigger, buildForecastEventData(event, house.name, context));
           published += 1;

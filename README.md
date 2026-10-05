@@ -51,8 +51,11 @@ expected tomorrow at 06:00.") and its figures as scene variables: `{{triggerEven
 
 A trigger is a **transition**, published once — never a state re-sent on every poll:
 
-- a forecast level fires when it enters the next 24 hours, and re-arms only once the forecast is clear of it by a
-  margin (2 °C, 15 km/h), so a forecast hovering around 0 °C does not fire every hour;
+- frost and heat fire once per day and threshold — the coldest night (noon to noon) or the hottest day (midnight to
+  midnight) entering the next 24 hours, so usually the day before: a mild threshold can stay reached for weeks, and
+  a heatwave closes the shutters every day;
+- wind fires once per episode, and re-arms only once the forecast is clear of it by a margin (15 km/h), so gusts
+  hovering around a threshold do not fire every hour;
 - the core matcher only compares equality, so a custom threshold is an event of its own: the forecast triggers watch
   every degree (every 5 km/h for the wind) and publish, per threshold crossed, a `level: "custom"` event carrying
   `threshold` (always °C / km/h), preceded by the fixed-level event when one sits on that threshold;
