@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/William-De71/gladys-meteo-france/compare/v1.4.0...v1.4.1) (2026-10-05)
+
+### Bug Fixes
+
+* fire the frost and heat triggers once per day, not once per episode ([a8d9a59](https://github.com/William-De71/gladys-meteo-france/commit/a8d9a5913d08a8b7df295eb3da9a215886e61cb5))
+* send a 0 gust from get_hour_forecast, and write "vent d'est" ([0252ef4](https://github.com/William-De71/gladys-meteo-france/commit/0252ef4b79003f6bceee0c8f52d692443af9d364))
+
 ## [1.4.0](https://github.com/William-De71/gladys-meteo-france/compare/v1.3.0...v1.4.0) (2026-09-26)
 
 ### Features
