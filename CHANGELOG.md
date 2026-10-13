@@ -1,3 +1,20 @@
+# Changelog
+
+All notable changes to this integration are documented in this file. The format
+follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions
+follow [Semantic Versioning](https://semver.org/). This file is generated at
+each release from the Conventional Commits: do not edit it by hand.
+
+## [1.5.0] - 2026-10-13
+
+### Added
+
+- **i18n:** the integration and its scene texts in German and Spanish ([cdd1f19](https://github.com/William-De71/gladys-meteo-france/commit/cdd1f191fb2cc1804d9932ea33da05e594f19c1a))
+
+### Fixed
+
+- keep the language and units of the scene texts after a restart ([5d13662](https://github.com/William-De71/gladys-meteo-france/commit/5d13662e31fd461ce64143b3ce26192780728dcd))
+
 ## [1.4.1](https://github.com/William-De71/gladys-meteo-france/compare/v1.4.0...v1.4.1) (2026-10-05)
 
 ### Bug Fixes
@@ -82,3 +99,5 @@
 
 * align with the published weather SDK, add a forecast cache ([4a2834c](https://github.com/William-De71/gladys-meteo-france/commit/4a2834c27aeb519c1775af22a9206981fd3f1c2d))
 * Météo France weather provider as an external integration ([c5921e9](https://github.com/William-De71/gladys-meteo-france/commit/c5921e993cdd45288c76bd629b940862ba847797))
+
+[1.5.0]: https://github.com/William-De71/gladys-meteo-france/compare/v1.4.1...v1.5.0
