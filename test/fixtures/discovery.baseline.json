@@ -1,0 +1,982 @@
+{
+  "generated_from": "version 1.4.1",
+  "manifest": {
+    "type": "weather",
+    "transports": ["cloud"],
+    "location": true,
+    "config_schema": [
+      {
+        "key": "intro",
+        "type": "section"
+      },
+      {
+        "key": "api_key",
+        "type": "secret"
+      },
+      {
+        "key": "cache_duration",
+        "type": "number"
+      }
+    ],
+    "scene_triggers": [
+      {
+        "key": "rain_expected",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "intensity",
+            "type": "multi_select"
+          }
+        ],
+        "options": {
+          "intensity": ["light", "moderate", "heavy"]
+        },
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "intensity",
+            "type": "string"
+          },
+          {
+            "key": "intensity_label",
+            "type": "string"
+          },
+          {
+            "key": "minutes_until_rain",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "rain_stopped",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "dry_for_hour",
+            "type": "boolean"
+          },
+          {
+            "key": "minutes_until_next_rain",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "frost_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "select"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          }
+        ],
+        "options": {
+          "level": ["frost", "hard_frost", "custom"]
+        },
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          },
+          {
+            "key": "temperature_min",
+            "type": "number"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours_until",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "heat_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "select"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          }
+        ],
+        "options": {
+          "level": ["heat_30", "heat_35", "custom"]
+        },
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          },
+          {
+            "key": "temperature_max",
+            "type": "number"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours_until",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "wind_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "select"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          }
+        ],
+        "options": {
+          "level": ["gust_60", "gust_80", "gust_100", "custom"]
+        },
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          },
+          {
+            "key": "wind_gust",
+            "type": "number"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours_until",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "ice_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "select"
+          }
+        ],
+        "options": {
+          "level": ["risk", "likely"]
+        },
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "level_label",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours_until",
+            "type": "number"
+          },
+          {
+            "key": "temperature",
+            "type": "number"
+          },
+          {
+            "key": "freezing_rain",
+            "type": "boolean"
+          },
+          {
+            "key": "recent_rain",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "snow_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours_until",
+            "type": "number"
+          },
+          {
+            "key": "condition",
+            "type": "string"
+          },
+          {
+            "key": "condition_label",
+            "type": "string"
+          },
+          {
+            "key": "snow_probability",
+            "type": "number"
+          },
+          {
+            "key": "rain_snow_limit",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "storm_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "hours_until",
+            "type": "number"
+          },
+          {
+            "key": "condition",
+            "type": "string"
+          },
+          {
+            "key": "condition_label",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "uv_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "select"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          }
+        ],
+        "options": {
+          "level": ["uv_6", "uv_8", "uv_11", "custom"]
+        },
+        "variables": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "threshold",
+            "type": "number"
+          },
+          {
+            "key": "uv_index",
+            "type": "number"
+          },
+          {
+            "key": "uv_label",
+            "type": "string"
+          },
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "scene_actions": [
+      {
+        "key": "get_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "day",
+            "type": "select"
+          }
+        ],
+        "options": {
+          "day": ["0", "1", "2", "3", "4", "5", "6", "7"]
+        },
+        "outputs": [
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "condition",
+            "type": "string"
+          },
+          {
+            "key": "condition_label",
+            "type": "string"
+          },
+          {
+            "key": "temperature_min",
+            "type": "number"
+          },
+          {
+            "key": "temperature_max",
+            "type": "number"
+          },
+          {
+            "key": "precipitation",
+            "type": "number"
+          },
+          {
+            "key": "precipitation_probability",
+            "type": "number"
+          },
+          {
+            "key": "wind_speed",
+            "type": "number"
+          },
+          {
+            "key": "wind_gust",
+            "type": "number"
+          },
+          {
+            "key": "uv_index",
+            "type": "number"
+          },
+          {
+            "key": "humidity",
+            "type": "number"
+          },
+          {
+            "key": "sunrise",
+            "type": "string"
+          },
+          {
+            "key": "sunset",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "get_rain_next_hours",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "hours",
+            "type": "number"
+          }
+        ],
+        "options": {},
+        "outputs": [
+          {
+            "key": "dry",
+            "type": "boolean"
+          },
+          {
+            "key": "precipitation",
+            "type": "number"
+          },
+          {
+            "key": "rainy_hours",
+            "type": "number"
+          },
+          {
+            "key": "hours_until_rain",
+            "type": "number"
+          },
+          {
+            "key": "first_rain_time",
+            "type": "string"
+          },
+          {
+            "key": "max_probability",
+            "type": "number"
+          },
+          {
+            "key": "hours",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "get_rain_next_hour",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "outputs": [
+          {
+            "key": "available",
+            "type": "boolean"
+          },
+          {
+            "key": "raining",
+            "type": "boolean"
+          },
+          {
+            "key": "rain_expected",
+            "type": "boolean"
+          },
+          {
+            "key": "intensity",
+            "type": "string"
+          },
+          {
+            "key": "intensity_label",
+            "type": "string"
+          },
+          {
+            "key": "minutes_until_rain",
+            "type": "number"
+          },
+          {
+            "key": "minutes_until_dry",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "get_vigilance",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "outputs": [
+          {
+            "key": "color",
+            "type": "number"
+          },
+          {
+            "key": "level",
+            "type": "string"
+          },
+          {
+            "key": "level_label",
+            "type": "string"
+          },
+          {
+            "key": "has_alert",
+            "type": "boolean"
+          },
+          {
+            "key": "phenomena",
+            "type": "string"
+          },
+          {
+            "key": "department",
+            "type": "string"
+          },
+          {
+            "key": "department_name",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          },
+          {
+            "key": "comment",
+            "type": "string"
+          },
+          {
+            "key": "bulletin",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "get_frost_risk",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "outputs": [
+          {
+            "key": "level",
+            "type": "number"
+          },
+          {
+            "key": "level_label",
+            "type": "string"
+          },
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "temperature",
+            "type": "number"
+          },
+          {
+            "key": "dew_point",
+            "type": "number"
+          },
+          {
+            "key": "frost_point",
+            "type": "number"
+          },
+          {
+            "key": "humidity",
+            "type": "number"
+          },
+          {
+            "key": "cloud_cover",
+            "type": "number"
+          },
+          {
+            "key": "wind_speed",
+            "type": "number"
+          },
+          {
+            "key": "reduced",
+            "type": "boolean"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "get_ice_risk",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          }
+        ],
+        "options": {},
+        "outputs": [
+          {
+            "key": "level",
+            "type": "number"
+          },
+          {
+            "key": "level_label",
+            "type": "string"
+          },
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "temperature",
+            "type": "number"
+          },
+          {
+            "key": "freezing_rain",
+            "type": "boolean"
+          },
+          {
+            "key": "recent_rain",
+            "type": "number"
+          },
+          {
+            "key": "freezing_probability",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "get_hour_forecast",
+        "fields": [
+          {
+            "key": "house",
+            "type": "string"
+          },
+          {
+            "key": "day",
+            "type": "select"
+          },
+          {
+            "key": "hour",
+            "type": "number"
+          }
+        ],
+        "options": {
+          "day": ["0", "1", "2"]
+        },
+        "outputs": [
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "time",
+            "type": "string"
+          },
+          {
+            "key": "temperature",
+            "type": "number"
+          },
+          {
+            "key": "apparent_temperature",
+            "type": "number"
+          },
+          {
+            "key": "humidity",
+            "type": "number"
+          },
+          {
+            "key": "condition",
+            "type": "string"
+          },
+          {
+            "key": "condition_label",
+            "type": "string"
+          },
+          {
+            "key": "precipitation",
+            "type": "number"
+          },
+          {
+            "key": "precipitation_probability",
+            "type": "number"
+          },
+          {
+            "key": "wind_speed",
+            "type": "number"
+          },
+          {
+            "key": "wind_gust",
+            "type": "number"
+          },
+          {
+            "key": "wind_direction",
+            "type": "number"
+          },
+          {
+            "key": "wind_direction_label",
+            "type": "string"
+          },
+          {
+            "key": "cloud_cover",
+            "type": "number"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "code": {
+    "scene_event_data": {
+      "rain_expected": ["house", "intensity", "intensity_label", "minutes_until_rain", "summary"],
+      "rain_stopped": ["dry_for_hour", "house", "minutes_until_next_rain", "summary"],
+      "frost_forecast": [
+        "hours_until",
+        "house",
+        "level",
+        "summary",
+        "temperature_min",
+        "threshold",
+        "time"
+      ],
+      "heat_forecast": [
+        "hours_until",
+        "house",
+        "level",
+        "summary",
+        "temperature_max",
+        "threshold",
+        "time"
+      ],
+      "wind_forecast": [
+        "hours_until",
+        "house",
+        "level",
+        "summary",
+        "threshold",
+        "time",
+        "wind_gust"
+      ],
+      "ice_forecast": [
+        "freezing_rain",
+        "hours_until",
+        "house",
+        "level",
+        "level_label",
+        "recent_rain",
+        "summary",
+        "temperature",
+        "time"
+      ],
+      "snow_forecast": [
+        "condition",
+        "condition_label",
+        "hours_until",
+        "house",
+        "rain_snow_limit",
+        "snow_probability",
+        "summary",
+        "time"
+      ],
+      "storm_forecast": ["condition", "condition_label", "hours_until", "house", "summary", "time"],
+      "uv_forecast": ["date", "house", "level", "summary", "threshold", "uv_index", "uv_label"]
+    },
+    "scene_action_outputs": {
+      "get_forecast": [
+        "condition",
+        "condition_label",
+        "date",
+        "humidity",
+        "precipitation",
+        "precipitation_probability",
+        "summary",
+        "sunrise",
+        "sunset",
+        "temperature_max",
+        "temperature_min",
+        "uv_index",
+        "wind_gust",
+        "wind_speed"
+      ],
+      "get_rain_next_hours": [
+        "dry",
+        "first_rain_time",
+        "hours",
+        "hours_until_rain",
+        "max_probability",
+        "precipitation",
+        "rainy_hours",
+        "summary"
+      ],
+      "get_rain_next_hour": [
+        "available",
+        "intensity",
+        "intensity_label",
+        "minutes_until_dry",
+        "minutes_until_rain",
+        "rain_expected",
+        "raining",
+        "summary"
+      ],
+      "get_vigilance": [
+        "bulletin",
+        "color",
+        "comment",
+        "department",
+        "department_name",
+        "has_alert",
+        "level",
+        "level_label",
+        "phenomena",
+        "summary"
+      ],
+      "get_frost_risk": [
+        "cloud_cover",
+        "date",
+        "dew_point",
+        "frost_point",
+        "humidity",
+        "level",
+        "level_label",
+        "reduced",
+        "summary",
+        "temperature",
+        "time",
+        "wind_speed"
+      ],
+      "get_ice_risk": [
+        "date",
+        "freezing_probability",
+        "freezing_rain",
+        "level",
+        "level_label",
+        "recent_rain",
+        "summary",
+        "temperature",
+        "time"
+      ],
+      "get_hour_forecast": [
+        "apparent_temperature",
+        "cloud_cover",
+        "condition",
+        "condition_label",
+        "date",
+        "humidity",
+        "precipitation",
+        "precipitation_probability",
+        "summary",
+        "temperature",
+        "time",
+        "wind_direction",
+        "wind_direction_label",
+        "wind_gust",
+        "wind_speed"
+      ]
+    }
+  }
+}
