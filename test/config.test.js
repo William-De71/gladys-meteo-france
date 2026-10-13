@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {
   normalizeConfig,
   hasVigilanceMap,
+  readPreferences,
+  PREFERENCE_KEYS,
   DEFAULT_CACHE_DURATION,
   MAX_CACHE_DURATION,
 } from '../src/config.js';
@@ -48,4 +50,22 @@ test('gates the vigilance map on the API key alone', () => {
   assert.equal(hasVigilanceMap({ apiKey: 'abcd' }), true);
   assert.equal(hasVigilanceMap({ apiKey: '' }), false);
   assert.equal(hasVigilanceMap(undefined), false);
+});
+
+test('reads the stored language and unit system, falling back on invalid values', () => {
+  const fallback = { language: 'fr', units: 'metric' };
+  assert.deepEqual(readPreferences({ last_language: 'de', last_units: 'us' }, fallback), {
+    language: 'de',
+    units: 'us',
+  });
+  assert.deepEqual(readPreferences({ last_language: 'es-ES' }, fallback), {
+    language: 'es-ES',
+    units: 'metric',
+  });
+  assert.deepEqual(
+    readPreferences({ last_language: 42, last_units: 'imperial' }, fallback),
+    fallback,
+  );
+  assert.deepEqual(readPreferences(undefined, fallback), fallback);
+  assert.deepEqual(PREFERENCE_KEYS, { language: 'last_language', units: 'last_units' });
 });

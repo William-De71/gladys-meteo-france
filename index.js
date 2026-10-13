@@ -44,7 +44,12 @@
 // -----------------------------------------------------------------------------
 
 import { GladysIntegration, logger } from '@gladysassistant/integration-sdk';
-import { normalizeConfig, hasVigilanceMap } from './src/config.js';
+import {
+  normalizeConfig,
+  hasVigilanceMap,
+  readPreferences,
+  PREFERENCE_KEYS,
+} from './src/config.js';
 import { getForecast, getRain, getVigilance, getVigilanceMap } from './src/meteo-france-api.js';
 import { buildWeather, readDepartment, readTimezone } from './src/forecast.js';
 import { buildAlerts, readMaxColor } from './src/vigilance.js';
@@ -78,8 +83,27 @@ let config = normalizeConfig();
 
 // Language and unit system of the instance, as the core sent them in its last
 // weather request. The scene actions and triggers have no request to read
-// them from, so their texts and figures follow the last one.
+// them from, so their texts and figures follow the last one, stored in the
+// config so a restart keeps them (French and metric until the first request).
 let preferences = { language: 'fr', units: 'metric' };
+
+/**
+ * @description Remember the language and unit system of a weather request,
+ * and store them when they changed.
+ * @param {object} options - { language, units }.
+ * @example
+ * rememberPreferences({ language: 'de', units: 'metric' });
+ */
+function rememberPreferences({ language, units }) {
+  const next = { language: language || preferences.language, units: units || preferences.units };
+  if (next.language === preferences.language && next.units === preferences.units) {
+    return;
+  }
+  preferences = next;
+  gladys
+    .setConfig({ [PREFERENCE_KEYS.language]: next.language, [PREFERENCE_KEYS.units]: next.units })
+    .catch((err) => logger.warn(`Unable to store the language and units: ${err.message}`));
+}
 
 // Short in-memory cache in front of Météo France: two upstream calls per
 // request, on an endpoint that can take ~20 s cold.
@@ -226,7 +250,7 @@ async function loadWeather({ latitude, longitude, language, units }) {
 // This is the whole point of the integration: the dashboard widget, the chat
 // assistant and the weather-alert scene triggers all come through here.
 gladys.onWeatherGet(async ({ latitude, longitude, language, units }) => {
-  preferences = { language: language || preferences.language, units: units || preferences.units };
+  rememberPreferences({ language, units });
   logger.debug(`onWeatherGet -> (${latitude}, ${longitude}) in ${units}`);
   const { weather } = await loadWeather({ latitude, longitude, language, units });
   return weather;
@@ -363,7 +387,9 @@ gladys.onConfigUpdated((rawConfig) => {
 // soon as it is up.
 gladys.on('connected', async () => {
   try {
-    config = normalizeConfig(await gladys.getConfig());
+    const rawConfig = await gladys.getConfig();
+    config = normalizeConfig(rawConfig);
+    preferences = readPreferences(rawConfig, preferences);
     // The config may have changed while we were disconnected.
     forecastCache.clear();
     await gladys.setConnectionStatus(true);
