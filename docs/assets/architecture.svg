@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="900" height="360" font-family="Helvetica, Arial, sans-serif" role="img" aria-labelledby="title desc">
+  <title id="title">Architecture of the Météo France integration</title>
+  <desc id="desc">Diagram: the integration container calls the Météo France services over HTTPS (forecast, vigilance, rain within the hour, and the vigilance map with an optional API key), turns them into the weather format of Gladys, watches the weather of every located house for the scene triggers, and returns to Gladys the weather, the vigilance alerts, the scene events and the scene action outputs.</desc>
+  <style>
+    .box { fill: #ffffff; stroke: #4a5568; stroke-width: 1.5; }
+    .inner { fill: #f7fafc; stroke: #a0aec0; stroke-width: 1; }
+    .mf { fill: #eff6ff; stroke: #1d4ed8; stroke-width: 1.5; }
+    .gladys { fill: #ebf4ff; stroke: #3b82f6; stroke-width: 1.5; }
+    .h { font-size: 15px; font-weight: bold; fill: #1a202c; }
+    .t { font-size: 12px; fill: #2d3748; }
+    .s { font-size: 11px; fill: #4a5568; }
+    .arrow { stroke: #4a5568; stroke-width: 1.5; fill: none; marker-end: url(#a); }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5568"/>
+    </marker>
+  </defs>
+  <rect width="900" height="360" fill="#ffffff"/>
+
+  <rect class="mf" x="20" y="80" width="180" height="190" rx="10"/>
+  <text class="h" x="110" y="108" text-anchor="middle">Météo France</text>
+  <text class="t" x="110" y="134" text-anchor="middle">webservice.meteofrance.com</text>
+  <text class="t" x="110" y="154" text-anchor="middle">forecast, vigilance</text>
+  <text class="t" x="110" y="174" text-anchor="middle">rain within the hour</text>
+  <text class="t" x="110" y="204" text-anchor="middle">public-api.meteofrance.fr</text>
+  <text class="t" x="110" y="224" text-anchor="middle">vigilance map</text>
+  <text class="s" x="110" y="252" text-anchor="middle">map: optional API key</text>
+
+  <rect class="box" x="260" y="30" width="370" height="300" rx="10"/>
+  <text class="h" x="445" y="56" text-anchor="middle">Integration container (Docker)</text>
+  <rect class="inner" x="280" y="72" width="155" height="56" rx="6"/>
+  <text class="t" x="357" y="96" text-anchor="middle">Météo France client</text>
+  <text class="s" x="357" y="114" text-anchor="middle">public token, cache, retry</text>
+  <rect class="inner" x="455" y="72" width="155" height="56" rx="6"/>
+  <text class="t" x="532" y="96" text-anchor="middle">weather provider</text>
+  <text class="s" x="532" y="114" text-anchor="middle">pivot weather + alerts</text>
+  <rect class="inner" x="280" y="146" width="155" height="56" rx="6"/>
+  <text class="t" x="357" y="170" text-anchor="middle">scene watcher</text>
+  <text class="s" x="357" y="188" text-anchor="middle">rain 5 min, forecast 30 min</text>
+  <rect class="inner" x="455" y="146" width="155" height="56" rx="6"/>
+  <text class="t" x="532" y="170" text-anchor="middle">scene actions</text>
+  <text class="s" x="532" y="188" text-anchor="middle">seven read-only actions</text>
+  <rect class="inner" x="280" y="220" width="155" height="56" rx="6"/>
+  <text class="t" x="357" y="244" text-anchor="middle">houses</text>
+  <text class="s" x="357" y="262" text-anchor="middle">latitude, longitude</text>
+  <rect class="inner" x="455" y="220" width="155" height="56" rx="6"/>
+  <text class="t" x="532" y="244" text-anchor="middle">vigilance watcher</text>
+  <text class="s" x="532" y="262" text-anchor="middle">every 15 min, per department</text>
+  <text class="s" x="445" y="312" text-anchor="middle">@gladysassistant/integration-sdk · transports: cloud · non-root</text>
+
+  <rect class="gladys" x="690" y="70" width="190" height="210" rx="10"/>
+  <text class="h" x="785" y="100" text-anchor="middle">Gladys</text>
+  <text class="t" x="785" y="128" text-anchor="middle">weather requests</text>
+  <text class="t" x="785" y="150" text-anchor="middle">houses (location)</text>
+  <text class="t" x="785" y="172" text-anchor="middle">weather-alert triggers</text>
+  <text class="t" x="785" y="194" text-anchor="middle">scene triggers, actions</text>
+  <text class="t" x="785" y="216" text-anchor="middle">weather widget, chat</text>
+  <text class="s" x="785" y="250" text-anchor="middle">host API + WebSocket</text>
+
+  <path class="arrow" d="M268,160 L200,160"/>
+  <path class="arrow" d="M200,190 L268,190"/>
+  <text class="s" x="210" y="152">HTTPS</text>
+  <path class="arrow" d="M630,150 L682,150"/>
+  <path class="arrow" d="M682,200 L630,200"/>
+  <text class="s" x="636" y="140">publish</text>
+  <text class="s" x="636" y="222">requests</text>
+</svg>

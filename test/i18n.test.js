@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 import {
   LANGUAGES,
@@ -169,4 +169,70 @@ test('French and English sentences are unchanged by the two new languages', () =
     en.get_forecast.summary,
     'Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%), gusts up to 55 km/h.',
   );
+});
+
+const READMES = { en: 'README.md', fr: 'README.fr.md', de: 'README.de.md', es: 'README.es.md' };
+
+test('docs: English and French mandatory, the four languages with the same structure', () => {
+  const headings = (value) => value.split('\n').filter((line) => /^#{1,3} /.test(line)).length;
+  const tables = (value) => value.split('\n').filter((line) => /^\|\s*-/.test(line)).length;
+  const docs = Object.fromEntries(
+    LANGUAGES.map((language) => {
+      const path = new URL(`../docs/${language}.md`, import.meta.url);
+      assert.ok(existsSync(path), `docs/${language}.md is missing`);
+      return [language, readFileSync(path, 'utf8')];
+    }),
+  );
+  for (const language of LANGUAGES) {
+    assert.ok(docs[language].length > 300, `docs/${language}.md is too short`);
+    assert.equal(headings(docs[language]), headings(docs.en), `docs/${language}.md headings`);
+    assert.equal(tables(docs[language]), tables(docs.en), `docs/${language}.md tables`);
+    assert.ok(!docs[language].includes('cover.jpg'), 'the store already shows the cover');
+  }
+});
+
+test('README: one per language, each linking to the three others, with badges and cover', () => {
+  const headings = (value) => value.split('\n').filter((line) => /^#{1,3} /.test(line)).length;
+  const english = read(`../${READMES.en}`);
+  for (const [language, file] of Object.entries(READMES)) {
+    const path = new URL(`../${file}`, import.meta.url);
+    assert.ok(existsSync(path), `${file} is missing`);
+    const content = readFileSync(path, 'utf8');
+    for (const other of Object.values(READMES).filter((name) => name !== file)) {
+      assert.ok(content.includes(`](${other})`), `${file} does not link to ${other}`);
+    }
+    assert.ok(content.includes(`](docs/${language}.md)`), `${file}: user documentation`);
+    assert.match(content, /\n!\[[^\]]+\]\(cover\.jpg\)\n/, `${file}: cover`);
+    // The four badges, the cover right below them.
+    const badges = content.indexOf('img.shields.io/badge/');
+    assert.ok(badges > 0 && badges < content.indexOf('](cover.jpg)'), `${file}: badges first`);
+    for (const badge of ['Apache--2.0', 'github/v/release', 'actions/workflow/status', 'Gladys-']) {
+      assert.ok(content.includes(badge), `${file}: badge ${badge}`);
+    }
+    assert.equal(headings(content), headings(english), `${file}: same sections as README.md`);
+    assert.ok(content.includes('](docs/assets/architecture.svg)'), `${file}: architecture`);
+  }
+});
+
+test('README: every table of contents entry points to a heading of the same file', () => {
+  // GitHub anchors: lower case, punctuation dropped, spaces to hyphens.
+  const slug = (heading) =>
+    heading
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N} -]/gu, '')
+      .replace(/ /g, '-');
+  for (const file of Object.values(READMES)) {
+    const content = read(`../${file}`);
+    const anchors = new Set(
+      content
+        .split('\n')
+        .filter((line) => line.startsWith('## '))
+        .map((line) => slug(line.slice(3))),
+    );
+    const links = [...content.matchAll(/^- \[[^\]]+\]\(#([^)]+)\)$/gm)].map((match) => match[1]);
+    assert.ok(links.length >= 10, `${file}: table of contents`);
+    for (const link of links) {
+      assert.ok(anchors.has(link), `${file}: #${link}`);
+    }
+  }
 });

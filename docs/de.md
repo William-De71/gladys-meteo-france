@@ -1,0 +1,188 @@
+# Météo France
+
+Diese Integration liefert Gladys die **Wettervorhersagen** und die **offiziellen Unwetterwarnungen** (Vigilance) von Météo France, dem nationalen Wetterdienst Frankreichs. Sie versorgt das Wetter-Widget des Dashboards, den Sprachassistenten und die Szenen-Auslöser für Wetterwarnungen.
+
+## Sofort einsatzbereit
+
+**Keine Konfiguration nötig.** Vorhersagen und Warnungen laufen über den öffentlichen Dienst von Météo France: Installiere die Integration, und sie funktioniert sofort.
+
+Ein optionaler API-Schlüssel schaltet zusätzlich die nationale Warnkarte frei (siehe unten).
+
+## Was sie liefert
+
+- **Stündliche Vorhersage** für die nächsten 24 Stunden: Temperatur, gefühlte Temperatur, Luftfeuchtigkeit, Luftdruck, Wind (Geschwindigkeit, Böen, Richtung), Niederschlag und Niederschlagswahrscheinlichkeit.
+- **Tagesvorhersage** für bis zu 8 Tage: Tiefst- und Höchsttemperatur, Wetterlage, Niederschlagssumme, UV-Index, Sonnenaufgang und -untergang.
+- **Offizielle Unwetterwarnungen**: die neun Phänomene von Météo France (Sturm, Starkregen und Überschwemmung, Gewitter, Hochwasser, Schnee und Glätte, Hitzewelle, strenge Kälte, Lawinen, Sturmflut), mit dem Namen des Departements und dem vollständigen offiziellen Lagebericht.
+- **Warnkarte** für heute und morgen (erfordert den API-Schlüssel).
+
+## Wie das Symbol eines Tages gewählt wird
+
+Das Symbol eines Tages fasst das **auffälligste Phänomen** dieses Tages zusammen, nicht das Wetter zur Mittagszeit.
+
+Météo France veröffentlicht zwei verschiedene Dinge: die stündliche Vorhersage und eine Zusammenfassung mit Stand Mittag. Diese Zusammenfassung beschreibt den Himmel zu einem einzigen Zeitpunkt und kann daher „Ensoleillé“ (sonnig) lauten, obwohl die Stunden desselben Tages Regen und mehrere Millimeter Niederschlag enthalten. Die Integration fasst den Tag deshalb aus seinen Stunden zusammen, wie es die Website von Météo France tut, und behält das Phänomen, das ihn am besten beschreibt: Ein Schauer schlägt eine sonnige Phase, ein Gewitter schlägt einen Schauer.
+
+Ab dem vierten Tag veröffentlicht Météo France keine stündlichen Details mehr, das Symbol greift dann auf die Mittagszusammenfassung zurück – die einzige verbleibende Angabe.
+
+Das Symbol kann trotzdem von der App von Météo France abweichen: Gladys bringt weniger Symbole mit, und mehrere verschiedene Himmelszustände teilen sich dort dasselbe Bild.
+
+## Szenen, die von Unwetterwarnungen ausgelöst werden
+
+Du kannst eine Szene anlegen, die startet, sobald eine Unwetterwarnung ausgegeben wird – zum Beispiel, um bei Warnstufe Orange eine SMS zu erhalten.
+
+Füge im Szeneneditor den Auslöser **„Wetterwarnung ausgelöst“** oder **„Wetterwarnung beendet“** hinzu und wähle dann das Zuhause sowie optional die Art des Phänomens und die Mindeststufe.
+
+Gladys prüft die Warnungen alle 30 Minuten. Diese Integration überwacht die Warnungen zusätzlich alle 15 Minuten und benachrichtigt Gladys sofort bei einer Änderung, sodass deine Szene innerhalb von Sekunden startet, statt auf die nächste geplante Prüfung zu warten.
+
+## Szenen: Auslöser von Météo France
+
+Neben den Unwetterwarnungen fügt die Integration dem Szeneneditor eigene Auslöser hinzu (ab Gladys 5.1), unter **Météo France**:
+
+| Auslöser                         | Löst aus, wenn…                                                                                                         | Filter                                       |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Regen in der nächsten Stunde** | die Radar-Kurzfristvorhersage Regen in der nächsten Stunde ankündigt, wo sie keinen ankündigte                          | Zuhause, Intensität (leicht / mäßig / stark) |
+| **Regen hat aufgehört**          | der laufende Regen aufhört                                                                                              | Zuhause                                      |
+| **Frost angekündigt**            | die nächsten 24 Stunden auf 0 °C, auf -5 °C oder auf einen Wert deiner Wahl sinken (-20 bis 5 °C)                       | Zuhause, Stufe, eigener Schwellenwert        |
+| **Hitze angekündigt**            | die nächsten 24 Stunden auf 30 °C, auf 35 °C oder auf einen Wert deiner Wahl steigen (20 bis 45 °C)                     | Zuhause, Stufe, eigener Schwellenwert        |
+| **Starker Wind angekündigt**     | die Böen der nächsten 24 Stunden 60, 80, 100 km/h oder einen Wert deiner Wahl erreichen (20 bis 150 km/h, 5er-Schritte) | Zuhause, Stufe, eigener Schwellenwert        |
+| **Glätte angekündigt**           | die nächsten 24 Stunden Regen auf eine Oberfläche um oder unter 0 °C bringen                                            | Zuhause, Stufe (Gefahr / wahrscheinlich)     |
+| **Schnee angekündigt**           | Schnee (oder Schneeregen) in den nächsten 24 Stunden auftaucht                                                          | Zuhause                                      |
+| **Gewitter angekündigt**         | ein Gewitter (oder Hagel) in den nächsten 12 Stunden auftaucht                                                          | Zuhause                                      |
+| **Hoher UV-Index angekündigt**   | der UV-Index des kommenden Tages 6, 8, 11 oder einen Wert deiner Wahl erreicht (1 bis 11)                               | Zuhause, Stufe, eigener Schwellenwert        |
+
+Beispiele: Dachfenster schließen und Markise einfahren bei **Regen in der nächsten Stunde**, die Heizung bei **Frost angekündigt** auf Frostschutz stellen, die Südrollläden am Vortag einer **Hitze angekündigt** schließen.
+
+Jeder Auslöser gibt den folgenden Aktionen eine versandfertige **Zusammenfassung** mit („Mäßiger Regen in 15 Min. erwartet.“, „Frost angekündigt: -2 °C morgen um 06:00 erwartet.“) sowie die Zahlen (Minuten bis zum Regen, Temperatur, Uhrzeit des Höchstwerts…).
+
+Gut zu wissen:
+
+- **Zuhause**: Lass das Feld leer, um alle Zuhause zu überwachen. Für ein bestimmtes gib seinen Namen **genau** wie in Gladys ein.
+- **Stufe**: Jede Stufe löst einzeln aus, einmal, nicht bei jeder Aktualisierung der Vorhersage.
+- **Frost und Hitze: einmal pro Tag.** Eine Szene „Hitze angekündigt“ mit 30 °C löst einmal für jeden Tag aus, der 30 °C erreicht, meist am Vortag, sobald der Höchstwert in die nächsten 24 Stunden rückt (oder später, wenn die Vorhersage steigt). Während einer fünftägigen Hitzewelle löst sie jeden Tag aus, und eine Vorhersage, die um 30 °C schwankt, löst für denselben Tag nicht zweimal aus. Frost funktioniert genauso pro Nacht (Mittag bis Mittag): Eine Frostnacht über Mitternacht löst einmal aus.
+- **Wind: einmal pro Episode.** Eine Szene „Starker Wind angekündigt“ mit 60 km/h löst aus, wenn die Böen in der Vorhersage auftauchen, und wird erst wieder scharf, wenn die Vorhersage deutlich zurückgeht (15 km/h unter dem Schwellenwert), damit eine schwankende Vorhersage nicht immer wieder auslöst.
+- **Eigener Schwellenwert**: Für einen Wert, der nicht in der Liste steht, wähle die Stufe „Eigener Schwellenwert“ und gib den Wert im gleichnamigen Feld ein – etwa -10 °C für Frost, 25 °C für Hitze oder 40 km/h für Wind. Er muss eine ganze Zahl sein (beim Wind ein Vielfaches von 5) und gilt immer in °C und km/h, unabhängig vom Einheitensystem von Gladys. Mit „Eigener Schwellenwert“ fülle das Feld immer aus: Leer würde die Szene bei jedem überschrittenen Grad auslösen. Bei den anderen Stufen lass es leer: Ein Wert dort würde das Auslösen verhindern.
+- **Regen in der nächsten Stunde** stammt vom Radar von Météo France und wird alle 5 Minuten geprüft. Er ist nicht überall verfügbar (manche Berggebiete, Überseegebiete): Beide Regen-Auslöser bleiben dann still. Derselbe Regen-Auslöser wiederholt sich nicht innerhalb von 30 Minuten, damit ein unentschlossener Schauer dich nicht dreimal warnt.
+- **Nach einem Neustart** dient die erste Prüfung als Ausgangswert und löst nichts aus, wie bei den Unwetterwarnungen von Gladys: Ein Neustart mitten in einer Frostnacht schickt die Benachrichtigung nicht erneut. Bei Frost und Hitze löst der nächste Tag wie gewohnt aus.
+- **Glätte, Schnee, Gewitter**: Jeder löst einmal aus, wenn das Phänomen in der Vorhersage auftaucht, und wird wieder scharf, wenn es sie verlassen hat. Eine Vorhersage, die von einer Aktualisierung zur nächsten schwankt, warnt dich nicht zweimal: Derselbe Auslöser wiederholt sich nicht innerhalb von 6 Stunden. Schnee löst bei seinem Auftreten aus, nicht bei einer Menge: Die Einheit der Schneemengen von Météo France ist nicht dokumentiert.
+- **Hoher UV-Index**: Météo France veröffentlicht nur einen UV-Index pro Tag. Vor Mittag liest der Auslöser den von heute, nach Mittag den von morgen. Er löst also einmal pro Tag und Stufe aus, meist gegen Mittag am Vortag (oder später, wenn die Vorhersage steigt). Der **eigene Schwellenwert** funktioniert wie beim Frost.
+- **Standort**: Diese Auslöser überwachen das Wetter ständig, daher braucht die Integration den Standort deiner Zuhause – deshalb fragt der Installationsbildschirm nach dem Standortzugriff. Ein Zuhause ohne Standort wird nicht überwacht.
+
+## Szenen: Aktionen von Météo France
+
+Sieben Aktionen lesen das Wetter mitten in einer Szene. Ihre Ergebnisse stehen den folgenden Aktionen zur Verfügung, zum Beispiel in einer Nachricht oder einer Bedingung:
+
+| Aktion                                   | Was sie liefert                                                                                                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Vorhersage eines Tages abrufen**       | Tiefst- und Höchsttemperatur, Himmel, Regen und Wahrscheinlichkeit, Wind und Böen, UV, Luftfeuchtigkeit, Sonnenauf- und -untergang                        |
+| **Regen der nächsten Stunden abrufen**   | trocken oder nicht, Regensumme, Regenstunden, Uhrzeit des ersten Regens (über 1 bis 24 Std.)                                                              |
+| **Regen in der nächsten Stunde abrufen** | regnet gerade, Regen erwartet, Intensität, Minuten bis zum Regen oder bis er aufhört                                                                      |
+| **Unwetterwarnung abrufen**              | Farbe und Stufe, aktive Phänomene, Departement, offizielle Zusammenfassung und vollständiger Lagebericht                                                  |
+| **Reifgefahr abrufen**                   | Stufe (0 keine, 1 Gefahr, 2 wahrscheinlich), kritischste Stunde, Temperatur, Tau- und Frostpunkt, Luftfeuchtigkeit, Wolken, Wind                          |
+| **Glättegefahr abrufen**                 | Stufe (0 keine, 1 Gefahr, 2 wahrscheinlich), Beginn, Temperatur, gefrierender Regen, Regen der letzten 6 Stunden, Frostwahrscheinlichkeit                 |
+| **Vorhersage einer Stunde abrufen**      | zu einer Stunde von heute, morgen oder übermorgen: Temperatur, gefühlte Temperatur, Himmel, Regen und Wahrscheinlichkeit, Wind, Böen und Richtung, Wolken |
+
+Jede Aktion liefert außerdem eine **Zusammenfassung** in einem Satz, z. B. „Morgen: Regen, 14 bis 21 °C, 4,2 mm Regen (80 %), Böen bis 55 km/h.“
+
+Beispiele:
+
+- **Morgen-Briefing**: ein Zeit-Auslöser um 7 Uhr, dann _Vorhersage eines Tages abrufen_ (heute) und _Unwetterwarnung abrufen_, dann eine Nachricht mit beiden Zusammenfassungen.
+- **Intelligente Bewässerung**: Vor dem Öffnen des Ventils _Regen der nächsten Stunden abrufen_ über 12 Std., dann eine Bedingung auf **Trocken**.
+- **Wäsche draußen?**: _Regen in der nächsten Stunde abrufen_, dann eine Bedingung auf **Regen in der nächsten Stunde**.
+- **Glättewarnung**: dieselbe Szene wie die Reifwarnung, mit _Glättegefahr abrufen_.
+- **Weg zur Arbeit**: um 21 Uhr _Vorhersage einer Stunde abrufen_ (morgen, 8), dann eine Nachricht mit der **Zusammenfassung** („Morgen um 08:00: Leicht bewölkt, 11 °C (gefühlt 8 °C), Wind aus Südwest mit 14 km/h, Böen bis 40 km/h, 1,2 mm Regen.“).
+- **Reifwarnung**: ein Zeit-Auslöser um 18 Uhr, dann _Reifgefahr abrufen_, dann „Nur fortfahren, wenn“ **Stufe** ≥ 1, dann eine Nachricht mit der **Zusammenfassung** („Reif wahrscheinlich morgen früh: 0,4 °C gegen 06:00, Frostpunkt -2,1 °C.“).
+
+**Reifgefahr**: Météo France veröffentlicht keinen Taupunkt. Die Aktion berechnet ihn Stunde für Stunde aus Temperatur und Luftfeuchtigkeit und leitet daraus den Frostpunkt ab. Sie betrachtet die Zeit von jetzt bis 10:00 des kommenden Morgens (vor 10:00 heute Morgen, danach morgen früh) und behält die kritischste Stunde. Reif wahrscheinlich: Temperatur ≤ 1 °C und Frostpunkt ≤ 0 °C, oder Temperatur ≤ 0 °C und Frostpunkt ≤ -2 °C. Reifgefahr: Temperatur ≤ 3 °C und Frostpunkt ≤ 0 °C. Reif bildet sich bei klarem Himmel und schwachem Wind: Ein bedeckter Himmel (80 % Bewölkung oder mehr) oder ein mittlerer Wind ab 20 km/h senkt die Stufe um eins, wie die Ausgabe **Durch Himmel oder Wind verringert** anzeigt.
+
+**Glättegefahr**: Météo France sagt weder Glätte noch die Bodentemperatur vorher, und seine „Frostwahrscheinlichkeit“ ist nur die Wahrscheinlichkeit einer Temperatur unter 0 °C (zur Information mitgeliefert). Die Aktion sucht daher Stunde für Stunde nach Wasser auf einer kalten Oberfläche, im selben Zeitfenster wie die Reifgefahr. Glätte wahrscheinlich: angekündigter gefrierender Regen, Regen bei einer Temperatur ≤ 0 °C oder eine nasse Oberfläche (Regen in den 6 vorherigen Stunden) bei einer Temperatur ≤ -1 °C. Glättegefahr: eine nasse Oberfläche und eine Temperatur ≤ 1 °C. Die Lufttemperatur steht für die Bodentemperatur, daher die Reserve von 1 °C.
+
+**Vorhersage einer Stunde**: Bis morgen sagt Météo France stündlich vorher, danach in 3-Stunden-Schritten. Die Aktion nimmt dann den Schritt, der die gewünschte Stunde abdeckt, und die Ausgabe **Uhrzeit der Vorhersage** zeigt welchen.
+
+Das Feld **Zuhause** ist optional: Leer nutzt die Aktion das erste Zuhause mit Standort. Temperaturen, Wind und Regen folgen dem Einheitensystem von Gladys und die Texte seiner Sprache (Englisch, Französisch, Deutsch oder Spanisch). Die Texte von Météo France selbst (offizielle Zusammenfassung und Lagebericht der Warnung) bleiben auf Französisch. Die Ausgabe **Verfügbar** von _Regen in der nächsten Stunde abrufen_ zeigt, ob die Radar-Kurzfristvorhersage dein Zuhause abdeckt.
+
+## Warnkarte (optional)
+
+Für die Anzeige der nationalen Warnkarte ist ein persönlicher, kostenloser API-Schlüssel nötig:
+
+1. Erstelle ein Konto im [API-Portal von Météo France](https://portail-api.meteofrance.fr/).
+2. Abonniere die API **„Données Publiques de Vigilance“** (kostenlos). Sie erscheint auch als **„Bulletin Vigilance“** und in technischen URLs als `DPVigilance` – alle drei sind dieselbe API.
+3. Wähle im Konfigurationsbildschirm der API den Token-Typ **API Key** (nicht OAuth2), gib eine lange **Gültigkeitsdauer** ein und erzeuge dann den Schlüssel – siehe die zwei Punkte unten, hier geht es meistens schief.
+4. Öffne in Gladys den Bildschirm **Konfiguration** der Integration Météo France, füge den Schlüssel ein und speichere.
+
+### Ein API-Schlüssel, kein OAuth2-Token
+
+Im Bildschirm **„Configurer l'API Bulletin Vigilance“** fragt das Portal nach einem **Token-Typ**:
+
+|                                                | Funktioniert hier | Lebensdauer                        |
+| ---------------------------------------------- | ----------------- | ---------------------------------- |
+| **API Key**                                    | ✅ **ja**         | die eingegebene Dauer              |
+| **OAuth2** (die Schaltfläche _Generate Token_) | ❌ nein           | etwa 1 Stunde, hier nicht erneuert |
+
+Kreuze also **API Key** an. Ein OAuth2-Token scheint zunächst zu funktionieren und **hört dann nach etwa einer Stunde auf**: Die Karte verschwindet ohne Meldung. Wenn deine Karte früher angezeigt wurde und jetzt nicht mehr, ist das fast immer der Grund.
+
+### Gültigkeitsdauer des Schlüssels
+
+Sobald **API Key** angekreuzt ist, zeigt das Portal ein Pflichtfeld **„Durée“** (Dauer), standardmäßig leer, das **in Sekunden** auszufüllen ist. Danach funktioniert der Schlüssel nicht mehr – und die Warnkarte mit ihm.
+
+Da die Integration diesen Schlüssel dauerhaft nutzt, gib die **längstmögliche Dauer** ein, sonst musst du ihn regelmäßig neu erzeugen und einfügen.
+
+> **Gib `94672800` ein** (etwa 3 Jahre). Das ist das Maximum, das das Portal akzeptiert – alles darüber wird abgelehnt.
+
+Zur Orientierung, falls du eine kürzere Dauer bevorzugst:
+
+| Dauer    | Einzugebender Wert       |
+| -------- | ------------------------ |
+| 1 Monat  | `2592000`                |
+| 6 Monate | `15552000`               |
+| 1 Jahr   | `31536000`               |
+| ~3 Jahre | `94672800` – **Maximum** |
+
+Notiere dir das Ablaufdatum: An diesem Tag hört die Karte ohne Vorwarnung auf, genau wie bei einem OAuth2-Token. Dann genügt es, einen neuen Schlüssel zu erzeugen und in Gladys einzufügen.
+
+Ohne diesen Schlüssel funktioniert alles andere normal weiter – nur die Karte ist nicht verfügbar.
+
+## Cache-Dauer
+
+Das Dashboard und der Chat-Assistent fragen beide das Wetter ab, und jede Anfrage kostet zwei Aufrufe bei Météo France. Die Integration verwendet daher eine aktuelle Antwort für die Dauer des **Caches** wieder, einstellbar im Bildschirm **Konfiguration** (standardmäßig 600 Sekunden, zwischen 0 und 3600).
+
+Normalerweise musst du sie nie ändern: Der Standardwert von 600 Sekunden passt für die allermeisten Installationen.
+
+### Welcher Wert
+
+Die Einstellung ist in **Sekunden**, zwischen 0 und 3600 (1 Stunde).
+
+| Wert                           | Wirkung                                                  |
+| ------------------------------ | -------------------------------------------------------- |
+| **0**                          | kein Cache, jede Anfrage ruft Météo France auf           |
+| **300** (5 Min.)               | aktuellere Daten, mehr Aufrufe                           |
+| **600** (10 Min.) – _Standard_ | gute Balance, empfohlen                                  |
+| **1800** (30 Min.)             | weniger Aufrufe, sehr reaktionsschnelles Dashboard       |
+| **3600** (1 Std.)              | Maximum, Vorhersagen können bis zu einer Stunde alt sein |
+
+Den Wert zu erhöhen ist kein Risiko: Météo France aktualisiert seine Vorhersagen nur wenige Male pro Stunde, ein Cache von 10 bis 30 Minuten kostet also kaum Aktualität und macht das Dashboard schneller.
+
+Zwei Dinge, die du wissen solltest:
+
+- Eine Änderung der Warnstufe wird unabhängig vom Cache erkannt: Die Integration leert den Cache und bittet Gladys sofort um eine neue Abfrage, sodass **deine Warn-Szenen auslösen, ohne auf das Ablaufen des Caches zu warten**, selbst bei einem Cache von 1 Stunde;
+- **0** deaktiviert den Cache und ruft Météo France bei jeder Anfrage auf. Da die Vorhersage-API bei kaltem Cache bis zu 20 Sekunden brauchen kann, wirkt das Dashboard dann deutlich langsamer. Nutze das nur zur gelegentlichen Fehlersuche, nicht dauerhaft.
+
+## Abdeckung
+
+Météo France deckt **das französische Mutterland und die Überseedepartements** ab. Für ein Zuhause außerhalb dieses Gebiets liefert die Integration keine Daten, und Gladys wechselt automatisch zu einem anderen Wetterdienst, falls du einen konfiguriert hast.
+
+## Vorrang vor OpenWeather
+
+Wenn du OpenWeather bereits konfiguriert hattest, übernimmt Météo France nach der Installation automatisch, ohne Einstellung. Wenn du die Integration stoppst oder deinstallierst, wechselt Gladys ebenso automatisch zurück zu OpenWeather.
+
+## Fehlerbehebung
+
+| Symptom                                                     | Wahrscheinliche Ursache                                                                                      |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Fehler „No house of Gladys has a location“                  | lege den Standort eines Zuhauses unter Einstellungen → Zuhause fest                                          |
+| Eine auf ein Zuhause gefilterte Szene löst nie aus          | das Feld Zuhause muss genau dem Namen des Zuhauses entsprechen                                               |
+| Ein Auslöser hat direkt nach einem Neustart nichts gesendet | die erste Prüfung nach einem Start dient absichtlich als Ausgangswert                                        |
+| Die Regen-Auslöser lösen nie aus                            | die Radar-Kurzfristvorhersage deckt das Zuhause nicht ab: prüfe mit _Regen in der nächsten Stunde abrufen_   |
+| Szenentexte in der falschen Sprache oder Einheit            | sie folgen der letzten Wetteranfrage von Gladys: zeige einmal das Wetter-Widget an                           |
+| Die Warnkarte verschwindet nach etwa einer Stunde           | es wurde ein OAuth2-Token verwendet: erzeuge stattdessen einen **API Key** (siehe oben)                      |
+| Die Warnkarte verschwindet nach mehreren Monaten            | die Dauer des Schlüssels ist abgelaufen: erzeuge einen neuen Schlüssel und füge ihn in der Konfiguration ein |
+
+Um ein Problem zu melden, gib die Version von Gladys, die Version der Integration, den Ort des Zuhauses (nie seine genaue Position) und die Logs des Containers an, idealerweise mit der Umgebungsvariable `DEBUG=gladys-integration-sdk`.

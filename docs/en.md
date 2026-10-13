@@ -106,7 +106,7 @@ Examples:
 
 **Forecast of an hour**: until tomorrow Météo France forecasts hour by hour, past it by 3-hour steps. The action then takes the step covering the hour asked, and the **Time of the forecast** output tells which.
 
-The **House** field is optional: left empty, the action uses the first located house. Temperatures, wind and rain follow the unit system of Gladys, and the texts its language (French or English). The **Available** output of _Get the rain within the hour_ tells whether the radar nowcast covers your house.
+The **House** field is optional: left empty, the action uses the first located house. Temperatures, wind and rain follow the unit system of Gladys, and the texts its language (English, French, German or Spanish). The texts of Météo France itself (official summary and bulletin of the vigilance) stay in French. The **Available** output of _Get the rain within the hour_ tells whether the radar nowcast covers your house.
 
 ## Vigilance map (optional)
 
@@ -181,3 +181,17 @@ Météo France covers **mainland France and its overseas departments**. For a ho
 ## Precedence over OpenWeather
 
 If you already had OpenWeather configured, installing Météo France automatically takes over with no setting to change. If you stop or uninstall the integration, Gladys falls back to OpenWeather just as automatically.
+
+## Troubleshooting
+
+| Symptom                                           | Likely cause                                                                     |
+| ------------------------------------------------- | -------------------------------------------------------------------------------- |
+| "No house of Gladys has a location"               | set the location of a house in Settings → Houses                                 |
+| A scene filtered on a house never fires           | the House field must match the house name exactly                                |
+| A trigger fired nothing just after a restart      | the first check after a start is a baseline, on purpose                          |
+| The rain triggers never fire                      | the radar nowcast does not cover the house: check _Get the rain within the hour_ |
+| Scene texts in the wrong language or unit system  | they follow the last weather request of Gladys: display the weather widget once  |
+| The vigilance map disappeared after about an hour | an OAuth2 token was used: generate an **API Key** instead (see above)            |
+| The vigilance map disappeared after months        | the key duration ran out: generate a new key and paste it in the Configuration   |
+
+To report a problem, give the Gladys version, the integration version, the town of the house (never its exact position) and the logs of the container, ideally with the environment variable `DEBUG=gladys-integration-sdk`.

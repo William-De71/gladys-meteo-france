@@ -1,0 +1,188 @@
+# Météo France
+
+Esta integración proporciona a Gladys las **previsiones meteorológicas** y los **avisos oficiales** (vigilance) de Météo France, el servicio meteorológico nacional francés. Alimenta el widget del tiempo del panel, el asistente de voz y los desencadenantes de escena de alertas meteorológicas.
+
+## Listo para usar
+
+**No se necesita ninguna configuración.** Las previsiones y los avisos pasan por el servicio público de Météo France: instale la integración y funciona de inmediato.
+
+Una clave de API opcional desbloquea además el mapa nacional de avisos (ver más abajo).
+
+## Qué ofrece
+
+- **Previsión por horas** para las próximas 24 horas: temperatura, sensación térmica, humedad, presión, viento (velocidad, rachas, dirección), precipitación y probabilidad de precipitación.
+- **Previsión diaria** hasta 8 días: temperaturas mínima y máxima, estado del cielo, precipitación total, índice UV, salida y puesta del sol.
+- **Avisos oficiales**: los nueve fenómenos de Météo France (viento fuerte, lluvia e inundaciones, tormentas, crecidas, nieve y hielo, ola de calor, frío intenso, aludes, inundación costera), con el nombre del departamento y el boletín oficial completo.
+- **Mapa de avisos** para hoy y mañana (requiere la clave de API).
+
+## Cómo se elige el icono de un día
+
+El icono de un día resume el **fenómeno más destacado** de ese día, no el tiempo a mediodía.
+
+Météo France publica dos cosas distintas: la previsión hora a hora y un resumen fechado a mediodía. Ese resumen describe el cielo en un solo momento, así que puede indicar «Ensoleillé» (soleado) en un día cuyas propias horas traen lluvia y varios milímetros de precipitación. Por eso la integración resume el día a partir de sus horas, como hace la web de Météo France, y conserva el fenómeno que mejor lo caracteriza: un chubasco prevalece sobre un rato de sol, una tormenta sobre un chubasco.
+
+A partir del cuarto día, Météo France deja de publicar el detalle por horas, y el icono vuelve al resumen de mediodía, el único dato disponible.
+
+El icono puede seguir diferenciándose de la aplicación de Météo France: Gladys incluye menos iconos, y varios cielos distintos comparten allí la misma imagen.
+
+## Escenas activadas por los avisos
+
+Puede crear una escena que se ejecute cuando se emita un aviso, por ejemplo para recibir un SMS con un aviso naranja.
+
+En el editor de escenas, añada el desencadenante **«Alerta meteorológica activada»** o **«Alerta meteorológica finalizada»**, y después elija la casa y, si lo desea, el tipo de fenómeno y la gravedad mínima.
+
+Gladys comprueba los avisos cada 30 minutos. Esta integración vigila además los avisos cada 15 minutos y avisa a Gladys en cuanto cambian, de modo que su escena se ejecuta en segundos en lugar de esperar a la siguiente comprobación programada.
+
+## Escenas: desencadenantes de Météo France
+
+Además de los avisos, la integración añade sus propios desencadenantes al editor de escenas (Gladys 5.1 o posterior), en **Météo France**:
+
+| Desencadenante             | Se activa cuando…                                                                                                   | Filtros                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Lluvia inminente**       | la previsión radar anuncia lluvia en la próxima hora, cuando antes no la anunciaba                                  | casa, intensidad (débil / moderada / fuerte) |
+| **Fin de la lluvia**       | la lluvia en curso cesa                                                                                             | casa                                         |
+| **Helada prevista**        | las próximas 24 horas bajan a 0 °C, a -5 °C o a un umbral de su elección (-20 a 5 °C)                               | casa, nivel, umbral personalizado            |
+| **Calor intenso previsto** | las próximas 24 horas suben a 30 °C, a 35 °C o a un umbral de su elección (20 a 45 °C)                              | casa, nivel, umbral personalizado            |
+| **Viento fuerte previsto** | las rachas de las próximas 24 horas alcanzan 60, 80, 100 km/h o un umbral de su elección (20 a 150 km/h, de 5 en 5) | casa, nivel, umbral personalizado            |
+| **Hielo previsto**         | las próximas 24 horas traen lluvia sobre una superficie a 0 °C o menos                                              | casa, nivel (riesgo / probable)              |
+| **Nieve prevista**         | la nieve (o el aguanieve) aparece en las próximas 24 horas                                                          | casa                                         |
+| **Tormenta prevista**      | una tormenta (o granizo) aparece en las próximas 12 horas                                                           | casa                                         |
+| **UV alto previsto**       | el índice UV del día siguiente alcanza 6, 8, 11 o un umbral de su elección (1 a 11)                                 | casa, nivel, umbral personalizado            |
+
+Ejemplos: cerrar los tragaluces y recoger el toldo con **Lluvia inminente**, poner la calefacción en modo antiheladas con **Helada prevista**, cerrar las persianas del sur la víspera de un **Calor intenso previsto**.
+
+Cada desencadenante entrega a las acciones siguientes un **Resumen** listo para enviar («Lluvia moderada prevista en 15 min.», «Helada prevista: -2 °C mañana a las 06:00.») junto con las cifras (minutos hasta la lluvia, temperatura, hora del pico…).
+
+Conviene saber:
+
+- **Casa**: deje el campo vacío para vigilar todas las casas. Para una en concreto, escriba su nombre **exactamente** como en Gladys.
+- **Nivel**: cada nivel se activa por separado, una vez, no en cada actualización de la previsión.
+- **Helada y calor: una vez al día.** Una escena «Calor intenso previsto» a 30 °C se activa una vez por cada día que alcanza 30 °C, normalmente la víspera, en cuanto el pico entra en las próximas 24 horas (o más tarde si la previsión sube). Durante una ola de calor de cinco días se activa cada día, y una previsión que duda en torno a 30 °C no se activa dos veces para el mismo día. La helada funciona igual por noche (de mediodía a mediodía): una noche de helada que pasa la medianoche se activa una sola vez.
+- **Viento: una vez por episodio.** Una escena «Viento fuerte previsto» a 60 km/h se activa cuando las rachas entran en la previsión y vuelve a armarse cuando la previsión baja claramente (15 km/h por debajo del umbral), para que una previsión que duda en torno al umbral no la active una y otra vez.
+- **Umbral personalizado**: para un valor que no está en la lista, elija el nivel «Umbral personalizado» e indique el valor en el campo del mismo nombre, por ejemplo -10 °C para la helada, 25 °C para el calor o 40 km/h para el viento. Debe ser un número entero (múltiplo de 5 para el viento) y siempre se expresa en °C y km/h, sea cual sea el sistema de unidades de Gladys. Con «Umbral personalizado», rellene siempre el campo: vacío, la escena se activaría con cada grado superado. Con los demás niveles, déjelo vacío: un valor ahí impediría que la escena se active.
+- **La lluvia en la próxima hora** procede del radar de Météo France y se comprueba cada 5 minutos. No está disponible en todas partes (algunas zonas de montaña, ultramar): los dos desencadenantes de lluvia permanecen entonces en silencio. El mismo desencadenante de lluvia no se repite en 30 minutos, para que un chubasco indeciso no le avise tres veces.
+- **Tras un reinicio**, la primera comprobación sirve de referencia y no activa nada, como los avisos de Gladys: un reinicio en plena noche de helada no vuelve a enviar la notificación. Para la helada y el calor, el día siguiente se activa con normalidad.
+- **Hielo, nieve, tormenta**: cada uno se activa una vez cuando el fenómeno entra en la previsión y vuelve a armarse cuando ha salido de ella. Una previsión que duda de una actualización a otra no le avisa dos veces: el mismo desencadenante no se repite en 6 horas. La nieve se activa por su presencia, no por una cantidad: la unidad de las cantidades de nieve de Météo France no está documentada.
+- **UV alto**: Météo France solo publica un índice UV por día. Antes de mediodía el desencadenante lee el de hoy, después de mediodía el de mañana. Por tanto se activa una vez al día y por nivel, normalmente hacia mediodía de la víspera (o más tarde si la previsión sube). El **Umbral personalizado** funciona como para la helada.
+- **Ubicación**: estos desencadenantes vigilan el tiempo de forma continua, por eso la integración necesita la ubicación de sus casas; de ahí que la pantalla de instalación pida acceso a la ubicación. Una casa sin ubicación no se vigila.
+
+## Escenas: acciones de Météo France
+
+Siete acciones leen el tiempo en mitad de una escena. Sus resultados pueden usarse en las acciones siguientes, por ejemplo en un mensaje o una condición:
+
+| Acción                                      | Qué devuelve                                                                                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Obtener la previsión de un día**          | temperaturas mínima y máxima, cielo, lluvia y probabilidad, viento y rachas, UV, humedad, salida y puesta del sol                          |
+| **Obtener la lluvia de las próximas horas** | seco o no, lluvia total, horas de lluvia, hora de la primera lluvia (de 1 a 24 h)                                                          |
+| **Obtener la lluvia en la próxima hora**    | lloviendo ahora, lluvia prevista, intensidad, minutos hasta la lluvia o hasta que pare                                                     |
+| **Obtener los avisos**                      | color y nivel, fenómenos en vigor, departamento, resumen oficial y boletín completo                                                        |
+| **Obtener el riesgo de escarcha**           | nivel (0 ninguno, 1 riesgo, 2 probable), hora más crítica, temperatura, puntos de rocío y de escarcha, humedad, nubes, viento              |
+| **Obtener el riesgo de hielo**              | nivel (0 ninguno, 1 riesgo, 2 probable), hora de inicio, temperatura, lluvia helada, lluvia de las últimas 6 horas, probabilidad de helada |
+| **Obtener la previsión de una hora**        | a una hora de hoy, mañana o pasado mañana: temperatura, sensación térmica, cielo, lluvia y probabilidad, viento, rachas y dirección, nubes |
+
+Cada acción devuelve también un **Resumen** en una frase, p. ej. «Mañana: lluvia, de 14 a 21 °C, 4,2 mm de lluvia (80 %), rachas de hasta 55 km/h.»
+
+Ejemplos:
+
+- **Resumen matinal**: un desencadenante horario a las 7, después _Obtener la previsión de un día_ (hoy) y _Obtener los avisos_, y luego un mensaje con ambos resúmenes.
+- **Riego inteligente**: antes de abrir la válvula, _Obtener la lluvia de las próximas horas_ sobre 12 h, y luego una condición sobre **Seco**.
+- **¿Tender la ropa fuera?**: _Obtener la lluvia en la próxima hora_, y luego una condición sobre **Lluvia en la próxima hora**.
+- **Alerta de hielo**: la misma escena que la alerta de escarcha, con _Obtener el riesgo de hielo_.
+- **Trayecto matinal**: a las 21, _Obtener la previsión de una hora_ (mañana, 8), y luego un mensaje con el **Resumen** («Mañana a las 08:00: parcialmente nublado, 11 °C (sensación de 8 °C), viento del suroeste a 14 km/h, rachas de hasta 40 km/h, 1,2 mm de lluvia.»).
+- **Alerta de escarcha**: un desencadenante horario a las 18, después _Obtener el riesgo de escarcha_, luego «Continuar solo si» **Nivel** ≥ 1, y un mensaje con el **Resumen** («Escarcha probable mañana por la mañana: 0,4 °C hacia las 06:00, punto de escarcha -2,1 °C.»).
+
+**Riesgo de escarcha**: Météo France no publica el punto de rocío. La acción lo calcula hora a hora a partir de la temperatura y la humedad, y deduce de él el punto de escarcha. Examina desde ahora hasta las 10:00 de la mañana siguiente (esta mañana antes de las 10:00, mañana por la mañana después) y conserva la hora más crítica. Escarcha probable: temperatura ≤ 1 °C y punto de escarcha ≤ 0 °C, o temperatura ≤ 0 °C y punto de escarcha ≤ -2 °C. Riesgo de escarcha: temperatura ≤ 3 °C y punto de escarcha ≤ 0 °C. La escarcha se forma con cielo despejado y viento flojo: un cielo cubierto (80 % de nubosidad o más) o un viento medio de 20 km/h o más rebaja el nivel un grado, como indica la salida **Atenuado por el cielo o el viento**.
+
+**Riesgo de hielo**: Météo France no prevé ni el hielo ni la temperatura del suelo, y su «probabilidad de helada» es solo la probabilidad de una temperatura bajo 0 °C (se devuelve a título informativo). Por eso la acción busca agua sobre una superficie fría, hora a hora, en la misma franja que el riesgo de escarcha. Hielo probable: lluvia helada prevista, lluvia con una temperatura ≤ 0 °C, o una superficie mojada (lluvia en las 6 horas anteriores) con una temperatura ≤ -1 °C. Riesgo de hielo: una superficie mojada y una temperatura ≤ 1 °C. La temperatura del aire sustituye a la del suelo, de ahí el margen de 1 °C.
+
+**Previsión de una hora**: hasta mañana, Météo France prevé hora a hora; más allá, en pasos de 3 horas. La acción toma entonces el paso que cubre la hora pedida, y la salida **Hora de la previsión** indica cuál.
+
+El campo **Casa** es opcional: vacío, la acción usa la primera casa con ubicación. Las temperaturas, el viento y la lluvia siguen el sistema de unidades de Gladys, y los textos su idioma (inglés, francés, alemán o español). Los textos de la propia Météo France (resumen oficial y boletín de los avisos) se mantienen en francés. La salida **Disponible** de _Obtener la lluvia en la próxima hora_ indica si la previsión radar cubre su casa.
+
+## Mapa de avisos (opcional)
+
+Para mostrar el mapa nacional de avisos se necesita una clave de API personal y gratuita:
+
+1. Cree una cuenta en el [portal de API de Météo France](https://portail-api.meteofrance.fr/).
+2. Suscríbase a la API **«Données Publiques de Vigilance»** (gratuita). También aparece como **«Bulletin Vigilance»**, y como `DPVigilance` en las URL técnicas: las tres son la misma API.
+3. En la pantalla de configuración de la API, elija el tipo de token **API Key** (no OAuth2), indique una **duración** de validez larga y genere la clave; vea los dos puntos siguientes, aquí es donde suele fallar.
+4. En Gladys, abra la pantalla **Configuración** de la integración Météo France, pegue la clave y guarde.
+
+### Una clave de API, no un token OAuth2
+
+En la pantalla **«Configurer l'API Bulletin Vigilance»**, el portal pide un **tipo de token**:
+
+|                                        | Funciona aquí | Duración                                 |
+| -------------------------------------- | ------------- | ---------------------------------------- |
+| **API Key**                            | ✅ **sí**     | la duración que indique                  |
+| **OAuth2** (el botón _Generate Token_) | ❌ no         | 1 hora aproximadamente, sin renovar aquí |
+
+Marque por tanto **API Key**. Un token OAuth2 parece funcionar al principio y luego **deja de funcionar al cabo de una hora aproximadamente**: el mapa desaparece sin aviso. Si su mapa se mostraba y ya no, casi siempre es por esto.
+
+### Duración de validez de la clave
+
+Una vez marcada **API Key**, el portal muestra un campo obligatorio **«Durée»** (duración), vacío por defecto, que se rellena **en segundos**. Es el momento en que la clave deja de funcionar, y con ella el mapa de avisos.
+
+Como la integración usa esta clave de forma permanente, indique la **duración más larga posible**; si no, tendrá que generarla y pegarla de nuevo con regularidad.
+
+> **Indique `94672800`** (unos 3 años). Es el máximo que acepta el portal: un valor mayor se rechaza.
+
+Como referencia, si prefiere una duración más corta:
+
+| Duración | Valor que indicar      |
+| -------- | ---------------------- |
+| 1 mes    | `2592000`              |
+| 6 meses  | `15552000`             |
+| 1 año    | `31536000`             |
+| ~3 años  | `94672800`: **máximo** |
+
+Anote la fecha de caducidad: ese día el mapa dejará de mostrarse sin aviso, igual que con un token OAuth2. Bastará entonces con generar una clave nueva y pegarla en Gladys.
+
+Sin esta clave, todo lo demás sigue funcionando con normalidad: solo el mapa no está disponible.
+
+## Duración de la caché
+
+El panel y el asistente de chat piden el tiempo, y cada petición cuesta dos llamadas a Météo France. Por eso la integración reutiliza una respuesta reciente durante la **duración de la caché**, ajustable en la pantalla **Configuración** (600 segundos por defecto, entre 0 y 3600).
+
+Normalmente no hace falta cambiarla: el valor por defecto de 600 segundos conviene a la gran mayoría de instalaciones.
+
+### Qué valor elegir
+
+El ajuste está en **segundos**, entre 0 y 3600 (1 hora).
+
+| Valor                           | Efecto                                              |
+| ------------------------------- | --------------------------------------------------- |
+| **0**                           | sin caché, cada petición llama a Météo France       |
+| **300** (5 min)                 | datos más recientes, más llamadas                   |
+| **600** (10 min): _por defecto_ | buen equilibrio, recomendado                        |
+| **1800** (30 min)               | menos llamadas, panel muy ágil                      |
+| **3600** (1 h)                  | máximo, las previsiones pueden tener hasta una hora |
+
+Subir el valor no supone riesgo: Météo France solo actualiza sus previsiones unas pocas veces por hora, así que una caché de 10 a 30 minutos apenas resta actualidad y hace el panel más rápido.
+
+Dos cosas que conviene saber:
+
+- un cambio del nivel de aviso se detecta con independencia de la caché: la integración la vacía y pide a Gladys que vuelva a consultar de inmediato, de modo que **sus escenas de alerta se activan sin esperar a que caduque la caché**, incluso con una caché de 1 hora;
+- **0** desactiva la caché y llama a Météo France en cada petición. Como la API de previsiones puede tardar hasta 20 segundos en frío, el panel puede parecer entonces mucho más lento. Resérvelo para un diagnóstico puntual, no para un uso permanente.
+
+## Cobertura
+
+Météo France cubre **la Francia metropolitana y los departamentos de ultramar**. Para una casa fuera de esa zona, la integración no devuelve datos y Gladys pasa automáticamente a otro servicio meteorológico si tiene uno configurado.
+
+## Prioridad sobre OpenWeather
+
+Si ya tenía OpenWeather configurado, al instalar Météo France esta toma el relevo automáticamente, sin ningún ajuste. Si detiene o desinstala la integración, Gladys vuelve a OpenWeather igual de automáticamente.
+
+## Solución de problemas
+
+| Síntoma                                                | Causa probable                                                                              |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Error «No house of Gladys has a location»              | indique la ubicación de una casa en Ajustes → Viviendas                                     |
+| Una escena filtrada por casa nunca se activa           | el campo Casa debe coincidir exactamente con el nombre de la casa                           |
+| Un desencadenante no envió nada justo tras un reinicio | la primera comprobación tras un arranque sirve de referencia, a propósito                   |
+| Los desencadenantes de lluvia nunca se activan         | la previsión radar no cubre la casa: compruébelo con _Obtener la lluvia en la próxima hora_ |
+| Textos de escena en un idioma o unidad equivocados     | siguen la última petición meteorológica de Gladys: muestre una vez el widget del tiempo     |
+| El mapa de avisos desaparece al cabo de una hora       | se usó un token OAuth2: genere en su lugar una **API Key** (ver más arriba)                 |
+| El mapa de avisos desaparece al cabo de varios meses   | la duración de la clave ha vencido: genere una clave nueva y péguela en la Configuración    |
+
+Para informar de un problema, indique la versión de Gladys, la versión de la integración, el municipio de la casa (nunca su posición exacta) y los registros del contenedor, idealmente con la variable de entorno `DEBUG=gladys-integration-sdk`.
