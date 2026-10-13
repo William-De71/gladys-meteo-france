@@ -4,7 +4,9 @@
   "name": "Météo France",
   "description": {
     "en": "French weather forecasts and official vigilance alerts from Météo France.",
-    "fr": "Prévisions météo et vigilance officielle Météo France pour la France."
+    "fr": "Prévisions météo et vigilance officielle Météo France pour la France.",
+    "de": "Wettervorhersagen und offizielle Unwetterwarnungen von Météo France.",
+    "es": "Previsiones meteorológicas y avisos oficiales de Météo France para Francia."
   },
   "version": "1.4.1",
   "docker_image": "ghcr.io/william-de71/gladys-meteo-france:1.4.1",
@@ -19,18 +21,24 @@
       "type": "section",
       "label": {
         "en": "Ready to use",
-        "fr": "Prêt à l'emploi"
+        "fr": "Prêt à l'emploi",
+        "de": "Sofort einsatzbereit",
+        "es": "Listo para usar"
       },
       "description": {
         "en": "Forecasts and vigilance alerts work with no configuration at all. The optional API key below only unlocks the national vigilance map image.",
-        "fr": "Les prévisions et la vigilance fonctionnent sans aucune configuration. La clé d'API optionnelle ci-dessous sert uniquement à afficher la carte de vigilance nationale."
+        "fr": "Les prévisions et la vigilance fonctionnent sans aucune configuration. La clé d'API optionnelle ci-dessous sert uniquement à afficher la carte de vigilance nationale.",
+        "de": "Vorhersagen und Warnungen funktionieren ganz ohne Konfiguration. Der optionale API-Schlüssel unten dient nur zur Anzeige der nationalen Warnkarte.",
+        "es": "Las previsiones y los avisos funcionan sin ninguna configuración. La clave de API opcional de abajo solo sirve para mostrar el mapa nacional de avisos."
       },
       "links": [
         {
           "url": "https://portail-api.meteofrance.fr/",
           "label": {
             "en": "Météo France API portal",
-            "fr": "Portail API Météo France"
+            "fr": "Portail API Météo France",
+            "de": "API-Portal von Météo France",
+            "es": "Portal de API de Météo France"
           }
         }
       ]
@@ -40,11 +48,15 @@
       "type": "secret",
       "label": {
         "en": "Météo France API key (optional)",
-        "fr": "Clé d'API Météo France (optionnelle)"
+        "fr": "Clé d'API Météo France (optionnelle)",
+        "de": "API-Schlüssel von Météo France (optional)",
+        "es": "Clave de API de Météo France (opcional)"
       },
       "description": {
         "en": "Only needed to display the national vigilance map. Create a free account on the Météo France API portal and subscribe to the \"Données Publiques de Vigilance\" API. Pick the \"API Key\" token type, NOT OAuth2 (which expires after about an hour), and set the mandatory \"Durée\" field to 94672800 seconds — about 3 years, the maximum the portal accepts. The map stops loading once that duration runs out.",
-        "fr": "Nécessaire uniquement pour afficher la carte de vigilance nationale. Créez un compte gratuit sur le portail API Météo France et souscrivez à l'API « Données Publiques de Vigilance ». Choisissez le type de token « API Key », PAS OAuth2 (qui expire au bout d'une heure environ), et renseignez le champ obligatoire « Durée » avec 94672800 secondes — environ 3 ans, le maximum accepté par le portail. La carte cesse de s'afficher une fois cette durée écoulée."
+        "fr": "Nécessaire uniquement pour afficher la carte de vigilance nationale. Créez un compte gratuit sur le portail API Météo France et souscrivez à l'API « Données Publiques de Vigilance ». Choisissez le type de token « API Key », PAS OAuth2 (qui expire au bout d'une heure environ), et renseignez le champ obligatoire « Durée » avec 94672800 secondes — environ 3 ans, le maximum accepté par le portail. La carte cesse de s'afficher une fois cette durée écoulée.",
+        "de": "Nur für die nationale Warnkarte nötig. Erstelle ein kostenloses Konto im API-Portal von Météo France und abonniere die API „Données Publiques de Vigilance“. Wähle den Token-Typ „API Key“, NICHT OAuth2 (läuft nach etwa einer Stunde ab), und trage im Pflichtfeld „Durée“ 94672800 Sekunden ein – etwa 3 Jahre, das vom Portal erlaubte Maximum. Danach wird die Karte nicht mehr geladen.",
+        "es": "Solo es necesaria para mostrar el mapa nacional de avisos. Cree una cuenta gratuita en el portal de API de Météo France y suscríbase a la API «Données Publiques de Vigilance». Elija el tipo de token «API Key», NO OAuth2 (caduca al cabo de una hora aproximadamente), e indique 94672800 segundos en el campo obligatorio «Durée»: unos 3 años, el máximo que acepta el portal. El mapa deja de mostrarse cuando vence ese plazo."
       },
       "required": false
     },
@@ -53,11 +65,15 @@
       "type": "number",
       "label": {
         "en": "Cache duration (s)",
-        "fr": "Durée du cache (s)"
+        "fr": "Durée du cache (s)",
+        "de": "Cache-Dauer (s)",
+        "es": "Duración de la caché (s)"
       },
       "description": {
         "en": "In seconds, between 0 and 3600. How long a weather answer is reused before calling Météo France again. The forecast endpoint can take up to 20 seconds on a cold cache, so reusing a recent answer keeps the dashboard responsive. The default of 600 (10 min) suits most setups; raising it to 1800 costs almost no freshness, as Météo France only refreshes a few times an hour. Set to 0 to always call the API (slower dashboard). A vigilance change always refreshes immediately, whatever this value.",
-        "fr": "En secondes, entre 0 et 3600. Durée pendant laquelle une réponse est réutilisée avant de rappeler Météo France. L'API de prévisions peut mettre jusqu'à 20 secondes à froid : réutiliser une réponse récente garde le tableau de bord réactif. La valeur par défaut de 600 (10 min) convient à la plupart des installations ; monter à 1800 ne fait presque rien perdre en fraîcheur, Météo France ne mettant à jour que quelques fois par heure. Mettre 0 pour toujours appeler l'API (tableau de bord plus lent). Une vigilance qui change rafraîchit toujours immédiatement, quelle que soit cette valeur."
+        "fr": "En secondes, entre 0 et 3600. Durée pendant laquelle une réponse est réutilisée avant de rappeler Météo France. L'API de prévisions peut mettre jusqu'à 20 secondes à froid : réutiliser une réponse récente garde le tableau de bord réactif. La valeur par défaut de 600 (10 min) convient à la plupart des installations ; monter à 1800 ne fait presque rien perdre en fraîcheur, Météo France ne mettant à jour que quelques fois par heure. Mettre 0 pour toujours appeler l'API (tableau de bord plus lent). Une vigilance qui change rafraîchit toujours immédiatement, quelle que soit cette valeur.",
+        "de": "In Sekunden, zwischen 0 und 3600. Wie lange eine Wetterantwort wiederverwendet wird, bevor Météo France erneut abgefragt wird. Die Vorhersage-API braucht bei kaltem Cache bis zu 20 Sekunden: Eine aktuelle Antwort wiederzuverwenden hält das Dashboard reaktionsschnell. Der Standardwert 600 (10 Min.) passt für die meisten Installationen; 1800 kostet kaum Aktualität, da Météo France nur wenige Male pro Stunde aktualisiert. 0 fragt immer die API ab (langsameres Dashboard). Eine geänderte Warnung aktualisiert immer sofort, unabhängig von diesem Wert.",
+        "es": "En segundos, entre 0 y 3600. Tiempo durante el que se reutiliza una respuesta antes de volver a consultar Météo France. La API de previsiones puede tardar hasta 20 segundos en frío: reutilizar una respuesta reciente mantiene ágil el panel. El valor por defecto de 600 (10 min) conviene a la mayoría de instalaciones; subir a 1800 apenas resta actualidad, ya que Météo France solo actualiza unas pocas veces por hora. Ponga 0 para consultar siempre la API (panel más lento). Un cambio de aviso siempre actualiza de inmediato, sea cual sea este valor."
       },
       "required": false,
       "default": 600,
@@ -70,11 +86,15 @@
       "key": "rain_expected",
       "label": {
         "en": "Rain expected within the hour",
-        "fr": "Pluie imminente"
+        "fr": "Pluie imminente",
+        "de": "Regen in der nächsten Stunde",
+        "es": "Lluvia inminente"
       },
       "description": {
         "en": "The Météo France radar nowcast announces rain within the hour, where it announced none. Checked every 5 minutes, where the nowcast covers the house.",
-        "fr": "La prévision radar de Météo France annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas. Vérifié toutes les 5 minutes, là où la pluie dans l'heure est disponible."
+        "fr": "La prévision radar de Météo France annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas. Vérifié toutes les 5 minutes, là où la pluie dans l'heure est disponible.",
+        "de": "Die Radar-Kurzfristvorhersage von Météo France kündigt Regen in der nächsten Stunde an, wo sie keinen ankündigte. Alle 5 Minuten geprüft, wo die Kurzfristvorhersage das Zuhause abdeckt.",
+        "es": "La previsión radar de Météo France anuncia lluvia en la próxima hora, cuando antes no la anunciaba. Se comprueba cada 5 minutos, allí donde está disponible la lluvia en la próxima hora."
       },
       "fields": [
         {
@@ -82,11 +102,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         },
@@ -95,11 +119,15 @@
           "type": "multi_select",
           "label": {
             "en": "Intensity",
-            "fr": "Intensité"
+            "fr": "Intensité",
+            "de": "Intensität",
+            "es": "Intensidad"
           },
           "description": {
             "en": "Strongest rain expected within the hour. Leave empty for any rain.",
-            "fr": "Pluie la plus forte prévue dans l'heure. Laissez vide pour toute pluie."
+            "fr": "Pluie la plus forte prévue dans l'heure. Laissez vide pour toute pluie.",
+            "de": "Stärkster Regen in der nächsten Stunde. Leer lassen für jeden Regen.",
+            "es": "Lluvia más fuerte prevista en la próxima hora. Déjelo vacío para cualquier lluvia."
           },
           "required": false,
           "options": [
@@ -107,21 +135,27 @@
               "value": "light",
               "label": {
                 "en": "Light rain",
-                "fr": "Pluie faible"
+                "fr": "Pluie faible",
+                "de": "Leichter Regen",
+                "es": "Lluvia débil"
               }
             },
             {
               "value": "moderate",
               "label": {
                 "en": "Moderate rain",
-                "fr": "Pluie modérée"
+                "fr": "Pluie modérée",
+                "de": "Mäßiger Regen",
+                "es": "Lluvia moderada"
               }
             },
             {
               "value": "heavy",
               "label": {
                 "en": "Heavy rain",
-                "fr": "Pluie forte"
+                "fr": "Pluie forte",
+                "de": "Starker Regen",
+                "es": "Lluvia fuerte"
               }
             }
           ]
@@ -133,7 +167,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -141,7 +177,9 @@
           "type": "string",
           "label": {
             "en": "Intensity (light, moderate, heavy)",
-            "fr": "Intensité (light, moderate, heavy)"
+            "fr": "Intensité (light, moderate, heavy)",
+            "de": "Intensität (light, moderate, heavy)",
+            "es": "Intensidad (light, moderate, heavy)"
           }
         },
         {
@@ -149,7 +187,9 @@
           "type": "string",
           "label": {
             "en": "Intensity label",
-            "fr": "Libellé de l'intensité"
+            "fr": "Libellé de l'intensité",
+            "de": "Bezeichnung der Intensität",
+            "es": "Etiqueta de la intensidad"
           }
         },
         {
@@ -157,7 +197,9 @@
           "type": "number",
           "label": {
             "en": "Minutes until rain",
-            "fr": "Minutes avant la pluie"
+            "fr": "Minutes avant la pluie",
+            "de": "Minuten bis zum Regen",
+            "es": "Minutos hasta la lluvia"
           }
         },
         {
@@ -165,11 +207,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -178,11 +224,15 @@
       "key": "rain_stopped",
       "label": {
         "en": "Rain stopped",
-        "fr": "Fin de la pluie"
+        "fr": "Fin de la pluie",
+        "de": "Regen hat aufgehört",
+        "es": "Fin de la lluvia"
       },
       "description": {
         "en": "The rain under way stops, according to the Météo France radar nowcast. Checked every 5 minutes.",
-        "fr": "La pluie en cours s'arrête, d'après la prévision radar de Météo France. Vérifié toutes les 5 minutes."
+        "fr": "La pluie en cours s'arrête, d'après la prévision radar de Météo France. Vérifié toutes les 5 minutes.",
+        "de": "Der laufende Regen hört laut der Radar-Kurzfristvorhersage von Météo France auf. Alle 5 Minuten geprüft.",
+        "es": "La lluvia en curso cesa, según la previsión radar de Météo France. Se comprueba cada 5 minutos."
       },
       "fields": [
         {
@@ -190,11 +240,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         }
@@ -205,7 +259,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -213,7 +269,9 @@
           "type": "boolean",
           "label": {
             "en": "Dry for the coming hour",
-            "fr": "Sec pour l'heure à venir"
+            "fr": "Sec pour l'heure à venir",
+            "de": "Trocken für die kommende Stunde",
+            "es": "Seco durante la próxima hora"
           }
         },
         {
@@ -221,7 +279,9 @@
           "type": "number",
           "label": {
             "en": "Minutes until the next rain",
-            "fr": "Minutes avant la prochaine pluie"
+            "fr": "Minutes avant la prochaine pluie",
+            "de": "Minuten bis zum nächsten Regen",
+            "es": "Minutos hasta la próxima lluvia"
           }
         },
         {
@@ -229,11 +289,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -242,11 +306,15 @@
       "key": "frost_forecast",
       "label": {
         "en": "Frost forecast",
-        "fr": "Gel annoncé"
+        "fr": "Gel annoncé",
+        "de": "Frost angekündigt",
+        "es": "Helada prevista"
       },
       "description": {
         "en": "The forecast of the next 24 hours reaches the chosen frost level. Fires once per night, usually the day before.",
-        "fr": "La prévision des 24 prochaines heures atteint le niveau de gel choisi. Se déclenche une fois par nuit, en général la veille."
+        "fr": "La prévision des 24 prochaines heures atteint le niveau de gel choisi. Se déclenche une fois par nuit, en général la veille.",
+        "de": "Die Vorhersage der nächsten 24 Stunden erreicht die gewählte Froststufe. Löst einmal pro Nacht aus, meist am Vortag.",
+        "es": "La previsión de las próximas 24 horas alcanza el nivel de helada elegido. Se activa una vez por noche, normalmente la víspera."
       },
       "fields": [
         {
@@ -254,11 +322,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         },
@@ -267,11 +339,15 @@
           "type": "select",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           },
           "description": {
             "en": "Lowest temperature expected in the next 24 hours. \"Custom threshold\" uses the value typed below.",
-            "fr": "Température la plus basse prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous."
+            "fr": "Température la plus basse prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous.",
+            "de": "Tiefste Temperatur in den nächsten 24 Stunden. „Eigener Schwellenwert“ nutzt den unten eingegebenen Wert.",
+            "es": "Temperatura más baja prevista en las próximas 24 horas. «Umbral personalizado» usa el valor indicado abajo."
           },
           "required": true,
           "default": "frost",
@@ -280,21 +356,27 @@
               "value": "frost",
               "label": {
                 "en": "0 °C (32 °F) or below",
-                "fr": "0 °C ou moins"
+                "fr": "0 °C ou moins",
+                "de": "0 °C oder weniger",
+                "es": "0 °C o menos"
               }
             },
             {
               "value": "hard_frost",
               "label": {
                 "en": "-5 °C (23 °F) or below",
-                "fr": "-5 °C ou moins"
+                "fr": "-5 °C ou moins",
+                "de": "-5 °C oder weniger",
+                "es": "-5 °C o menos"
               }
             },
             {
               "value": "custom",
               "label": {
                 "en": "Custom threshold",
-                "fr": "Seuil personnalisé"
+                "fr": "Seuil personnalisé",
+                "de": "Eigener Schwellenwert",
+                "es": "Umbral personalizado"
               }
             }
           ]
@@ -304,18 +386,24 @@
           "type": "number",
           "label": {
             "en": "Custom threshold (°C)",
-            "fr": "Seuil personnalisé (°C)"
+            "fr": "Seuil personnalisé (°C)",
+            "de": "Eigener Schwellenwert (°C)",
+            "es": "Umbral personalizado (°C)"
           },
           "description": {
             "en": "With \"Custom threshold\": lowest temperature expected in the next 24 hours, in whole degrees Celsius from -20 to 5. Leave empty with the other levels.",
-            "fr": "Avec « Seuil personnalisé » : température la plus basse prévue dans les 24 prochaines heures, en degrés Celsius entiers de -20 à 5. Laissez vide avec les autres niveaux."
+            "fr": "Avec « Seuil personnalisé » : température la plus basse prévue dans les 24 prochaines heures, en degrés Celsius entiers de -20 à 5. Laissez vide avec les autres niveaux.",
+            "de": "Mit „Eigener Schwellenwert“: tiefste Temperatur in den nächsten 24 Stunden, in ganzen Grad Celsius von -20 bis 5. Bei den anderen Stufen leer lassen.",
+            "es": "Con «Umbral personalizado»: temperatura más baja prevista en las próximas 24 horas, en grados Celsius enteros de -20 a 5. Déjelo vacío con los demás niveles."
           },
           "required": false,
           "min": -20,
           "max": 5,
           "placeholder": {
             "en": "-3",
-            "fr": "-3"
+            "fr": "-3",
+            "de": "-3",
+            "es": "-3"
           }
         }
       ],
@@ -325,7 +413,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -333,7 +423,9 @@
           "type": "string",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           }
         },
         {
@@ -341,11 +433,15 @@
           "type": "number",
           "label": {
             "en": "Threshold (°C)",
-            "fr": "Seuil (°C)"
+            "fr": "Seuil (°C)",
+            "de": "Schwellenwert (°C)",
+            "es": "Umbral (°C)"
           },
           "description": {
             "en": "The threshold crossed, as set in the trigger.",
-            "fr": "Le seuil franchi, tel que réglé dans le déclencheur."
+            "fr": "Le seuil franchi, tel que réglé dans le déclencheur.",
+            "de": "Der überschrittene Schwellenwert, wie im Auslöser eingestellt.",
+            "es": "El umbral superado, tal como se ajustó en el desencadenante."
           }
         },
         {
@@ -353,7 +449,9 @@
           "type": "number",
           "label": {
             "en": "Lowest temperature",
-            "fr": "Température minimale"
+            "fr": "Température minimale",
+            "de": "Tiefsttemperatur",
+            "es": "Temperatura mínima"
           }
         },
         {
@@ -361,11 +459,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "Local time of the peak, HH:MM.",
-            "fr": "Heure locale du pic, HH:MM."
+            "fr": "Heure locale du pic, HH:MM.",
+            "de": "Ortszeit des Höchstwerts, HH:MM.",
+            "es": "Hora local del pico, HH:MM."
           }
         },
         {
@@ -373,7 +475,9 @@
           "type": "number",
           "label": {
             "en": "Hours until",
-            "fr": "Dans combien d'heures"
+            "fr": "Dans combien d'heures",
+            "de": "Stunden bis dahin",
+            "es": "Horas hasta entonces"
           }
         },
         {
@@ -381,11 +485,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -394,11 +502,15 @@
       "key": "heat_forecast",
       "label": {
         "en": "Heat forecast",
-        "fr": "Forte chaleur annoncée"
+        "fr": "Forte chaleur annoncée",
+        "de": "Hitze angekündigt",
+        "es": "Calor intenso previsto"
       },
       "description": {
         "en": "The forecast of the next 24 hours reaches the chosen heat level. Fires once per day, usually the day before.",
-        "fr": "La prévision des 24 prochaines heures atteint le niveau de chaleur choisi. Se déclenche une fois par jour, en général la veille."
+        "fr": "La prévision des 24 prochaines heures atteint le niveau de chaleur choisi. Se déclenche une fois par jour, en général la veille.",
+        "de": "Die Vorhersage der nächsten 24 Stunden erreicht die gewählte Hitzestufe. Löst einmal pro Tag aus, meist am Vortag.",
+        "es": "La previsión de las próximas 24 horas alcanza el nivel de calor elegido. Se activa una vez al día, normalmente la víspera."
       },
       "fields": [
         {
@@ -406,11 +518,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         },
@@ -419,11 +535,15 @@
           "type": "select",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           },
           "description": {
             "en": "Highest temperature expected in the next 24 hours. \"Custom threshold\" uses the value typed below.",
-            "fr": "Température la plus haute prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous."
+            "fr": "Température la plus haute prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous.",
+            "de": "Höchste Temperatur in den nächsten 24 Stunden. „Eigener Schwellenwert“ nutzt den unten eingegebenen Wert.",
+            "es": "Temperatura más alta prevista en las próximas 24 horas. «Umbral personalizado» usa el valor indicado abajo."
           },
           "required": true,
           "default": "heat_30",
@@ -432,21 +552,27 @@
               "value": "heat_30",
               "label": {
                 "en": "30 °C (86 °F) or above",
-                "fr": "30 °C ou plus"
+                "fr": "30 °C ou plus",
+                "de": "30 °C oder mehr",
+                "es": "30 °C o más"
               }
             },
             {
               "value": "heat_35",
               "label": {
                 "en": "35 °C (95 °F) or above",
-                "fr": "35 °C ou plus"
+                "fr": "35 °C ou plus",
+                "de": "35 °C oder mehr",
+                "es": "35 °C o más"
               }
             },
             {
               "value": "custom",
               "label": {
                 "en": "Custom threshold",
-                "fr": "Seuil personnalisé"
+                "fr": "Seuil personnalisé",
+                "de": "Eigener Schwellenwert",
+                "es": "Umbral personalizado"
               }
             }
           ]
@@ -456,18 +582,24 @@
           "type": "number",
           "label": {
             "en": "Custom threshold (°C)",
-            "fr": "Seuil personnalisé (°C)"
+            "fr": "Seuil personnalisé (°C)",
+            "de": "Eigener Schwellenwert (°C)",
+            "es": "Umbral personalizado (°C)"
           },
           "description": {
             "en": "With \"Custom threshold\": highest temperature expected in the next 24 hours, in whole degrees Celsius from 20 to 45. Leave empty with the other levels.",
-            "fr": "Avec « Seuil personnalisé » : température la plus haute prévue dans les 24 prochaines heures, en degrés Celsius entiers de 20 à 45. Laissez vide avec les autres niveaux."
+            "fr": "Avec « Seuil personnalisé » : température la plus haute prévue dans les 24 prochaines heures, en degrés Celsius entiers de 20 à 45. Laissez vide avec les autres niveaux.",
+            "de": "Mit „Eigener Schwellenwert“: höchste Temperatur in den nächsten 24 Stunden, in ganzen Grad Celsius von 20 bis 45. Bei den anderen Stufen leer lassen.",
+            "es": "Con «Umbral personalizado»: temperatura más alta prevista en las próximas 24 horas, en grados Celsius enteros de 20 a 45. Déjelo vacío con los demás niveles."
           },
           "required": false,
           "min": 20,
           "max": 45,
           "placeholder": {
             "en": "25",
-            "fr": "25"
+            "fr": "25",
+            "de": "25",
+            "es": "25"
           }
         }
       ],
@@ -477,7 +609,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -485,7 +619,9 @@
           "type": "string",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           }
         },
         {
@@ -493,11 +629,15 @@
           "type": "number",
           "label": {
             "en": "Threshold (°C)",
-            "fr": "Seuil (°C)"
+            "fr": "Seuil (°C)",
+            "de": "Schwellenwert (°C)",
+            "es": "Umbral (°C)"
           },
           "description": {
             "en": "The threshold crossed, as set in the trigger.",
-            "fr": "Le seuil franchi, tel que réglé dans le déclencheur."
+            "fr": "Le seuil franchi, tel que réglé dans le déclencheur.",
+            "de": "Der überschrittene Schwellenwert, wie im Auslöser eingestellt.",
+            "es": "El umbral superado, tal como se ajustó en el desencadenante."
           }
         },
         {
@@ -505,7 +645,9 @@
           "type": "number",
           "label": {
             "en": "Highest temperature",
-            "fr": "Température maximale"
+            "fr": "Température maximale",
+            "de": "Höchsttemperatur",
+            "es": "Temperatura máxima"
           }
         },
         {
@@ -513,11 +655,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "Local time of the peak, HH:MM.",
-            "fr": "Heure locale du pic, HH:MM."
+            "fr": "Heure locale du pic, HH:MM.",
+            "de": "Ortszeit des Höchstwerts, HH:MM.",
+            "es": "Hora local del pico, HH:MM."
           }
         },
         {
@@ -525,7 +671,9 @@
           "type": "number",
           "label": {
             "en": "Hours until",
-            "fr": "Dans combien d'heures"
+            "fr": "Dans combien d'heures",
+            "de": "Stunden bis dahin",
+            "es": "Horas hasta entonces"
           }
         },
         {
@@ -533,11 +681,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -546,11 +698,15 @@
       "key": "wind_forecast",
       "label": {
         "en": "Strong wind forecast",
-        "fr": "Vent fort annoncé"
+        "fr": "Vent fort annoncé",
+        "de": "Starker Wind angekündigt",
+        "es": "Viento fuerte previsto"
       },
       "description": {
         "en": "The forecast of the next 24 hours reaches the chosen gust level. Fires once per episode.",
-        "fr": "La prévision des 24 prochaines heures atteint le niveau de rafales choisi. Se déclenche une fois par épisode."
+        "fr": "La prévision des 24 prochaines heures atteint le niveau de rafales choisi. Se déclenche une fois par épisode.",
+        "de": "Die Vorhersage der nächsten 24 Stunden erreicht die gewählte Böenstufe. Löst einmal pro Episode aus.",
+        "es": "La previsión de las próximas 24 horas alcanza el nivel de rachas elegido. Se activa una vez por episodio."
       },
       "fields": [
         {
@@ -558,11 +714,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         },
@@ -571,11 +731,15 @@
           "type": "select",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           },
           "description": {
             "en": "Strongest gust expected in the next 24 hours. \"Custom threshold\" uses the value typed below.",
-            "fr": "Rafale la plus forte prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous."
+            "fr": "Rafale la plus forte prévue dans les 24 prochaines heures. « Seuil personnalisé » utilise la valeur saisie en dessous.",
+            "de": "Stärkste Böe in den nächsten 24 Stunden. „Eigener Schwellenwert“ nutzt den unten eingegebenen Wert.",
+            "es": "Racha más fuerte prevista en las próximas 24 horas. «Umbral personalizado» usa el valor indicado abajo."
           },
           "required": true,
           "default": "gust_60",
@@ -584,28 +748,36 @@
               "value": "gust_60",
               "label": {
                 "en": "Gusts of 60 km/h (37 mph) or more",
-                "fr": "Rafales de 60 km/h ou plus"
+                "fr": "Rafales de 60 km/h ou plus",
+                "de": "Böen ab 60 km/h",
+                "es": "Rachas de 60 km/h o más"
               }
             },
             {
               "value": "gust_80",
               "label": {
                 "en": "Gusts of 80 km/h (50 mph) or more",
-                "fr": "Rafales de 80 km/h ou plus"
+                "fr": "Rafales de 80 km/h ou plus",
+                "de": "Böen ab 80 km/h",
+                "es": "Rachas de 80 km/h o más"
               }
             },
             {
               "value": "gust_100",
               "label": {
                 "en": "Gusts of 100 km/h (62 mph) or more",
-                "fr": "Rafales de 100 km/h ou plus"
+                "fr": "Rafales de 100 km/h ou plus",
+                "de": "Böen ab 100 km/h",
+                "es": "Rachas de 100 km/h o más"
               }
             },
             {
               "value": "custom",
               "label": {
                 "en": "Custom threshold",
-                "fr": "Seuil personnalisé"
+                "fr": "Seuil personnalisé",
+                "de": "Eigener Schwellenwert",
+                "es": "Umbral personalizado"
               }
             }
           ]
@@ -615,18 +787,24 @@
           "type": "number",
           "label": {
             "en": "Custom threshold (km/h)",
-            "fr": "Seuil personnalisé (km/h)"
+            "fr": "Seuil personnalisé (km/h)",
+            "de": "Eigener Schwellenwert (km/h)",
+            "es": "Umbral personalizado (km/h)"
           },
           "description": {
             "en": "With \"Custom threshold\": strongest gust expected in the next 24 hours, in km/h from 20 to 150, a multiple of 5. Leave empty with the other levels.",
-            "fr": "Avec « Seuil personnalisé » : rafale la plus forte prévue dans les 24 prochaines heures, en km/h de 20 à 150, par pas de 5. Laissez vide avec les autres niveaux."
+            "fr": "Avec « Seuil personnalisé » : rafale la plus forte prévue dans les 24 prochaines heures, en km/h de 20 à 150, par pas de 5. Laissez vide avec les autres niveaux.",
+            "de": "Mit „Eigener Schwellenwert“: stärkste Böe in den nächsten 24 Stunden, in km/h von 20 bis 150, in 5er-Schritten. Bei den anderen Stufen leer lassen.",
+            "es": "Con «Umbral personalizado»: racha más fuerte prevista en las próximas 24 horas, en km/h de 20 a 150, de 5 en 5. Déjelo vacío con los demás niveles."
           },
           "required": false,
           "min": 20,
           "max": 150,
           "placeholder": {
             "en": "40",
-            "fr": "40"
+            "fr": "40",
+            "de": "40",
+            "es": "40"
           }
         }
       ],
@@ -636,7 +814,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -644,7 +824,9 @@
           "type": "string",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           }
         },
         {
@@ -652,11 +834,15 @@
           "type": "number",
           "label": {
             "en": "Threshold (km/h)",
-            "fr": "Seuil (km/h)"
+            "fr": "Seuil (km/h)",
+            "de": "Schwellenwert (km/h)",
+            "es": "Umbral (km/h)"
           },
           "description": {
             "en": "The threshold crossed, as set in the trigger.",
-            "fr": "Le seuil franchi, tel que réglé dans le déclencheur."
+            "fr": "Le seuil franchi, tel que réglé dans le déclencheur.",
+            "de": "Der überschrittene Schwellenwert, wie im Auslöser eingestellt.",
+            "es": "El umbral superado, tal como se ajustó en el desencadenante."
           }
         },
         {
@@ -664,7 +850,9 @@
           "type": "number",
           "label": {
             "en": "Strongest gust",
-            "fr": "Rafale maximale"
+            "fr": "Rafale maximale",
+            "de": "Stärkste Böe",
+            "es": "Racha máxima"
           }
         },
         {
@@ -672,11 +860,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "Local time of the peak, HH:MM.",
-            "fr": "Heure locale du pic, HH:MM."
+            "fr": "Heure locale du pic, HH:MM.",
+            "de": "Ortszeit des Höchstwerts, HH:MM.",
+            "es": "Hora local del pico, HH:MM."
           }
         },
         {
@@ -684,7 +876,9 @@
           "type": "number",
           "label": {
             "en": "Hours until",
-            "fr": "Dans combien d'heures"
+            "fr": "Dans combien d'heures",
+            "de": "Stunden bis dahin",
+            "es": "Horas hasta entonces"
           }
         },
         {
@@ -692,11 +886,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -705,11 +903,15 @@
       "key": "ice_forecast",
       "label": {
         "en": "Black ice forecast",
-        "fr": "Verglas annoncé"
+        "fr": "Verglas annoncé",
+        "de": "Glätte angekündigt",
+        "es": "Hielo previsto"
       },
       "description": {
         "en": "The next 24 hours bring rain on a surface at or below freezing. Fires once per episode.",
-        "fr": "Les 24 prochaines heures annoncent de la pluie sur une surface proche ou en dessous de 0 °C. Se déclenche une fois par épisode."
+        "fr": "Les 24 prochaines heures annoncent de la pluie sur une surface proche ou en dessous de 0 °C. Se déclenche une fois par épisode.",
+        "de": "Die nächsten 24 Stunden bringen Regen auf eine Oberfläche um oder unter 0 °C. Löst einmal pro Episode aus.",
+        "es": "Las próximas 24 horas traen lluvia sobre una superficie a 0 °C o menos. Se activa una vez por episodio."
       },
       "fields": [
         {
@@ -717,11 +919,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         },
@@ -730,7 +936,9 @@
           "type": "select",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           },
           "required": true,
           "default": "risk",
@@ -739,14 +947,18 @@
               "value": "risk",
               "label": {
                 "en": "Risk of black ice or more",
-                "fr": "Risque de verglas ou plus"
+                "fr": "Risque de verglas ou plus",
+                "de": "Glättegefahr oder mehr",
+                "es": "Riesgo de hielo o más"
               }
             },
             {
               "value": "likely",
               "label": {
                 "en": "Black ice likely",
-                "fr": "Verglas probable"
+                "fr": "Verglas probable",
+                "de": "Glätte wahrscheinlich",
+                "es": "Hielo probable"
               }
             }
           ]
@@ -758,7 +970,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -766,7 +980,9 @@
           "type": "string",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           }
         },
         {
@@ -774,7 +990,9 @@
           "type": "string",
           "label": {
             "en": "Level label",
-            "fr": "Libellé du niveau"
+            "fr": "Libellé du niveau",
+            "de": "Bezeichnung der Stufe",
+            "es": "Etiqueta del nivel"
           }
         },
         {
@@ -782,11 +1000,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "Local time, HH:MM.",
-            "fr": "Heure locale, HH:MM."
+            "fr": "Heure locale, HH:MM.",
+            "de": "Ortszeit, HH:MM.",
+            "es": "Hora local, HH:MM."
           }
         },
         {
@@ -794,7 +1016,9 @@
           "type": "number",
           "label": {
             "en": "Hours until",
-            "fr": "Dans combien d'heures"
+            "fr": "Dans combien d'heures",
+            "de": "Stunden bis dahin",
+            "es": "Horas hasta entonces"
           }
         },
         {
@@ -802,7 +1026,9 @@
           "type": "number",
           "label": {
             "en": "Temperature",
-            "fr": "Température"
+            "fr": "Température",
+            "de": "Temperatur",
+            "es": "Temperatura"
           }
         },
         {
@@ -810,7 +1036,9 @@
           "type": "boolean",
           "label": {
             "en": "Freezing rain",
-            "fr": "Pluie verglaçante"
+            "fr": "Pluie verglaçante",
+            "de": "Gefrierender Regen",
+            "es": "Lluvia helada"
           }
         },
         {
@@ -818,7 +1046,9 @@
           "type": "number",
           "label": {
             "en": "Rain of the last 6 hours",
-            "fr": "Pluie des 6 dernières heures"
+            "fr": "Pluie des 6 dernières heures",
+            "de": "Regen der letzten 6 Stunden",
+            "es": "Lluvia de las últimas 6 horas"
           }
         },
         {
@@ -826,11 +1056,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -839,11 +1073,15 @@
       "key": "snow_forecast",
       "label": {
         "en": "Snow forecast",
-        "fr": "Neige annoncée"
+        "fr": "Neige annoncée",
+        "de": "Schnee angekündigt",
+        "es": "Nieve prevista"
       },
       "description": {
         "en": "Snow or sleet enters the forecast of the next 24 hours. Fires once per episode.",
-        "fr": "De la neige ou de la pluie et neige apparaît dans la prévision des 24 prochaines heures. Se déclenche une fois par épisode."
+        "fr": "De la neige ou de la pluie et neige apparaît dans la prévision des 24 prochaines heures. Se déclenche une fois par épisode.",
+        "de": "Schnee oder Schneeregen erscheint in der Vorhersage der nächsten 24 Stunden. Löst einmal pro Episode aus.",
+        "es": "La nieve o el aguanieve aparece en la previsión de las próximas 24 horas. Se activa una vez por episodio."
       },
       "fields": [
         {
@@ -851,11 +1089,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         }
@@ -866,7 +1108,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -874,11 +1118,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "Local time, HH:MM.",
-            "fr": "Heure locale, HH:MM."
+            "fr": "Heure locale, HH:MM.",
+            "de": "Ortszeit, HH:MM.",
+            "es": "Hora local, HH:MM."
           }
         },
         {
@@ -886,7 +1134,9 @@
           "type": "number",
           "label": {
             "en": "Hours until",
-            "fr": "Dans combien d'heures"
+            "fr": "Dans combien d'heures",
+            "de": "Stunden bis dahin",
+            "es": "Horas hasta entonces"
           }
         },
         {
@@ -894,7 +1144,9 @@
           "type": "string",
           "label": {
             "en": "Sky (key)",
-            "fr": "Ciel (clé)"
+            "fr": "Ciel (clé)",
+            "de": "Himmel (Schlüssel)",
+            "es": "Cielo (clave)"
           }
         },
         {
@@ -902,7 +1154,9 @@
           "type": "string",
           "label": {
             "en": "Sky",
-            "fr": "Ciel"
+            "fr": "Ciel",
+            "de": "Himmel",
+            "es": "Cielo"
           }
         },
         {
@@ -910,7 +1164,9 @@
           "type": "number",
           "label": {
             "en": "Chance of snow (%)",
-            "fr": "Probabilité de neige (%)"
+            "fr": "Probabilité de neige (%)",
+            "de": "Schneewahrscheinlichkeit (%)",
+            "es": "Probabilidad de nieve (%)"
           }
         },
         {
@@ -918,7 +1174,9 @@
           "type": "number",
           "label": {
             "en": "Rain-snow limit (m)",
-            "fr": "Limite pluie-neige (m)"
+            "fr": "Limite pluie-neige (m)",
+            "de": "Schneefallgrenze (m)",
+            "es": "Cota de nieve (m)"
           }
         },
         {
@@ -926,11 +1184,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -939,11 +1201,15 @@
       "key": "storm_forecast",
       "label": {
         "en": "Storm forecast",
-        "fr": "Orage annoncé"
+        "fr": "Orage annoncé",
+        "de": "Gewitter angekündigt",
+        "es": "Tormenta prevista"
       },
       "description": {
         "en": "A thunderstorm or hail enters the forecast of the next 12 hours. Fires once per episode.",
-        "fr": "Un orage ou de la grêle apparaît dans la prévision des 12 prochaines heures. Se déclenche une fois par épisode."
+        "fr": "Un orage ou de la grêle apparaît dans la prévision des 12 prochaines heures. Se déclenche une fois par épisode.",
+        "de": "Ein Gewitter oder Hagel erscheint in der Vorhersage der nächsten 12 Stunden. Löst einmal pro Episode aus.",
+        "es": "Una tormenta o granizo aparece en la previsión de las próximas 12 horas. Se activa una vez por episodio."
       },
       "fields": [
         {
@@ -951,11 +1217,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         }
@@ -966,7 +1236,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -974,11 +1246,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "Local time, HH:MM.",
-            "fr": "Heure locale, HH:MM."
+            "fr": "Heure locale, HH:MM.",
+            "de": "Ortszeit, HH:MM.",
+            "es": "Hora local, HH:MM."
           }
         },
         {
@@ -986,7 +1262,9 @@
           "type": "number",
           "label": {
             "en": "Hours until",
-            "fr": "Dans combien d'heures"
+            "fr": "Dans combien d'heures",
+            "de": "Stunden bis dahin",
+            "es": "Horas hasta entonces"
           }
         },
         {
@@ -994,7 +1272,9 @@
           "type": "string",
           "label": {
             "en": "Sky (key)",
-            "fr": "Ciel (clé)"
+            "fr": "Ciel (clé)",
+            "de": "Himmel (Schlüssel)",
+            "es": "Cielo (clave)"
           }
         },
         {
@@ -1002,7 +1282,9 @@
           "type": "string",
           "label": {
             "en": "Sky",
-            "fr": "Ciel"
+            "fr": "Ciel",
+            "de": "Himmel",
+            "es": "Cielo"
           }
         },
         {
@@ -1010,11 +1292,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1023,11 +1309,15 @@
       "key": "uv_forecast",
       "label": {
         "en": "High UV forecast",
-        "fr": "UV élevé annoncé"
+        "fr": "UV élevé annoncé",
+        "de": "Hoher UV-Index angekündigt",
+        "es": "UV alto previsto"
       },
       "description": {
         "en": "The UV index of the coming day (today until noon, tomorrow after) reaches the chosen level. Fires once per day, usually around noon the day before.",
-        "fr": "L'indice UV de la journée à venir (aujourd'hui jusqu'à midi, demain ensuite) atteint le niveau choisi. Se déclenche une fois par jour, en général vers midi la veille."
+        "fr": "L'indice UV de la journée à venir (aujourd'hui jusqu'à midi, demain ensuite) atteint le niveau choisi. Se déclenche une fois par jour, en général vers midi la veille.",
+        "de": "Der UV-Index des kommenden Tages (heute bis Mittag, danach morgen) erreicht die gewählte Stufe. Löst einmal pro Tag aus, meist gegen Mittag am Vortag.",
+        "es": "El índice UV del día siguiente (hoy hasta mediodía, después mañana) alcanza el nivel elegido. Se activa una vez al día, normalmente hacia mediodía de la víspera."
       },
       "fields": [
         {
@@ -1035,11 +1325,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, exactly as shown in Gladys. Leave empty for every house.",
-            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons."
+            "fr": "Nom de la maison, exactement comme dans Gladys. Laissez vide pour toutes les maisons.",
+            "de": "Name des Zuhauses, genau wie in Gladys. Leer lassen für alle Zuhause.",
+            "es": "Nombre de la casa, exactamente como en Gladys. Déjelo vacío para todas las casas."
           },
           "required": false
         },
@@ -1048,11 +1342,15 @@
           "type": "select",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           },
           "description": {
             "en": "Daily UV index forecast by Météo France. \"Custom threshold\" uses the value typed below.",
-            "fr": "Indice UV du jour prévu par Météo France. « Seuil personnalisé » utilise la valeur saisie en dessous."
+            "fr": "Indice UV du jour prévu par Météo France. « Seuil personnalisé » utilise la valeur saisie en dessous.",
+            "de": "Täglicher UV-Index laut Météo France. „Eigener Schwellenwert“ nutzt den unten eingegebenen Wert.",
+            "es": "Índice UV diario previsto por Météo France. «Umbral personalizado» usa el valor indicado abajo."
           },
           "required": true,
           "default": "uv_6",
@@ -1061,28 +1359,36 @@
               "value": "uv_6",
               "label": {
                 "en": "6 or more (high)",
-                "fr": "6 ou plus (élevé)"
+                "fr": "6 ou plus (élevé)",
+                "de": "6 oder mehr (hoch)",
+                "es": "6 o más (alto)"
               }
             },
             {
               "value": "uv_8",
               "label": {
                 "en": "8 or more (very high)",
-                "fr": "8 ou plus (très élevé)"
+                "fr": "8 ou plus (très élevé)",
+                "de": "8 oder mehr (sehr hoch)",
+                "es": "8 o más (muy alto)"
               }
             },
             {
               "value": "uv_11",
               "label": {
                 "en": "11 or more (extreme)",
-                "fr": "11 ou plus (extrême)"
+                "fr": "11 ou plus (extrême)",
+                "de": "11 oder mehr (extrem)",
+                "es": "11 o más (extremo)"
               }
             },
             {
               "value": "custom",
               "label": {
                 "en": "Custom threshold",
-                "fr": "Seuil personnalisé"
+                "fr": "Seuil personnalisé",
+                "de": "Eigener Schwellenwert",
+                "es": "Umbral personalizado"
               }
             }
           ]
@@ -1092,18 +1398,24 @@
           "type": "number",
           "label": {
             "en": "Custom threshold",
-            "fr": "Seuil personnalisé"
+            "fr": "Seuil personnalisé",
+            "de": "Eigener Schwellenwert",
+            "es": "Umbral personalizado"
           },
           "description": {
             "en": "With \"Custom threshold\": UV index from 1 to 11, a whole number. Leave empty with the other levels.",
-            "fr": "Avec « Seuil personnalisé » : indice UV de 1 à 11, nombre entier. Laissez vide avec les autres niveaux."
+            "fr": "Avec « Seuil personnalisé » : indice UV de 1 à 11, nombre entier. Laissez vide avec les autres niveaux.",
+            "de": "Mit „Eigener Schwellenwert“: UV-Index von 1 bis 11, eine ganze Zahl. Bei den anderen Stufen leer lassen.",
+            "es": "Con «Umbral personalizado»: índice UV de 1 a 11, un número entero. Déjelo vacío con los demás niveles."
           },
           "required": false,
           "min": 1,
           "max": 11,
           "placeholder": {
             "en": "5",
-            "fr": "5"
+            "fr": "5",
+            "de": "5",
+            "es": "5"
           }
         }
       ],
@@ -1113,7 +1425,9 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           }
         },
         {
@@ -1121,7 +1435,9 @@
           "type": "string",
           "label": {
             "en": "Level",
-            "fr": "Niveau"
+            "fr": "Niveau",
+            "de": "Stufe",
+            "es": "Nivel"
           }
         },
         {
@@ -1129,7 +1445,9 @@
           "type": "number",
           "label": {
             "en": "Threshold",
-            "fr": "Seuil"
+            "fr": "Seuil",
+            "de": "Schwellenwert",
+            "es": "Umbral"
           }
         },
         {
@@ -1137,7 +1455,9 @@
           "type": "number",
           "label": {
             "en": "UV index",
-            "fr": "Indice UV"
+            "fr": "Indice UV",
+            "de": "UV-Index",
+            "es": "Índice UV"
           }
         },
         {
@@ -1145,7 +1465,9 @@
           "type": "string",
           "label": {
             "en": "UV level",
-            "fr": "Niveau UV"
+            "fr": "Niveau UV",
+            "de": "UV-Stufe",
+            "es": "Nivel UV"
           }
         },
         {
@@ -1153,11 +1475,15 @@
           "type": "string",
           "label": {
             "en": "Date",
-            "fr": "Date"
+            "fr": "Date",
+            "de": "Datum",
+            "es": "Fecha"
           },
           "description": {
             "en": "YYYY-MM-DD.",
-            "fr": "AAAA-MM-JJ."
+            "fr": "AAAA-MM-JJ.",
+            "de": "JJJJ-MM-TT.",
+            "es": "AAAA-MM-DD."
           }
         },
         {
@@ -1165,11 +1491,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1180,11 +1510,15 @@
       "key": "get_forecast",
       "label": {
         "en": "Get the forecast of a day",
-        "fr": "Obtenir les prévisions d'un jour"
+        "fr": "Obtenir les prévisions d'un jour",
+        "de": "Vorhersage eines Tages abrufen",
+        "es": "Obtener la previsión de un día"
       },
       "description": {
         "en": "Temperatures, sky, rain, wind, UV and sun times of one day, for the following actions of the scene.",
-        "fr": "Températures, ciel, pluie, vent, UV et heures du soleil d'une journée, pour les actions suivantes de la scène."
+        "fr": "Températures, ciel, pluie, vent, UV et heures du soleil d'une journée, pour les actions suivantes de la scène.",
+        "de": "Temperaturen, Himmel, Regen, Wind, UV und Sonnenzeiten eines Tages, für die folgenden Aktionen der Szene.",
+        "es": "Temperaturas, cielo, lluvia, viento, UV y horas de sol de un día, para las siguientes acciones de la escena."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -1193,11 +1527,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         },
@@ -1206,7 +1544,9 @@
           "type": "select",
           "label": {
             "en": "Day",
-            "fr": "Jour"
+            "fr": "Jour",
+            "de": "Tag",
+            "es": "Día"
           },
           "required": false,
           "default": "0",
@@ -1215,56 +1555,72 @@
               "value": "0",
               "label": {
                 "en": "Today",
-                "fr": "Aujourd'hui"
+                "fr": "Aujourd'hui",
+                "de": "Heute",
+                "es": "Hoy"
               }
             },
             {
               "value": "1",
               "label": {
                 "en": "Tomorrow",
-                "fr": "Demain"
+                "fr": "Demain",
+                "de": "Morgen",
+                "es": "Mañana"
               }
             },
             {
               "value": "2",
               "label": {
                 "en": "In 2 days",
-                "fr": "Dans 2 jours"
+                "fr": "Dans 2 jours",
+                "de": "In 2 Tagen",
+                "es": "Dentro de 2 días"
               }
             },
             {
               "value": "3",
               "label": {
                 "en": "In 3 days",
-                "fr": "Dans 3 jours"
+                "fr": "Dans 3 jours",
+                "de": "In 3 Tagen",
+                "es": "Dentro de 3 días"
               }
             },
             {
               "value": "4",
               "label": {
                 "en": "In 4 days",
-                "fr": "Dans 4 jours"
+                "fr": "Dans 4 jours",
+                "de": "In 4 Tagen",
+                "es": "Dentro de 4 días"
               }
             },
             {
               "value": "5",
               "label": {
                 "en": "In 5 days",
-                "fr": "Dans 5 jours"
+                "fr": "Dans 5 jours",
+                "de": "In 5 Tagen",
+                "es": "Dentro de 5 días"
               }
             },
             {
               "value": "6",
               "label": {
                 "en": "In 6 days",
-                "fr": "Dans 6 jours"
+                "fr": "Dans 6 jours",
+                "de": "In 6 Tagen",
+                "es": "Dentro de 6 días"
               }
             },
             {
               "value": "7",
               "label": {
                 "en": "In 7 days",
-                "fr": "Dans 7 jours"
+                "fr": "Dans 7 jours",
+                "de": "In 7 Tagen",
+                "es": "Dentro de 7 días"
               }
             }
           ]
@@ -1276,7 +1632,9 @@
           "type": "string",
           "label": {
             "en": "Date (YYYY-MM-DD)",
-            "fr": "Date (AAAA-MM-JJ)"
+            "fr": "Date (AAAA-MM-JJ)",
+            "de": "Datum (JJJJ-MM-TT)",
+            "es": "Fecha (AAAA-MM-DD)"
           }
         },
         {
@@ -1284,7 +1642,9 @@
           "type": "string",
           "label": {
             "en": "Sky (key)",
-            "fr": "Ciel (clé)"
+            "fr": "Ciel (clé)",
+            "de": "Himmel (Schlüssel)",
+            "es": "Cielo (clave)"
           }
         },
         {
@@ -1292,7 +1652,9 @@
           "type": "string",
           "label": {
             "en": "Sky",
-            "fr": "Ciel"
+            "fr": "Ciel",
+            "de": "Himmel",
+            "es": "Cielo"
           }
         },
         {
@@ -1300,7 +1662,9 @@
           "type": "number",
           "label": {
             "en": "Lowest temperature",
-            "fr": "Température minimale"
+            "fr": "Température minimale",
+            "de": "Tiefsttemperatur",
+            "es": "Temperatura mínima"
           }
         },
         {
@@ -1308,7 +1672,9 @@
           "type": "number",
           "label": {
             "en": "Highest temperature",
-            "fr": "Température maximale"
+            "fr": "Température maximale",
+            "de": "Höchsttemperatur",
+            "es": "Temperatura máxima"
           }
         },
         {
@@ -1316,7 +1682,9 @@
           "type": "number",
           "label": {
             "en": "Precipitation",
-            "fr": "Précipitations"
+            "fr": "Précipitations",
+            "de": "Niederschlag",
+            "es": "Precipitación"
           }
         },
         {
@@ -1324,7 +1692,9 @@
           "type": "number",
           "label": {
             "en": "Precipitation probability (%)",
-            "fr": "Probabilité de précipitations (%)"
+            "fr": "Probabilité de précipitations (%)",
+            "de": "Niederschlagswahrscheinlichkeit (%)",
+            "es": "Probabilidad de precipitación (%)"
           }
         },
         {
@@ -1332,7 +1702,9 @@
           "type": "number",
           "label": {
             "en": "Wind speed",
-            "fr": "Vitesse du vent"
+            "fr": "Vitesse du vent",
+            "de": "Windgeschwindigkeit",
+            "es": "Velocidad del viento"
           }
         },
         {
@@ -1340,7 +1712,9 @@
           "type": "number",
           "label": {
             "en": "Strongest gust",
-            "fr": "Rafale maximale"
+            "fr": "Rafale maximale",
+            "de": "Stärkste Böe",
+            "es": "Racha máxima"
           }
         },
         {
@@ -1348,7 +1722,9 @@
           "type": "number",
           "label": {
             "en": "UV index",
-            "fr": "Indice UV"
+            "fr": "Indice UV",
+            "de": "UV-Index",
+            "es": "Índice UV"
           }
         },
         {
@@ -1356,7 +1732,9 @@
           "type": "number",
           "label": {
             "en": "Humidity (%)",
-            "fr": "Humidité (%)"
+            "fr": "Humidité (%)",
+            "de": "Luftfeuchtigkeit (%)",
+            "es": "Humedad (%)"
           }
         },
         {
@@ -1364,7 +1742,9 @@
           "type": "string",
           "label": {
             "en": "Sunrise (HH:MM)",
-            "fr": "Lever du soleil (HH:MM)"
+            "fr": "Lever du soleil (HH:MM)",
+            "de": "Sonnenaufgang (HH:MM)",
+            "es": "Salida del sol (HH:MM)"
           }
         },
         {
@@ -1372,7 +1752,9 @@
           "type": "string",
           "label": {
             "en": "Sunset (HH:MM)",
-            "fr": "Coucher du soleil (HH:MM)"
+            "fr": "Coucher du soleil (HH:MM)",
+            "de": "Sonnenuntergang (HH:MM)",
+            "es": "Puesta del sol (HH:MM)"
           }
         },
         {
@@ -1380,11 +1762,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1393,11 +1779,15 @@
       "key": "get_rain_next_hours",
       "label": {
         "en": "Get the rain of the next hours",
-        "fr": "Obtenir la pluie des prochaines heures"
+        "fr": "Obtenir la pluie des prochaines heures",
+        "de": "Regen der nächsten Stunden abrufen",
+        "es": "Obtener la lluvia de las próximas horas"
       },
       "description": {
         "en": "Whether it stays dry over the next hours, and how much rain is expected otherwise.",
-        "fr": "Si le temps reste sec dans les prochaines heures, et sinon combien de pluie est prévue."
+        "fr": "Si le temps reste sec dans les prochaines heures, et sinon combien de pluie est prévue.",
+        "de": "Ob es in den nächsten Stunden trocken bleibt, und sonst wie viel Regen erwartet wird.",
+        "es": "Si el tiempo sigue seco en las próximas horas y, si no, cuánta lluvia se prevé."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -1406,11 +1796,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         },
@@ -1419,11 +1813,15 @@
           "type": "number",
           "label": {
             "en": "Hours",
-            "fr": "Heures"
+            "fr": "Heures",
+            "de": "Stunden",
+            "es": "Horas"
           },
           "description": {
             "en": "How many hours ahead, 1 to 24.",
-            "fr": "Sur combien d'heures, de 1 à 24."
+            "fr": "Sur combien d'heures, de 1 à 24.",
+            "de": "Wie viele Stunden voraus, 1 bis 24.",
+            "es": "Cuántas horas por delante, de 1 a 24."
           },
           "required": false,
           "default": 12,
@@ -1437,7 +1835,9 @@
           "type": "boolean",
           "label": {
             "en": "Dry",
-            "fr": "Temps sec"
+            "fr": "Temps sec",
+            "de": "Trocken",
+            "es": "Seco"
           }
         },
         {
@@ -1445,7 +1845,9 @@
           "type": "number",
           "label": {
             "en": "Total precipitation",
-            "fr": "Cumul de précipitations"
+            "fr": "Cumul de précipitations",
+            "de": "Niederschlagssumme",
+            "es": "Precipitación total"
           }
         },
         {
@@ -1453,7 +1855,9 @@
           "type": "number",
           "label": {
             "en": "Rainy hours",
-            "fr": "Heures de pluie"
+            "fr": "Heures de pluie",
+            "de": "Regenstunden",
+            "es": "Horas de lluvia"
           }
         },
         {
@@ -1461,7 +1865,9 @@
           "type": "number",
           "label": {
             "en": "Hours until rain",
-            "fr": "Heures avant la pluie"
+            "fr": "Heures avant la pluie",
+            "de": "Stunden bis zum Regen",
+            "es": "Horas hasta la lluvia"
           }
         },
         {
@@ -1469,7 +1875,9 @@
           "type": "string",
           "label": {
             "en": "First rain (HH:MM)",
-            "fr": "Première pluie (HH:MM)"
+            "fr": "Première pluie (HH:MM)",
+            "de": "Erster Regen (HH:MM)",
+            "es": "Primera lluvia (HH:MM)"
           }
         },
         {
@@ -1477,7 +1885,9 @@
           "type": "number",
           "label": {
             "en": "Highest precipitation probability (%)",
-            "fr": "Probabilité de précipitations maximale (%)"
+            "fr": "Probabilité de précipitations maximale (%)",
+            "de": "Höchste Niederschlagswahrscheinlichkeit (%)",
+            "es": "Probabilidad máxima de precipitación (%)"
           }
         },
         {
@@ -1485,7 +1895,9 @@
           "type": "number",
           "label": {
             "en": "Hours covered",
-            "fr": "Heures couvertes"
+            "fr": "Heures couvertes",
+            "de": "Abgedeckte Stunden",
+            "es": "Horas cubiertas"
           }
         },
         {
@@ -1493,11 +1905,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1506,11 +1922,15 @@
       "key": "get_rain_next_hour",
       "label": {
         "en": "Get the rain within the hour",
-        "fr": "Obtenir la pluie dans l'heure"
+        "fr": "Obtenir la pluie dans l'heure",
+        "de": "Regen in der nächsten Stunde abrufen",
+        "es": "Obtener la lluvia en la próxima hora"
       },
       "description": {
         "en": "The Météo France radar nowcast, in 5 to 10-minute steps. Not available everywhere: check the \"Available\" output.",
-        "fr": "La prévision radar de Météo France, par pas de 5 à 10 minutes. Pas disponible partout : vérifiez la sortie « Disponible »."
+        "fr": "La prévision radar de Météo France, par pas de 5 à 10 minutes. Pas disponible partout : vérifiez la sortie « Disponible ».",
+        "de": "Die Radar-Kurzfristvorhersage von Météo France, in Schritten von 5 bis 10 Minuten. Nicht überall verfügbar: Prüfe die Ausgabe „Verfügbar“.",
+        "es": "La previsión radar de Météo France, en pasos de 5 a 10 minutos. No está disponible en todas partes: compruebe la salida «Disponible»."
       },
       "timeout_seconds": 20,
       "fields": [
@@ -1519,11 +1939,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         }
@@ -1534,7 +1958,9 @@
           "type": "boolean",
           "label": {
             "en": "Available",
-            "fr": "Disponible"
+            "fr": "Disponible",
+            "de": "Verfügbar",
+            "es": "Disponible"
           }
         },
         {
@@ -1542,7 +1968,9 @@
           "type": "boolean",
           "label": {
             "en": "Raining now",
-            "fr": "Pluie en cours"
+            "fr": "Pluie en cours",
+            "de": "Regnet gerade",
+            "es": "Lloviendo ahora"
           }
         },
         {
@@ -1550,7 +1978,9 @@
           "type": "boolean",
           "label": {
             "en": "Rain within the hour",
-            "fr": "Pluie dans l'heure"
+            "fr": "Pluie dans l'heure",
+            "de": "Regen in der nächsten Stunde",
+            "es": "Lluvia en la próxima hora"
           }
         },
         {
@@ -1558,7 +1988,9 @@
           "type": "string",
           "label": {
             "en": "Intensity (none, light, moderate, heavy)",
-            "fr": "Intensité (none, light, moderate, heavy)"
+            "fr": "Intensité (none, light, moderate, heavy)",
+            "de": "Intensität (none, light, moderate, heavy)",
+            "es": "Intensidad (none, light, moderate, heavy)"
           }
         },
         {
@@ -1566,7 +1998,9 @@
           "type": "string",
           "label": {
             "en": "Intensity label",
-            "fr": "Libellé de l'intensité"
+            "fr": "Libellé de l'intensité",
+            "de": "Bezeichnung der Intensität",
+            "es": "Etiqueta de la intensidad"
           }
         },
         {
@@ -1574,7 +2008,9 @@
           "type": "number",
           "label": {
             "en": "Minutes until rain",
-            "fr": "Minutes avant la pluie"
+            "fr": "Minutes avant la pluie",
+            "de": "Minuten bis zum Regen",
+            "es": "Minutos hasta la lluvia"
           }
         },
         {
@@ -1582,7 +2018,9 @@
           "type": "number",
           "label": {
             "en": "Minutes until the rain stops",
-            "fr": "Minutes avant la fin de la pluie"
+            "fr": "Minutes avant la fin de la pluie",
+            "de": "Minuten bis der Regen aufhört",
+            "es": "Minutos hasta que pare la lluvia"
           }
         },
         {
@@ -1590,11 +2028,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1603,11 +2045,15 @@
       "key": "get_vigilance",
       "label": {
         "en": "Get the vigilance",
-        "fr": "Obtenir la vigilance"
+        "fr": "Obtenir la vigilance",
+        "de": "Unwetterwarnung abrufen",
+        "es": "Obtener los avisos"
       },
       "description": {
         "en": "The Météo France vigilance of the department of the house, with its bulletin.",
-        "fr": "La vigilance Météo France du département de la maison, avec son bulletin."
+        "fr": "La vigilance Météo France du département de la maison, avec son bulletin.",
+        "de": "Die Unwetterwarnung von Météo France für das Departement des Zuhauses, mit ihrem Lagebericht.",
+        "es": "Los avisos de Météo France del departamento de la casa, con su boletín."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -1616,11 +2062,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         }
@@ -1631,7 +2081,9 @@
           "type": "number",
           "label": {
             "en": "Color (1 green to 4 red)",
-            "fr": "Couleur (1 vert à 4 rouge)"
+            "fr": "Couleur (1 vert à 4 rouge)",
+            "de": "Farbe (1 grün bis 4 rot)",
+            "es": "Color (1 verde a 4 rojo)"
           }
         },
         {
@@ -1639,7 +2091,9 @@
           "type": "string",
           "label": {
             "en": "Level (green, yellow, orange, red)",
-            "fr": "Niveau (green, yellow, orange, red)"
+            "fr": "Niveau (green, yellow, orange, red)",
+            "de": "Stufe (green, yellow, orange, red)",
+            "es": "Nivel (green, yellow, orange, red)"
           }
         },
         {
@@ -1647,7 +2101,9 @@
           "type": "string",
           "label": {
             "en": "Level label",
-            "fr": "Libellé du niveau"
+            "fr": "Libellé du niveau",
+            "de": "Bezeichnung der Stufe",
+            "es": "Etiqueta del nivel"
           }
         },
         {
@@ -1655,7 +2111,9 @@
           "type": "boolean",
           "label": {
             "en": "Vigilance in force",
-            "fr": "Vigilance en cours"
+            "fr": "Vigilance en cours",
+            "de": "Warnung aktiv",
+            "es": "Aviso en vigor"
           }
         },
         {
@@ -1663,7 +2121,9 @@
           "type": "string",
           "label": {
             "en": "Phenomena",
-            "fr": "Phénomènes"
+            "fr": "Phénomènes",
+            "de": "Phänomene",
+            "es": "Fenómenos"
           }
         },
         {
@@ -1671,7 +2131,9 @@
           "type": "string",
           "label": {
             "en": "Department number",
-            "fr": "Numéro du département"
+            "fr": "Numéro du département",
+            "de": "Nummer des Departements",
+            "es": "Número del departamento"
           }
         },
         {
@@ -1679,7 +2141,9 @@
           "type": "string",
           "label": {
             "en": "Department",
-            "fr": "Département"
+            "fr": "Département",
+            "de": "Departement",
+            "es": "Departamento"
           }
         },
         {
@@ -1687,11 +2151,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         },
         {
@@ -1699,7 +2167,9 @@
           "type": "string",
           "label": {
             "en": "Official summary",
-            "fr": "Résumé officiel"
+            "fr": "Résumé officiel",
+            "de": "Offizielle Zusammenfassung",
+            "es": "Resumen oficial"
           }
         },
         {
@@ -1707,7 +2177,9 @@
           "type": "string",
           "label": {
             "en": "Full bulletin",
-            "fr": "Bulletin complet"
+            "fr": "Bulletin complet",
+            "de": "Vollständiger Lagebericht",
+            "es": "Boletín completo"
           }
         }
       ]
@@ -1716,11 +2188,15 @@
       "key": "get_frost_risk",
       "label": {
         "en": "Get the frost risk",
-        "fr": "Obtenir le risque de givre"
+        "fr": "Obtenir le risque de givre",
+        "de": "Reifgefahr abrufen",
+        "es": "Obtener el riesgo de escarcha"
       },
       "description": {
         "en": "Hoar frost risk of the coming morning, from now until 10:00: computed hour by hour from the temperature and the humidity, lowered by an overcast sky or a steady wind.",
-        "fr": "Risque de givre de la prochaine matinée, de maintenant jusqu'à 10 h : calculé heure par heure à partir de la température et de l'humidité, atténué par un ciel couvert ou un vent soutenu."
+        "fr": "Risque de givre de la prochaine matinée, de maintenant jusqu'à 10 h : calculé heure par heure à partir de la température et de l'humidité, atténué par un ciel couvert ou un vent soutenu.",
+        "de": "Reifgefahr des kommenden Morgens, von jetzt bis 10:00: Stunde für Stunde aus Temperatur und Luftfeuchtigkeit berechnet, verringert durch bedeckten Himmel oder anhaltenden Wind.",
+        "es": "Riesgo de escarcha de la próxima mañana, desde ahora hasta las 10:00: calculado hora a hora a partir de la temperatura y la humedad, atenuado por un cielo cubierto o un viento sostenido."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -1729,11 +2205,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         }
@@ -1744,7 +2224,9 @@
           "type": "number",
           "label": {
             "en": "Level (0 none, 1 risk, 2 likely)",
-            "fr": "Niveau (0 aucun, 1 risque, 2 probable)"
+            "fr": "Niveau (0 aucun, 1 risque, 2 probable)",
+            "de": "Stufe (0 keine, 1 Gefahr, 2 wahrscheinlich)",
+            "es": "Nivel (0 ninguno, 1 riesgo, 2 probable)"
           }
         },
         {
@@ -1752,7 +2234,9 @@
           "type": "string",
           "label": {
             "en": "Level label",
-            "fr": "Libellé du niveau"
+            "fr": "Libellé du niveau",
+            "de": "Bezeichnung der Stufe",
+            "es": "Etiqueta del nivel"
           }
         },
         {
@@ -1760,11 +2244,15 @@
           "type": "string",
           "label": {
             "en": "Date of the morning",
-            "fr": "Date de la matinée"
+            "fr": "Date de la matinée",
+            "de": "Datum des Morgens",
+            "es": "Fecha de la mañana"
           },
           "description": {
             "en": "YYYY-MM-DD.",
-            "fr": "AAAA-MM-JJ."
+            "fr": "AAAA-MM-JJ.",
+            "de": "JJJJ-MM-TT.",
+            "es": "AAAA-MM-DD."
           }
         },
         {
@@ -1772,11 +2260,15 @@
           "type": "string",
           "label": {
             "en": "Time of the worst hour",
-            "fr": "Heure la plus critique"
+            "fr": "Heure la plus critique",
+            "de": "Uhrzeit der kritischsten Stunde",
+            "es": "Hora más crítica"
           },
           "description": {
             "en": "Local time, HH:MM.",
-            "fr": "Heure locale, HH:MM."
+            "fr": "Heure locale, HH:MM.",
+            "de": "Ortszeit, HH:MM.",
+            "es": "Hora local, HH:MM."
           }
         },
         {
@@ -1784,11 +2276,15 @@
           "type": "number",
           "label": {
             "en": "Temperature",
-            "fr": "Température"
+            "fr": "Température",
+            "de": "Temperatur",
+            "es": "Temperatura"
           },
           "description": {
             "en": "At the worst hour.",
-            "fr": "À l'heure la plus critique."
+            "fr": "À l'heure la plus critique.",
+            "de": "Zur kritischsten Stunde.",
+            "es": "A la hora más crítica."
           }
         },
         {
@@ -1796,11 +2292,15 @@
           "type": "number",
           "label": {
             "en": "Dew point",
-            "fr": "Point de rosée"
+            "fr": "Point de rosée",
+            "de": "Taupunkt",
+            "es": "Punto de rocío"
           },
           "description": {
             "en": "At the worst hour.",
-            "fr": "À l'heure la plus critique."
+            "fr": "À l'heure la plus critique.",
+            "de": "Zur kritischsten Stunde.",
+            "es": "A la hora más crítica."
           }
         },
         {
@@ -1808,11 +2308,15 @@
           "type": "number",
           "label": {
             "en": "Frost point",
-            "fr": "Point de givre"
+            "fr": "Point de givre",
+            "de": "Frostpunkt",
+            "es": "Punto de escarcha"
           },
           "description": {
             "en": "At the worst hour.",
-            "fr": "À l'heure la plus critique."
+            "fr": "À l'heure la plus critique.",
+            "de": "Zur kritischsten Stunde.",
+            "es": "A la hora más crítica."
           }
         },
         {
@@ -1820,7 +2324,9 @@
           "type": "number",
           "label": {
             "en": "Humidity (%)",
-            "fr": "Humidité (%)"
+            "fr": "Humidité (%)",
+            "de": "Luftfeuchtigkeit (%)",
+            "es": "Humedad (%)"
           }
         },
         {
@@ -1828,7 +2334,9 @@
           "type": "number",
           "label": {
             "en": "Cloud cover (%)",
-            "fr": "Couverture nuageuse (%)"
+            "fr": "Couverture nuageuse (%)",
+            "de": "Bewölkung (%)",
+            "es": "Nubosidad (%)"
           }
         },
         {
@@ -1836,7 +2344,9 @@
           "type": "number",
           "label": {
             "en": "Wind speed",
-            "fr": "Vitesse du vent"
+            "fr": "Vitesse du vent",
+            "de": "Windgeschwindigkeit",
+            "es": "Velocidad del viento"
           }
         },
         {
@@ -1844,11 +2354,15 @@
           "type": "boolean",
           "label": {
             "en": "Lowered by the sky or the wind",
-            "fr": "Atténué par le ciel ou le vent"
+            "fr": "Atténué par le ciel ou le vent",
+            "de": "Durch Himmel oder Wind verringert",
+            "es": "Atenuado por el cielo o el viento"
           },
           "description": {
             "en": "The level was lowered by one: overcast sky or steady wind.",
-            "fr": "Le niveau a été abaissé d'un cran : ciel couvert ou vent soutenu."
+            "fr": "Le niveau a été abaissé d'un cran : ciel couvert ou vent soutenu.",
+            "de": "Die Stufe wurde um eins gesenkt: bedeckter Himmel oder anhaltender Wind.",
+            "es": "El nivel se rebajó un grado: cielo cubierto o viento sostenido."
           }
         },
         {
@@ -1856,11 +2370,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1869,11 +2387,15 @@
       "key": "get_ice_risk",
       "label": {
         "en": "Get the black ice risk",
-        "fr": "Obtenir le risque de verglas"
+        "fr": "Obtenir le risque de verglas",
+        "de": "Glättegefahr abrufen",
+        "es": "Obtener el riesgo de hielo"
       },
       "description": {
         "en": "Black ice risk of the coming morning, from now until 10:00: rain on a surface at or below freezing, hour by hour, including the rain of the 6 previous hours.",
-        "fr": "Risque de verglas de la prochaine matinée, de maintenant jusqu'à 10 h : pluie sur une surface proche ou en dessous de 0 °C, heure par heure, en comptant la pluie des 6 heures précédentes."
+        "fr": "Risque de verglas de la prochaine matinée, de maintenant jusqu'à 10 h : pluie sur une surface proche ou en dessous de 0 °C, heure par heure, en comptant la pluie des 6 heures précédentes.",
+        "de": "Glättegefahr des kommenden Morgens, von jetzt bis 10:00: Regen auf eine Oberfläche um oder unter 0 °C, Stunde für Stunde, einschließlich des Regens der 6 vorherigen Stunden.",
+        "es": "Riesgo de hielo de la próxima mañana, desde ahora hasta las 10:00: lluvia sobre una superficie a 0 °C o menos, hora a hora, contando la lluvia de las 6 horas anteriores."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -1882,11 +2404,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         }
@@ -1897,7 +2423,9 @@
           "type": "number",
           "label": {
             "en": "Level (0 none, 1 risk, 2 likely)",
-            "fr": "Niveau (0 aucun, 1 risque, 2 probable)"
+            "fr": "Niveau (0 aucun, 1 risque, 2 probable)",
+            "de": "Stufe (0 keine, 1 Gefahr, 2 wahrscheinlich)",
+            "es": "Nivel (0 ninguno, 1 riesgo, 2 probable)"
           }
         },
         {
@@ -1905,7 +2433,9 @@
           "type": "string",
           "label": {
             "en": "Level label",
-            "fr": "Libellé du niveau"
+            "fr": "Libellé du niveau",
+            "de": "Bezeichnung der Stufe",
+            "es": "Etiqueta del nivel"
           }
         },
         {
@@ -1913,11 +2443,15 @@
           "type": "string",
           "label": {
             "en": "Date of the morning",
-            "fr": "Date de la matinée"
+            "fr": "Date de la matinée",
+            "de": "Datum des Morgens",
+            "es": "Fecha de la mañana"
           },
           "description": {
             "en": "YYYY-MM-DD.",
-            "fr": "AAAA-MM-JJ."
+            "fr": "AAAA-MM-JJ.",
+            "de": "JJJJ-MM-TT.",
+            "es": "AAAA-MM-DD."
           }
         },
         {
@@ -1925,11 +2459,15 @@
           "type": "string",
           "label": {
             "en": "Time",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Uhrzeit",
+            "es": "Hora"
           },
           "description": {
             "en": "When the ice sets in (the coldest hour without ice), local HH:MM.",
-            "fr": "Début du verglas (l'heure la plus froide sans verglas), heure locale HH:MM."
+            "fr": "Début du verglas (l'heure la plus froide sans verglas), heure locale HH:MM.",
+            "de": "Wann die Glätte einsetzt (die kälteste Stunde ohne Glätte), Ortszeit HH:MM.",
+            "es": "Cuándo se forma el hielo (la hora más fría sin hielo), hora local HH:MM."
           }
         },
         {
@@ -1937,7 +2475,9 @@
           "type": "number",
           "label": {
             "en": "Temperature",
-            "fr": "Température"
+            "fr": "Température",
+            "de": "Temperatur",
+            "es": "Temperatura"
           }
         },
         {
@@ -1945,7 +2485,9 @@
           "type": "boolean",
           "label": {
             "en": "Freezing rain",
-            "fr": "Pluie verglaçante"
+            "fr": "Pluie verglaçante",
+            "de": "Gefrierender Regen",
+            "es": "Lluvia helada"
           }
         },
         {
@@ -1953,7 +2495,9 @@
           "type": "number",
           "label": {
             "en": "Rain of the last 6 hours",
-            "fr": "Pluie des 6 dernières heures"
+            "fr": "Pluie des 6 dernières heures",
+            "de": "Regen der letzten 6 Stunden",
+            "es": "Lluvia de las últimas 6 horas"
           }
         },
         {
@@ -1961,11 +2505,15 @@
           "type": "number",
           "label": {
             "en": "Chance of frost (%)",
-            "fr": "Probabilité de gel (%)"
+            "fr": "Probabilité de gel (%)",
+            "de": "Frostwahrscheinlichkeit (%)",
+            "es": "Probabilidad de helada (%)"
           },
           "description": {
             "en": "Météo France's chance of a temperature below 0 °C.",
-            "fr": "Probabilité Météo France d'une température négative."
+            "fr": "Probabilité Météo France d'une température négative.",
+            "de": "Wahrscheinlichkeit einer Temperatur unter 0 °C laut Météo France.",
+            "es": "Probabilidad de Météo France de una temperatura bajo 0 °C."
           }
         },
         {
@@ -1973,11 +2521,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]
@@ -1986,11 +2538,15 @@
       "key": "get_hour_forecast",
       "label": {
         "en": "Get the forecast of an hour",
-        "fr": "Obtenir la météo d'une heure"
+        "fr": "Obtenir la météo d'une heure",
+        "de": "Vorhersage einer Stunde abrufen",
+        "es": "Obtener la previsión de una hora"
       },
       "description": {
         "en": "The forecast at a given hour of today, tomorrow or the day after: temperature, feels like, sky, rain, wind and its direction.",
-        "fr": "La prévision à une heure donnée d'aujourd'hui, de demain ou d'après-demain : température, ressenti, ciel, pluie, vent et sa direction."
+        "fr": "La prévision à une heure donnée d'aujourd'hui, de demain ou d'après-demain : température, ressenti, ciel, pluie, vent et sa direction.",
+        "de": "Die Vorhersage zu einer bestimmten Stunde von heute, morgen oder übermorgen: Temperatur, gefühlte Temperatur, Himmel, Regen, Wind und Windrichtung.",
+        "es": "La previsión a una hora dada de hoy, mañana o pasado mañana: temperatura, sensación térmica, cielo, lluvia, viento y su dirección."
       },
       "timeout_seconds": 45,
       "fields": [
@@ -1999,11 +2555,15 @@
           "type": "string",
           "label": {
             "en": "House",
-            "fr": "Maison"
+            "fr": "Maison",
+            "de": "Zuhause",
+            "es": "Casa"
           },
           "description": {
             "en": "Name of the house, as shown in Gladys. Leave empty for the first house with a location.",
-            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée."
+            "fr": "Nom de la maison, tel qu'affiché dans Gladys. Laissez vide pour la première maison localisée.",
+            "de": "Name des Zuhauses, wie in Gladys angezeigt. Leer lassen für das erste Zuhause mit Standort.",
+            "es": "Nombre de la casa, tal como aparece en Gladys. Déjelo vacío para la primera casa con ubicación."
           },
           "required": false
         },
@@ -2012,7 +2572,9 @@
           "type": "select",
           "label": {
             "en": "Day",
-            "fr": "Jour"
+            "fr": "Jour",
+            "de": "Tag",
+            "es": "Día"
           },
           "required": false,
           "default": "1",
@@ -2021,21 +2583,27 @@
               "value": "0",
               "label": {
                 "en": "Today",
-                "fr": "Aujourd'hui"
+                "fr": "Aujourd'hui",
+                "de": "Heute",
+                "es": "Hoy"
               }
             },
             {
               "value": "1",
               "label": {
                 "en": "Tomorrow",
-                "fr": "Demain"
+                "fr": "Demain",
+                "de": "Morgen",
+                "es": "Mañana"
               }
             },
             {
               "value": "2",
               "label": {
                 "en": "In 2 days",
-                "fr": "Dans 2 jours"
+                "fr": "Dans 2 jours",
+                "de": "In 2 Tagen",
+                "es": "Dentro de 2 días"
               }
             }
           ]
@@ -2045,11 +2613,15 @@
           "type": "number",
           "label": {
             "en": "Hour",
-            "fr": "Heure"
+            "fr": "Heure",
+            "de": "Stunde",
+            "es": "Hora"
           },
           "description": {
             "en": "0 to 23, local time. Past tomorrow, Météo France forecasts by 3-hour steps: the step covering this hour is used.",
-            "fr": "De 0 à 23, heure locale. Au-delà de demain, Météo France prévoit par pas de 3 heures : le pas qui couvre cette heure est utilisé."
+            "fr": "De 0 à 23, heure locale. Au-delà de demain, Météo France prévoit par pas de 3 heures : le pas qui couvre cette heure est utilisé.",
+            "de": "0 bis 23, Ortszeit. Ab übermorgen sagt Météo France in 3-Stunden-Schritten vorher: Der Schritt, der diese Stunde abdeckt, wird verwendet.",
+            "es": "De 0 a 23, hora local. Más allá de mañana, Météo France prevé en pasos de 3 horas: se usa el paso que cubre esa hora."
           },
           "required": false,
           "default": 8,
@@ -2063,11 +2635,15 @@
           "type": "string",
           "label": {
             "en": "Date",
-            "fr": "Date"
+            "fr": "Date",
+            "de": "Datum",
+            "es": "Fecha"
           },
           "description": {
             "en": "YYYY-MM-DD.",
-            "fr": "AAAA-MM-JJ."
+            "fr": "AAAA-MM-JJ.",
+            "de": "JJJJ-MM-TT.",
+            "es": "AAAA-MM-DD."
           }
         },
         {
@@ -2075,11 +2651,15 @@
           "type": "string",
           "label": {
             "en": "Time of the forecast",
-            "fr": "Heure de la prévision"
+            "fr": "Heure de la prévision",
+            "de": "Uhrzeit der Vorhersage",
+            "es": "Hora de la previsión"
           },
           "description": {
             "en": "Local time, HH:MM.",
-            "fr": "Heure locale, HH:MM."
+            "fr": "Heure locale, HH:MM.",
+            "de": "Ortszeit, HH:MM.",
+            "es": "Hora local, HH:MM."
           }
         },
         {
@@ -2087,7 +2667,9 @@
           "type": "number",
           "label": {
             "en": "Temperature",
-            "fr": "Température"
+            "fr": "Température",
+            "de": "Temperatur",
+            "es": "Temperatura"
           }
         },
         {
@@ -2095,7 +2677,9 @@
           "type": "number",
           "label": {
             "en": "Feels like",
-            "fr": "Ressenti"
+            "fr": "Ressenti",
+            "de": "Gefühlte Temperatur",
+            "es": "Sensación térmica"
           }
         },
         {
@@ -2103,7 +2687,9 @@
           "type": "number",
           "label": {
             "en": "Humidity (%)",
-            "fr": "Humidité (%)"
+            "fr": "Humidité (%)",
+            "de": "Luftfeuchtigkeit (%)",
+            "es": "Humedad (%)"
           }
         },
         {
@@ -2111,7 +2697,9 @@
           "type": "string",
           "label": {
             "en": "Sky (key)",
-            "fr": "Ciel (clé)"
+            "fr": "Ciel (clé)",
+            "de": "Himmel (Schlüssel)",
+            "es": "Cielo (clave)"
           }
         },
         {
@@ -2119,7 +2707,9 @@
           "type": "string",
           "label": {
             "en": "Sky",
-            "fr": "Ciel"
+            "fr": "Ciel",
+            "de": "Himmel",
+            "es": "Cielo"
           }
         },
         {
@@ -2127,7 +2717,9 @@
           "type": "number",
           "label": {
             "en": "Rain",
-            "fr": "Pluie"
+            "fr": "Pluie",
+            "de": "Regen",
+            "es": "Lluvia"
           }
         },
         {
@@ -2135,7 +2727,9 @@
           "type": "number",
           "label": {
             "en": "Chance of rain (%)",
-            "fr": "Probabilité de pluie (%)"
+            "fr": "Probabilité de pluie (%)",
+            "de": "Regenwahrscheinlichkeit (%)",
+            "es": "Probabilidad de lluvia (%)"
           }
         },
         {
@@ -2143,7 +2737,9 @@
           "type": "number",
           "label": {
             "en": "Wind speed",
-            "fr": "Vitesse du vent"
+            "fr": "Vitesse du vent",
+            "de": "Windgeschwindigkeit",
+            "es": "Velocidad del viento"
           }
         },
         {
@@ -2151,7 +2747,9 @@
           "type": "number",
           "label": {
             "en": "Gusts",
-            "fr": "Rafales"
+            "fr": "Rafales",
+            "de": "Böen",
+            "es": "Rachas"
           }
         },
         {
@@ -2159,11 +2757,15 @@
           "type": "number",
           "label": {
             "en": "Wind direction (°)",
-            "fr": "Direction du vent (°)"
+            "fr": "Direction du vent (°)",
+            "de": "Windrichtung (°)",
+            "es": "Dirección del viento (°)"
           },
           "description": {
             "en": "Where the wind blows from, 0 = north.",
-            "fr": "D'où vient le vent, 0 = nord."
+            "fr": "D'où vient le vent, 0 = nord.",
+            "de": "Woher der Wind weht, 0 = Norden.",
+            "es": "De dónde sopla el viento, 0 = norte."
           }
         },
         {
@@ -2171,7 +2773,9 @@
           "type": "string",
           "label": {
             "en": "Wind direction",
-            "fr": "Direction du vent"
+            "fr": "Direction du vent",
+            "de": "Windrichtung",
+            "es": "Dirección del viento"
           }
         },
         {
@@ -2179,7 +2783,9 @@
           "type": "number",
           "label": {
             "en": "Cloud cover (%)",
-            "fr": "Couverture nuageuse (%)"
+            "fr": "Couverture nuageuse (%)",
+            "de": "Bewölkung (%)",
+            "es": "Nubosidad (%)"
           }
         },
         {
@@ -2187,11 +2793,15 @@
           "type": "string",
           "label": {
             "en": "Summary",
-            "fr": "Résumé"
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
           },
           "description": {
             "en": "A sentence ready to put in a message.",
-            "fr": "Une phrase prête à mettre dans un message."
+            "fr": "Une phrase prête à mettre dans un message.",
+            "de": "Ein Satz, fertig für eine Nachricht.",
+            "es": "Una frase lista para un mensaje."
           }
         }
       ]

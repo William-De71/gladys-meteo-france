@@ -24,12 +24,15 @@ import { convertTemperature, convertPrecipitation, dayKey } from './forecast.js'
 import { parseWeather } from './conditions.js';
 import { evaluateIceHours, pickIceHour, ICE_LEVELS } from './ice.js';
 import { SCENE_TRIGGERS, CUSTOM_LEVEL, describeMoment } from './scene-triggers.js';
+import { afterRain } from './scene-actions.js';
 import {
   CONDITION_LABELS,
   ICE_LABELS,
   textLanguage,
+  pick,
+  colon,
+  percent,
   unitSymbols,
-  formatNumber,
   formatLocalTime,
   uvLabel,
 } from './scene-text.js';
@@ -316,16 +319,10 @@ function buildHazardEventData(
 ) {
   const lang = textLanguage(language);
   const symbols = unitSymbols(units);
-  const fr = lang === 'fr';
 
   if (event.trigger === SCENE_TRIGGERS.UV_FORECAST) {
     const label = uvLabel(event.uv, lang);
-    let when;
-    if (fr) {
-      when = event.today ? "aujourd'hui" : 'demain';
-    } else {
-      when = event.today ? 'today' : 'tomorrow';
-    }
+    const uv = event.uv;
     return {
       house,
       level: event.level,
@@ -333,9 +330,19 @@ function buildHazardEventData(
       uv_index: event.uv,
       uv_label: label,
       date: event.date,
-      summary: fr
-        ? `Indice UV de ${event.uv} (${label}) prévu ${when}.`
-        : `UV index of ${event.uv} (${label}) expected ${when}.`,
+      summary: event.today
+        ? pick(lang, {
+            en: `UV index of ${uv} (${label}) expected today.`,
+            fr: `Indice UV de ${uv} (${label}) prévu aujourd'hui.`,
+            de: `UV-Index von ${uv} (${label}) heute erwartet.`,
+            es: `Índice UV de ${uv} (${label}) previsto para hoy.`,
+          })
+        : pick(lang, {
+            en: `UV index of ${uv} (${label}) expected tomorrow.`,
+            fr: `Indice UV de ${uv} (${label}) prévu demain.`,
+            de: `UV-Index von ${uv} (${label}) morgen erwartet.`,
+            es: `Índice UV de ${uv} (${label}) previsto para mañana.`,
+          }),
     };
   }
 
@@ -355,16 +362,15 @@ function buildHazardEventData(
     data.freezing_rain = hour.freezingRain;
     data.recent_rain = convertPrecipitation(hour.recentRain, units);
     const degrees = `${data.temperature} ${symbols.temperature}`;
-    let cause;
-    if (hour.freezingRain) {
-      cause = fr ? 'pluie verglaçante' : 'freezing rain';
-    } else {
-      const rain = `${formatNumber(data.recent_rain, lang)} ${symbols.precipitation}`;
-      cause = fr ? `après ${rain} de pluie` : `after ${rain} of rain`;
-    }
-    data.summary = fr
-      ? `${data.level_label} ${moment} : ${degrees}, ${cause}.`
-      : `${data.level_label} ${moment}: ${degrees}, ${cause}.`;
+    const cause = hour.freezingRain
+      ? pick(lang, {
+          en: 'freezing rain',
+          fr: 'pluie verglaçante',
+          de: 'gefrierender Regen',
+          es: 'lluvia helada',
+        })
+      : afterRain(data.recent_rain, symbols, lang);
+    data.summary = `${data.level_label} ${moment}${colon(lang)} ${degrees}, ${cause}.`;
     return data;
   }
 
@@ -372,28 +378,58 @@ function buildHazardEventData(
   data.condition_label = CONDITION_LABELS[lang][event.condition] || event.condition;
 
   if (event.trigger === SCENE_TRIGGERS.SNOW_FORECAST) {
-    let summary = fr ? `Neige annoncée ${moment}` : `Snow expected ${moment}`;
+    let chance = '';
     if (isNumber(event.probability)) {
       data.snow_probability = event.probability;
-      summary += fr ? ` (probabilité ${event.probability} %)` : ` (${event.probability}% chance)`;
+      const share = percent(event.probability, lang);
+      chance = pick(lang, {
+        en: ` (${share} chance)`,
+        fr: ` (probabilité ${share})`,
+        de: ` (Wahrscheinlichkeit ${share})`,
+        es: ` (probabilidad del ${share})`,
+      });
     }
-    summary += '.';
+    let summary = pick(lang, {
+      en: `Snow expected ${moment}${chance}.`,
+      fr: `Neige annoncée ${moment}${chance}.`,
+      de: `Schnee ${moment} erwartet${chance}.`,
+      es: `Nieve prevista ${moment}${chance}.`,
+    });
     if (isNumber(event.limit)) {
       data.rain_snow_limit = event.limit;
-      summary += fr
-        ? ` Limite pluie-neige à ${event.limit} m.`
-        : ` Rain-snow limit at ${event.limit} m.`;
+      summary += pick(lang, {
+        en: ` Rain-snow limit at ${event.limit} m.`,
+        fr: ` Limite pluie-neige à ${event.limit} m.`,
+        de: ` Schneefallgrenze bei ${event.limit} m.`,
+        es: ` Cota de nieve a ${event.limit} m.`,
+      });
     }
     data.summary = summary;
     return data;
   }
 
-  const storm = {
-    fr: { hail: 'Grêle annoncée', 'snow-thunderstorm': 'Orages de neige annoncés' },
-    en: { hail: 'Hail expected', 'snow-thunderstorm': 'Thundersnow expected' },
-  };
-  const fallback = fr ? 'Orages annoncés' : 'Thunderstorms expected';
-  data.summary = `${storm[lang][event.condition] || fallback} ${moment}.`;
+  if (event.condition === 'hail') {
+    data.summary = pick(lang, {
+      en: `Hail expected ${moment}.`,
+      fr: `Grêle annoncée ${moment}.`,
+      de: `Hagel ${moment} erwartet.`,
+      es: `Granizo previsto ${moment}.`,
+    });
+  } else if (event.condition === 'snow-thunderstorm') {
+    data.summary = pick(lang, {
+      en: `Thundersnow expected ${moment}.`,
+      fr: `Orages de neige annoncés ${moment}.`,
+      de: `Gewittrige Schneeschauer ${moment} erwartet.`,
+      es: `Chubascos de nieve con tormenta previstos ${moment}.`,
+    });
+  } else {
+    data.summary = pick(lang, {
+      en: `Thunderstorms expected ${moment}.`,
+      fr: `Orages annoncés ${moment}.`,
+      de: `Gewitter ${moment} erwartet.`,
+      es: `Tormentas previstas ${moment}.`,
+    });
+  }
   return data;
 }
 

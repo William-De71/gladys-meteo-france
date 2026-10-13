@@ -26,14 +26,19 @@ import {
 import { parseWeather } from './conditions.js';
 import { evaluateFrostRisk, readMorningWindow } from './frost.js';
 import { evaluateIceHours, pickIceHour, readFreezingProbability, readRainAmount } from './ice.js';
-import { PHENOMENON_NAMES, departmentName, parseSummary, parseBulletin } from './vigilance.js';
+import { departmentName, parseSummary, parseBulletin } from './vigilance.js';
 import {
   CONDITION_LABELS,
   INTENSITY_LABELS,
   VIGILANCE_LABELS,
   FROST_LABELS,
   ICE_LABELS,
+  PHENOMENON_LABELS,
   textLanguage,
+  pick,
+  inSentence,
+  colon,
+  percent,
   unitSymbols,
   formatNumber,
   formatLocalTime,
@@ -135,20 +140,78 @@ function readRainHours(value) {
 }
 
 /**
+ * @description "3 mm of rain" in the language.
+ * @param {number} amount - The amount, in the unit system of the instance.
+ * @param {object} symbols - The unitSymbols() of the instance.
+ * @param {string} language - 'en', 'fr', 'de' or 'es'.
+ * @returns {string} The phrase.
+ * @example
+ * rainAmount(4.2, unitSymbols('metric'), 'fr'); // -> '4,2 mm de pluie'
+ */
+function rainAmount(amount, symbols, language) {
+  const value = `${formatNumber(amount, language)} ${symbols.precipitation}`;
+  return pick(language, {
+    en: `${value} of rain`,
+    fr: `${value} de pluie`,
+    de: `${value} Regen`,
+    es: `${value} de lluvia`,
+  });
+}
+
+/**
+ * @description "after 2.4 mm of rain" in the language (shared with the black
+ * ice trigger).
+ * @param {number} amount - The amount, in the unit system of the instance.
+ * @param {object} symbols - The unitSymbols() of the instance.
+ * @param {string} language - 'en', 'fr', 'de' or 'es'.
+ * @returns {string} The phrase.
+ * @example
+ * afterRain(2.4, unitSymbols('metric'), 'de'); // -> 'nach 2,4 mm Regen'
+ */
+function afterRain(amount, symbols, language) {
+  const value = `${formatNumber(amount, language)} ${symbols.precipitation}`;
+  return pick(language, {
+    en: `after ${value} of rain`,
+    fr: `après ${value} de pluie`,
+    de: `nach ${value} Regen`,
+    es: `tras ${value} de lluvia`,
+  });
+}
+
+/**
+ * @description "gusts up to 55 km/h" in the language.
+ * @param {number} speed - The gust, in the unit system of the instance.
+ * @param {object} symbols - The unitSymbols() of the instance.
+ * @param {string} language - 'en', 'fr', 'de' or 'es'.
+ * @returns {string} The phrase.
+ * @example
+ * gusts(55, unitSymbols('metric'), 'es'); // -> 'rachas de hasta 55 km/h'
+ */
+function gusts(speed, symbols, language) {
+  const value = `${formatNumber(speed, language)} ${symbols.wind}`;
+  return pick(language, {
+    en: `gusts up to ${value}`,
+    fr: `rafales à ${value}`,
+    de: `Böen bis ${value}`,
+    es: `rachas de hasta ${value}`,
+  });
+}
+
+/**
  * @description Name the day of a forecast in a sentence.
  * @param {number} offset - Days from today.
  * @param {string} dateKey - The 'YYYY-MM-DD' date.
- * @param {string} language - 'fr' or 'en'.
+ * @param {string} language - 'en', 'fr', 'de' or 'es'.
  * @returns {string} "Aujourd'hui", "Demain", "Samedi 27"...
  * @example
  * dayLabel(1, '2026-09-26', 'fr'); // -> 'Demain'
  */
 function dayLabel(offset, dateKey, language) {
   if (offset === 0) {
-    return language === 'fr' ? "Aujourd'hui" : 'Today';
+    return pick(language, { en: 'Today', fr: "Aujourd'hui", de: 'Heute', es: 'Hoy' });
   }
   if (offset === 1) {
-    return language === 'fr' ? 'Demain' : 'Tomorrow';
+    return pick(language, { en: 'Tomorrow', fr: 'Demain', de: 'Morgen', es: 'Mañana' });
   }
   return capitalize(formatDayName(dateKey, language));
 }
@@ -226,37 +289,34 @@ function buildForecastOutputs({
   // "Demain : pluie, 8 à 14 °C, 3 mm de pluie (70 %), rafales à 45 km/h."
   const parts = [];
   if (outputs.condition_label) {
-    parts.push(outputs.condition_label.toLowerCase());
+    parts.push(inSentence(outputs.condition_label, lang));
   }
+  const [min, max] = [entry.temperature_min, entry.temperature_max];
   parts.push(
-    lang === 'fr'
-      ? `${entry.temperature_min} à ${entry.temperature_max} ${symbols.temperature}`
-      : `${entry.temperature_min} to ${entry.temperature_max} ${symbols.temperature}`,
+    pick(lang, {
+      en: `${min} to ${max} ${symbols.temperature}`,
+      fr: `${min} à ${max} ${symbols.temperature}`,
+      de: `${min} bis ${max} ${symbols.temperature}`,
+      es: `de ${min} a ${max} ${symbols.temperature}`,
+    }),
   );
   if (isNumber(outputs.precipitation) && outputs.precipitation > 0) {
-    const amount = `${formatNumber(outputs.precipitation, lang)} ${symbols.precipitation}`;
-    let rain = lang === 'fr' ? `${amount} de pluie` : `${amount} of rain`;
+    let rain = rainAmount(outputs.precipitation, symbols, lang);
     if (isNumber(outputs.precipitation_probability)) {
-      rain +=
-        lang === 'fr'
-          ? ` (${outputs.precipitation_probability} %)`
-          : ` (${outputs.precipitation_probability}%)`;
+      rain += ` (${percent(outputs.precipitation_probability, lang)})`;
     }
     parts.push(rain);
   }
   if (isNumber(outputs.wind_gust)) {
     const gustKmh = units === 'us' ? outputs.wind_gust / 0.621371 : outputs.wind_gust;
     if (gustKmh >= NOTABLE_GUST_KMH) {
-      const gust = `${formatNumber(outputs.wind_gust, lang)} ${symbols.wind}`;
-      parts.push(lang === 'fr' ? `rafales à ${gust}` : `gusts up to ${gust}`);
+      parts.push(gusts(outputs.wind_gust, symbols, lang));
     }
   }
   if (isNumber(outputs.uv_index) && outputs.uv_index >= NOTABLE_UV_INDEX) {
     parts.push(`UV ${outputs.uv_index} (${uvLabel(outputs.uv_index, lang)})`);
   }
-  // French typography puts a space before the colon, English does not.
-  const colon = lang === 'fr' ? ' :' : ':';
-  outputs.summary = `${dayLabel(offset, date, lang)}${colon} ${parts.join(', ')}.`;
+  outputs.summary = `${dayLabel(offset, date, lang)}${colon(lang)} ${parts.join(', ')}.`;
   return outputs;
 }
 
@@ -297,22 +357,32 @@ function buildRainHoursOutputs({ weather, timezone, units, language, hours }) {
     outputs.max_probability = Math.max(...probabilities);
   }
 
-  const span =
-    lang === 'fr'
-      ? `dans les ${window.length} prochaines heures`
-      : `in the next ${window.length} hours`;
+  const span = pick(lang, {
+    en: `in the next ${window.length} hours`,
+    fr: `dans les ${window.length} prochaines heures`,
+    de: `in den nächsten ${window.length} Stunden`,
+    es: `en las próximas ${window.length} horas`,
+  });
   if (firstRainIndex === -1) {
-    outputs.summary = lang === 'fr' ? `Pas de pluie prévue ${span}.` : `No rain expected ${span}.`;
+    outputs.summary = pick(lang, {
+      en: `No rain expected ${span}.`,
+      fr: `Pas de pluie prévue ${span}.`,
+      de: `Kein Regen ${span} erwartet.`,
+      es: `No se prevé lluvia ${span}.`,
+    });
     return outputs;
   }
 
   outputs.hours_until_rain = firstRainIndex;
   outputs.first_rain_time = formatLocalTime(window[firstRainIndex].datetime, timezone);
   const amount = `${formatNumber(total, lang)} ${symbols.precipitation}`;
-  outputs.summary =
-    lang === 'fr'
-      ? `Pluie prévue à partir de ${outputs.first_rain_time} ${span} : ${amount} sur ${outputs.rainy_hours} h.`
-      : `Rain expected from ${outputs.first_rain_time} ${span}: ${amount} over ${outputs.rainy_hours} h.`;
+  const [from, rainy] = [outputs.first_rain_time, outputs.rainy_hours];
+  outputs.summary = pick(lang, {
+    en: `Rain expected from ${from} ${span}: ${amount} over ${rainy} h.`,
+    fr: `Pluie prévue à partir de ${from} ${span} : ${amount} sur ${rainy} h.`,
+    de: `Regen ab ${from} ${span} erwartet: ${amount} in ${rainy} Std.`,
+    es: `Lluvia prevista a partir de las ${from} ${span}: ${amount} en ${rainy} h.`,
+  });
   return outputs;
 }
 
@@ -328,26 +398,45 @@ function describeNowcast(nowcast, language) {
   const lang = textLanguage(language);
   const label = INTENSITY_LABELS[lang][nowcast.intensity];
   if (!nowcast.available) {
-    return lang === 'fr'
-      ? "Prévision de pluie dans l'heure indisponible pour ce lieu."
-      : 'Rain within the hour is not available for this place.';
+    return pick(lang, {
+      en: 'Rain within the hour is not available for this place.',
+      fr: "Prévision de pluie dans l'heure indisponible pour ce lieu.",
+      de: 'Regen in der nächsten Stunde ist für diesen Ort nicht verfügbar.',
+      es: 'La previsión de lluvia en la próxima hora no está disponible para este lugar.',
+    });
   }
   if (nowcast.raining) {
-    if (nowcast.minutesUntilDry !== null) {
-      return lang === 'fr'
-        ? `${label} en cours, fin prévue dans ${nowcast.minutesUntilDry} min.`
-        : `${label} now, ending in ${nowcast.minutesUntilDry} min.`;
+    const dry = nowcast.minutesUntilDry;
+    if (dry !== null) {
+      return pick(lang, {
+        en: `${label} now, ending in ${dry} min.`,
+        fr: `${label} en cours, fin prévue dans ${dry} min.`,
+        de: `${label} jetzt, Ende in ${dry} Min.`,
+        es: `${label} en curso, termina en ${dry} min.`,
+      });
     }
-    return lang === 'fr'
-      ? `${label} en cours pour l'heure à venir.`
-      : `${label} now, for the whole coming hour.`;
+    return pick(lang, {
+      en: `${label} now, for the whole coming hour.`,
+      fr: `${label} en cours pour l'heure à venir.`,
+      de: `${label} jetzt, die ganze kommende Stunde.`,
+      es: `${label} en curso durante toda la próxima hora.`,
+    });
   }
   if (nowcast.rainExpected) {
-    return lang === 'fr'
-      ? `${label} prévue dans ${nowcast.minutesUntilRain} min.`
-      : `${label} expected in ${nowcast.minutesUntilRain} min.`;
+    const soon = nowcast.minutesUntilRain;
+    return pick(lang, {
+      en: `${label} expected in ${soon} min.`,
+      fr: `${label} prévue dans ${soon} min.`,
+      de: `${label} in ${soon} Min. erwartet.`,
+      es: `${label} prevista en ${soon} min.`,
+    });
   }
-  return lang === 'fr' ? "Pas de pluie prévue dans l'heure." : 'No rain expected within the hour.';
+  return pick(lang, {
+    en: 'No rain expected within the hour.',
+    fr: "Pas de pluie prévue dans l'heure.",
+    de: 'Kein Regen in der nächsten Stunde erwartet.',
+    es: 'No se prevé lluvia en la próxima hora.',
+  });
 }
 
 /**
@@ -404,7 +493,8 @@ function buildVigilanceOutputs(warningData, department, language) {
 
   const phenomena = active
     .map((item) => {
-      const name = PHENOMENON_NAMES[Number(item.phenomenon_id)] || `${item.phenomenon_id}`;
+      const names = PHENOMENON_LABELS[lang];
+      const name = names[Number(item.phenomenon_id)] || `${item.phenomenon_id}`;
       const itemLevel = VIGILANCE_LEVELS[item.phenomenon_max_color_id];
       return `${name} (${VIGILANCE_LABELS[lang][itemLevel]})`;
     })
@@ -421,16 +511,21 @@ function buildVigilanceOutputs(warningData, department, language) {
   if (phenomena) {
     outputs.phenomena = phenomena;
   }
+  const label = outputs.level_label;
   if (color > 1) {
-    outputs.summary =
-      lang === 'fr'
-        ? `Vigilance ${outputs.level_label} en ${area} : ${phenomena}.`
-        : `${capitalize(outputs.level_label)} warning in ${area}: ${phenomena}.`;
+    outputs.summary = pick(lang, {
+      en: `${capitalize(label)} warning in ${area}: ${phenomena}.`,
+      fr: `Vigilance ${label} en ${area} : ${phenomena}.`,
+      de: `Warnstufe ${label} in ${area}: ${phenomena}.`,
+      es: `Aviso ${label} en ${area}: ${phenomena}.`,
+    });
   } else {
-    outputs.summary =
-      lang === 'fr'
-        ? `Pas de vigilance particulière en ${area}.`
-        : `No particular warning in ${area}.`;
+    outputs.summary = pick(lang, {
+      en: `No particular warning in ${area}.`,
+      fr: `Pas de vigilance particulière en ${area}.`,
+      de: `Keine besondere Warnung in ${area}.`,
+      es: `Sin aviso especial en ${area}.`,
+    });
   }
   const comment = parseSummary(warningData);
   if (comment) {
@@ -502,28 +597,44 @@ function buildFrostRiskOutputs({
   const degrees = (value) => `${formatNumber(value, lang)} ${symbols.temperature}`;
   const when = morningPhrase(today, lang);
   // "Givre probable demain matin : 0,4 °C vers 06:00, point de givre -2,1 °C."
+  const [label, low, time] = [outputs.level_label, degrees(outputs.temperature), outputs.time];
   if (worst.level > 0) {
-    outputs.summary =
-      lang === 'fr'
-        ? `${outputs.level_label} ${when} : ${degrees(outputs.temperature)} vers ${outputs.time}, point de givre ${degrees(outputs.frost_point)}.`
-        : `${outputs.level_label} ${when}: ${degrees(outputs.temperature)} around ${outputs.time}, frost point ${degrees(outputs.frost_point)}.`;
+    const point = degrees(outputs.frost_point);
+    outputs.summary = pick(lang, {
+      en: `${label} ${when}: ${low} around ${time}, frost point ${point}.`,
+      fr: `${label} ${when} : ${low} vers ${time}, point de givre ${point}.`,
+      de: `${label} ${when}: ${low} gegen ${time}, Frostpunkt ${point}.`,
+      es: `${label} ${when}: ${low} hacia las ${time}, punto de escarcha ${point}.`,
+    });
   } else {
-    outputs.summary =
-      lang === 'fr'
-        ? `Pas de givre attendu ${when} : minimum ${degrees(outputs.temperature)} vers ${outputs.time}.`
-        : `No frost expected ${when}: low of ${degrees(outputs.temperature)} around ${outputs.time}.`;
+    outputs.summary = pick(lang, {
+      en: `No frost expected ${when}: low of ${low} around ${time}.`,
+      fr: `Pas de givre attendu ${when} : minimum ${low} vers ${time}.`,
+      de: `Kein Reif ${when} erwartet: Tiefstwert ${low} gegen ${time}.`,
+      es: `No se espera escarcha ${when}: mínima de ${low} hacia las ${time}.`,
+    });
   }
   if (worst.reduced) {
-    const causes = {
-      fr: { sky: 'le ciel couvert', wind: 'le vent', both: 'le ciel couvert et le vent' },
+    const causes = pick(lang, {
       en: { sky: 'the overcast sky', wind: 'the wind', both: 'the overcast sky and the wind' },
-    }[lang];
+      fr: { sky: 'le ciel couvert', wind: 'le vent', both: 'le ciel couvert et le vent' },
+      de: {
+        sky: 'den bedeckten Himmel',
+        wind: 'den Wind',
+        both: 'den bedeckten Himmel und den Wind',
+      },
+      es: { sky: 'el cielo cubierto', wind: 'el viento', both: 'el cielo cubierto y el viento' },
+    });
     let cause = causes.wind;
     if (worst.overcast) {
       cause = worst.windy ? causes.both : causes.sky;
     }
-    outputs.summary +=
-      lang === 'fr' ? ` Risque atténué par ${cause}.` : ` Risk lowered by ${cause}.`;
+    outputs.summary += pick(lang, {
+      en: ` Risk lowered by ${cause}.`,
+      fr: ` Risque atténué par ${cause}.`,
+      de: ` Risiko verringert durch ${cause}.`,
+      es: ` Riesgo atenuado por ${cause}.`,
+    });
   }
   return outputs;
 }
@@ -537,10 +648,20 @@ function buildFrostRiskOutputs({
  * morningPhrase(false, 'fr'); // -> 'demain matin'
  */
 function morningPhrase(today, language) {
-  if (language === 'fr') {
-    return today ? 'ce matin' : 'demain matin';
+  if (today) {
+    return pick(language, {
+      en: 'this morning',
+      fr: 'ce matin',
+      de: 'heute Morgen',
+      es: 'esta mañana',
+    });
   }
-  return today ? 'this morning' : 'tomorrow morning';
+  return pick(language, {
+    en: 'tomorrow morning',
+    fr: 'demain matin',
+    de: 'morgen früh',
+    es: 'mañana por la mañana',
+  });
 }
 
 /**
@@ -588,25 +709,32 @@ function buildIceRiskOutputs({
 
   const degrees = `${formatNumber(outputs.temperature, lang)} ${symbols.temperature}`;
   const when = morningPhrase(today, lang);
+  const time = outputs.time;
   if (hour.level === 0) {
-    outputs.summary =
-      lang === 'fr'
-        ? `Pas de verglas attendu ${when} : minimum ${degrees} vers ${outputs.time}.`
-        : `No black ice expected ${when}: low of ${degrees} around ${outputs.time}.`;
+    outputs.summary = pick(lang, {
+      en: `No black ice expected ${when}: low of ${degrees} around ${time}.`,
+      fr: `Pas de verglas attendu ${when} : minimum ${degrees} vers ${time}.`,
+      de: `Keine Glätte ${when} erwartet: Tiefstwert ${degrees} gegen ${time}.`,
+      es: `No se espera hielo ${when}: mínima de ${degrees} hacia las ${time}.`,
+    });
     return outputs;
   }
   // "Verglas probable demain matin vers 06:00 : -1,5 °C après 2,4 mm de pluie."
-  let cause;
-  if (hour.freezingRain) {
-    cause = lang === 'fr' ? 'pluie verglaçante annoncée' : 'freezing rain forecast';
-  } else {
-    const rain = `${formatNumber(outputs.recent_rain, lang)} ${symbols.precipitation}`;
-    cause = lang === 'fr' ? `après ${rain} de pluie` : `after ${rain} of rain`;
-  }
-  outputs.summary =
-    lang === 'fr'
-      ? `${outputs.level_label} ${when} vers ${outputs.time} : ${degrees}, ${cause}.`
-      : `${outputs.level_label} ${when} around ${outputs.time}: ${degrees}, ${cause}.`;
+  const cause = hour.freezingRain
+    ? pick(lang, {
+        en: 'freezing rain forecast',
+        fr: 'pluie verglaçante annoncée',
+        de: 'gefrierender Regen angekündigt',
+        es: 'lluvia helada prevista',
+      })
+    : afterRain(outputs.recent_rain, symbols, lang);
+  const label = outputs.level_label;
+  outputs.summary = pick(lang, {
+    en: `${label} ${when} around ${time}: ${degrees}, ${cause}.`,
+    fr: `${label} ${when} vers ${time} : ${degrees}, ${cause}.`,
+    de: `${label} ${when} gegen ${time}: ${degrees}, ${cause}.`,
+    es: `${label} ${when} hacia las ${time}: ${degrees}, ${cause}.`,
+  });
   return outputs;
 }
 
@@ -711,47 +839,62 @@ function buildHourForecastOutputs({
   // 15 km/h, rafales à 40 km/h, pas de pluie."
   const parts = [];
   if (outputs.condition_label) {
-    parts.push(outputs.condition_label.toLowerCase());
+    parts.push(inSentence(outputs.condition_label, lang));
   }
   let temperature = `${outputs.temperature} ${symbols.temperature}`;
   if (
     isNumber(outputs.apparent_temperature) &&
     outputs.apparent_temperature !== outputs.temperature
   ) {
-    temperature +=
-      lang === 'fr'
-        ? ` (ressenti ${outputs.apparent_temperature} ${symbols.temperature})`
-        : ` (feels like ${outputs.apparent_temperature} ${symbols.temperature})`;
+    const feels = `${outputs.apparent_temperature} ${symbols.temperature}`;
+    temperature += pick(lang, {
+      en: ` (feels like ${feels})`,
+      fr: ` (ressenti ${feels})`,
+      de: ` (gefühlt ${feels})`,
+      es: ` (sensación de ${feels})`,
+    });
   }
   parts.push(temperature);
   if (isNumber(outputs.wind_speed)) {
     const speed = `${formatNumber(outputs.wind_speed, lang)} ${symbols.wind}`;
     const from = outputs.wind_direction_label && compassPoint(outputs.wind_direction, lang);
-    if (lang === 'fr') {
-      // "vent d'est", "vent d'ouest": French elides "de" before a vowel.
-      const of = from && /^[aeiou]/.test(from) ? `d'${from}` : `de ${from}`;
-      parts.push(from ? `vent ${of} à ${speed}` : `vent à ${speed}`);
-    } else {
-      parts.push(from ? `${from} wind at ${speed}` : `wind at ${speed}`);
-    }
+    // "vent d'est", "vent d'ouest": French elides "de" before a vowel.
+    const of = from && /^[aeiou]/.test(from) ? `d'${from}` : `de ${from}`;
+    parts.push(
+      from
+        ? pick(lang, {
+            en: `${from} wind at ${speed}`,
+            fr: `vent ${of} à ${speed}`,
+            de: `Wind aus ${from} mit ${speed}`,
+            es: `viento del ${from} a ${speed}`,
+          })
+        : pick(lang, {
+            en: `wind at ${speed}`,
+            fr: `vent à ${speed}`,
+            de: `Wind mit ${speed}`,
+            es: `viento a ${speed}`,
+          }),
+    );
   }
   if (isNumber(outputs.wind_gust) && outputs.wind_gust > 0) {
-    const gust = `${formatNumber(outputs.wind_gust, lang)} ${symbols.wind}`;
-    parts.push(lang === 'fr' ? `rafales à ${gust}` : `gusts up to ${gust}`);
+    parts.push(gusts(outputs.wind_gust, symbols, lang));
   }
   if (outputs.precipitation > 0) {
-    const amount = `${formatNumber(outputs.precipitation, lang)} ${symbols.precipitation}`;
-    parts.push(lang === 'fr' ? `${amount} de pluie` : `${amount} of rain`);
+    parts.push(rainAmount(outputs.precipitation, symbols, lang));
   } else {
-    parts.push(lang === 'fr' ? 'pas de pluie' : 'no rain');
+    parts.push(
+      pick(lang, { en: 'no rain', fr: 'pas de pluie', de: 'kein Regen', es: 'sin lluvia' }),
+    );
   }
-  const colon = lang === 'fr' ? ' :' : ':';
-  const at = lang === 'fr' ? 'à' : 'at';
-  outputs.summary = `${dayLabel(offset, date, lang)} ${at} ${outputs.time}${colon} ${parts.join(', ')}.`;
+  const at = pick(lang, { en: 'at', fr: 'à', de: 'um', es: 'a las' });
+  const dayName = dayLabel(offset, date, lang);
+  outputs.summary = `${dayName} ${at} ${outputs.time}${colon(lang)} ${parts.join(', ')}.`;
   return outputs;
 }
 
 export {
+  afterRain,
+  gusts,
   SCENE_ACTIONS,
   buildFrostRiskOutputs,
   buildIceRiskOutputs,

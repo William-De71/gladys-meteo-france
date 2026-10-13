@@ -44,6 +44,7 @@ import { describeNowcast } from './scene-actions.js';
 import {
   INTENSITY_LABELS,
   textLanguage,
+  pick,
   unitSymbols,
   formatNumber,
   formatLocalTime,
@@ -165,18 +166,20 @@ function buildRainEventData(key, house, nowcast, language) {
     };
   }
   const dryForHour = nowcast.minutesUntilNextRain === null;
-  let summary;
-  if (dryForHour) {
-    summary =
-      lang === 'fr'
-        ? "Fin de la pluie, pas de nouvelle averse prévue dans l'heure."
-        : 'The rain has stopped, no more rain expected within the hour.';
-  } else {
-    summary =
-      lang === 'fr'
-        ? `Fin de la pluie, reprise prévue dans ${nowcast.minutesUntilNextRain} min.`
-        : `The rain has stopped, more expected in ${nowcast.minutesUntilNextRain} min.`;
-  }
+  const next = nowcast.minutesUntilNextRain;
+  const summary = dryForHour
+    ? pick(lang, {
+        en: 'The rain has stopped, no more rain expected within the hour.',
+        fr: "Fin de la pluie, pas de nouvelle averse prévue dans l'heure.",
+        de: 'Der Regen hat aufgehört, in der nächsten Stunde kein weiterer Regen erwartet.',
+        es: 'Ha dejado de llover, no se prevé más lluvia en la próxima hora.',
+      })
+    : pick(lang, {
+        en: `The rain has stopped, more expected in ${next} min.`,
+        fr: `Fin de la pluie, reprise prévue dans ${next} min.`,
+        de: `Der Regen hat aufgehört, neuer Regen in ${next} Min. erwartet.`,
+        es: `Ha dejado de llover, se prevé que vuelva en ${next} min.`,
+      });
   return {
     house,
     dry_for_hour: dryForHour,
@@ -406,7 +409,7 @@ function evaluateForecastLevels(states, extremes) {
  * @description "aujourd'hui à 06:00" / "demain à 06:00" for a moment.
  * @param {number} dt - The moment, in seconds.
  * @param {string|null} timezone - The IANA timezone of the place.
- * @param {string} language - 'fr' or 'en'.
+ * @param {string} language - 'en', 'fr', 'de' or 'es'.
  * @param {number} nowSeconds - Current time in seconds.
  * @returns {string} The phrase.
  * @example
@@ -415,10 +418,12 @@ function evaluateForecastLevels(states, extremes) {
 function describeMoment(dt, timezone, language, nowSeconds) {
   const time = formatLocalTime(dt, timezone);
   const today = dayKey(nowSeconds, timezone) === dayKey(dt, timezone);
-  if (language === 'fr') {
-    return `${today ? "aujourd'hui" : 'demain'} à ${time}`;
-  }
-  return `${today ? 'today' : 'tomorrow'} at ${time}`;
+  return pick(language, {
+    en: `${today ? 'today' : 'tomorrow'} at ${time}`,
+    fr: `${today ? "aujourd'hui" : 'demain'} à ${time}`,
+    de: `${today ? 'heute' : 'morgen'} um ${time}`,
+    es: `${today ? 'hoy' : 'mañana'} a las ${time}`,
+  });
 }
 
 /**
@@ -452,10 +457,12 @@ function buildForecastEventData(
   if (event.trigger === SCENE_TRIGGERS.WIND_FORECAST) {
     data.wind_gust = convertSceneWindSpeed(event.value, units);
     const gust = `${formatNumber(data.wind_gust, lang)} ${symbols.wind}`;
-    data.summary =
-      lang === 'fr'
-        ? `Vent fort annoncé : rafales à ${gust} prévues ${moment}.`
-        : `Strong wind forecast: gusts up to ${gust} expected ${moment}.`;
+    data.summary = pick(lang, {
+      en: `Strong wind forecast: gusts up to ${gust} expected ${moment}.`,
+      fr: `Vent fort annoncé : rafales à ${gust} prévues ${moment}.`,
+      de: `Starker Wind angekündigt: Böen bis ${gust} ${moment} erwartet.`,
+      es: `Viento fuerte previsto: rachas de hasta ${gust} ${moment}.`,
+    });
     return data;
   }
 
@@ -464,19 +471,22 @@ function buildForecastEventData(
   if (event.trigger === SCENE_TRIGGERS.FROST_FORECAST) {
     data.temperature_min = temperature;
     const hard = event.threshold <= HARD_FROST_THRESHOLD;
-    if (lang === 'fr') {
-      data.summary = `${hard ? 'Gel fort' : 'Gel'} annoncé : ${degrees} prévus ${moment}.`;
-    } else {
-      data.summary = `${hard ? 'Hard frost' : 'Frost'} forecast: ${degrees} expected ${moment}.`;
-    }
+    data.summary = pick(lang, {
+      en: `${hard ? 'Hard frost' : 'Frost'} forecast: ${degrees} expected ${moment}.`,
+      fr: `${hard ? 'Gel fort' : 'Gel'} annoncé : ${degrees} prévus ${moment}.`,
+      de: `${hard ? 'Strenger Frost' : 'Frost'} angekündigt: ${degrees} ${moment} erwartet.`,
+      es: `${hard ? 'Helada fuerte prevista' : 'Helada prevista'}: ${degrees} ${moment}.`,
+    });
     return data;
   }
 
   data.temperature_max = temperature;
-  data.summary =
-    lang === 'fr'
-      ? `Forte chaleur annoncée : ${degrees} prévus ${moment}.`
-      : `Heat forecast: ${degrees} expected ${moment}.`;
+  data.summary = pick(lang, {
+    en: `Heat forecast: ${degrees} expected ${moment}.`,
+    fr: `Forte chaleur annoncée : ${degrees} prévus ${moment}.`,
+    de: `Hitze angekündigt: ${degrees} ${moment} erwartet.`,
+    es: `Calor intenso previsto: ${degrees} ${moment}.`,
+  });
   return data;
 }
 
