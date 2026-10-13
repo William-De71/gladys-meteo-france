@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Gladys community forum (French)
+    url: https://community.gladysassistant.com/t/integration-externe-meteo-france/10322
+    about: Questions and feedback, in the thread of the integration.
+  - name: Security problem
+    url: https://github.com/William-De71/gladys-meteo-france/security/advisories/new
+    about: Report it privately, never in a public issue.
