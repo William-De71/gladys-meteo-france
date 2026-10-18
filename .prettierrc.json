@@ -4,5 +4,13 @@
   "trailingComma": "all",
   "semi": true,
   "tabWidth": 2,
-  "arrowParens": "always"
+  "arrowParens": "always",
+  "overrides": [
+    {
+      "files": "gladys-assistant-integration.json",
+      "options": {
+        "printWidth": 400
+      }
+    }
+  ]
 }

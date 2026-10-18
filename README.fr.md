@@ -62,7 +62,7 @@ les **déclencheurs d'alerte météo** du cœur. Une fois installé, il prend au
 - **Carte de vigilance** (optionnelle, clé d'API) : la carte nationale du jour et du lendemain, affichée dans le
   widget.
 
-**Scènes** : neuf déclencheurs (pluie dans l'heure, gel, chaleur, vent, verglas, neige, orage, UV) et sept actions
+**Scènes** : dix déclencheurs (pluie dans l'heure, gel, chaleur, vent, verglas, neige, orage, UV, avalanche) et huit actions
 en lecture seule, avec un résumé prêt à envoyer en **français, anglais, allemand ou espagnol**, la langue de
 Gladys.
 
@@ -156,17 +156,18 @@ prévient le cœur quelle que soit la valeur ; 0 désactive le cache (tableau de
 
 ## Déclencheurs de scène
 
-| Déclencheur (clé)                          | Se déclenche quand                                                                                     | Filtres               |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------------------- |
-| **Pluie imminente** `rain_expected`        | la prévision radar annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas                  | maison, intensité     |
-| **Fin de la pluie** `rain_stopped`         | la pluie en cours s'arrête                                                                             | maison                |
-| **Gel annoncé** `frost_forecast`           | les 24 prochaines heures atteignent 0 °C, -5 °C ou un seuil personnalisé (-20 à 5 °C)                  | maison, niveau, seuil |
-| **Forte chaleur annoncée** `heat_forecast` | les 24 prochaines heures atteignent 30 °C, 35 °C ou un seuil personnalisé (20 à 45 °C)                 | maison, niveau, seuil |
-| **Vent fort annoncé** `wind_forecast`      | les rafales des 24 prochaines heures atteignent 60, 80, 100 km/h ou un seuil (20 à 150 km/h, pas de 5) | maison, niveau, seuil |
-| **Verglas annoncé** `ice_forecast`         | les 24 prochaines heures atteignent le niveau risque / probable de verglas (voir `src/ice.js`)         | maison, niveau        |
-| **Neige annoncée** `snow_forecast`         | de la neige ou de la pluie et neige apparaît dans les 24 prochaines heures (présence, jamais quantité) | maison                |
-| **Orage annoncé** `storm_forecast`         | un orage ou de la grêle apparaît dans les 12 prochaines heures                                         | maison                |
-| **UV élevé annoncé** `uv_forecast`         | l'indice UV du jour à venir atteint 6, 8, 11 ou un seuil personnalisé (1 à 11)                         | maison, niveau, seuil |
+| Déclencheur (clé)                                 | Se déclenche quand                                                                                     | Filtres               |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------- |
+| **Pluie imminente** `rain_expected`               | la prévision radar annonce de la pluie dans l'heure, alors qu'elle n'en annonçait pas                  | maison, intensité     |
+| **Fin de la pluie** `rain_stopped`                | la pluie en cours s'arrête                                                                             | maison                |
+| **Gel annoncé** `frost_forecast`                  | les 24 prochaines heures atteignent 0 °C, -5 °C ou un seuil personnalisé (-20 à 5 °C)                  | maison, niveau, seuil |
+| **Forte chaleur annoncée** `heat_forecast`        | les 24 prochaines heures atteignent 30 °C, 35 °C ou un seuil personnalisé (20 à 45 °C)                 | maison, niveau, seuil |
+| **Vent fort annoncé** `wind_forecast`             | les rafales des 24 prochaines heures atteignent 60, 80, 100 km/h ou un seuil (20 à 150 km/h, pas de 5) | maison, niveau, seuil |
+| **Verglas annoncé** `ice_forecast`                | les 24 prochaines heures atteignent le niveau risque / probable de verglas (voir `src/ice.js`)         | maison, niveau        |
+| **Neige annoncée** `snow_forecast`                | de la neige ou de la pluie et neige apparaît dans les 24 prochaines heures (présence, jamais quantité) | maison                |
+| **Orage annoncé** `storm_forecast`                | un orage ou de la grêle apparaît dans les 12 prochaines heures                                         | maison                |
+| **UV élevé annoncé** `uv_forecast`                | l'indice UV du jour à venir atteint 6, 8, 11 ou un seuil personnalisé (1 à 11)                         | maison, niveau, seuil |
+| **Risque d'avalanche en hausse** `avalanche_risk` | le bulletin d'avalanche du massif de la maison monte à 2, 3, 4 ou 5 (voir `src/avalanche.js`)          | maison, niveau        |
 
 Chaque déclencheur porte un `summary` prêt à envoyer (« Pluie modérée prévue dans 20 min. », « Gel annoncé : -2 °C
 prévus demain à 06:00. ») et ses chiffres en variables de scène : `{{triggerEvent.data.minutes_until_rain}}`,
@@ -190,6 +191,7 @@ Un déclencheur est une **transition**, publiée une fois — jamais un état re
   averse ;
 - verglas, neige et orage ajoutent un délai de 6 heures par déclencheur et par niveau, et `uv_forecast` se déclenche
   une fois par jour et par seuil, en lisant l'indice du jour avant midi et celui du lendemain après ;
+- `avalanche_risk` relit chaque heure le bulletin du massif de chaque maison et se déclenche une fois par niveau quand le risque monte, réarmé quand il redescend ; la fin de saison compte comme 0, si bien que le premier bulletin de novembre se déclenche ;
 - le premier relevé après un démarrage sert de **référence** et ne déclenche rien, comme la vérification des
   alertes météo du cœur.
 
@@ -210,12 +212,15 @@ scènes).
 | **Obtenir le risque de givre** `get_frost_risk`                  | `level` 0-2, heure la plus critique, température, points de rosée et de givre, humidité, nuages, vent, `reduced` |
 | **Obtenir le risque de verglas** `get_ice_risk`                  | `level` 0-2, heure de début, température, `freezing_rain`, pluie des 6 dernières heures, `freezing_probability`  |
 | **Obtenir la météo d'une heure** `get_hour_forecast`             | une heure d'aujourd'hui au surlendemain : température, ressenti, ciel, pluie, vent, rafales, direction, nuages   |
+| **Obtenir le risque d'avalanche** `get_avalanche_risk`           | `has_bulletin`, `risk` 1-5, risques sous et au-dessus de `altitude`, `risk_next_day`, commentaire du bulletin    |
 
 Chaque action renvoie aussi un `summary` d'une phrase, par exemple « Demain : pluie, 14 à 21 °C, 4,2 mm de pluie
 (80 %), rafales à 55 km/h. » — en espagnol « Mañana: lluvia, de 14 a 21 °C, 4,2 mm de lluvia (80 %), rachas de
 hasta 55 km/h. ». Un chiffre que Météo France ne fournit pas est omis, jamais envoyé à 0 — 0 mm se lirait « sec »
 dans les conditions qui suivent. Les actions sont en lecture seule et ne déclenchent jamais de déclencheur : une
 scène ne peut pas boucler à travers l'intégration.
+
+`get_avalanche_risk` et `avalanche_risk` (`src/avalanche.js`, `src/massifs.js`) lisent le bulletin d'estimation du risque d'avalanche (BRA, XML) du même service public. Une maison appartient au massif qui la contient, ou au plus proche à moins de 5 km, d'après les contours officiels des 36 massifs (Météo France, Licence Ouverte, simplifiés à ~170 m) ; le champ `massif` de l'action accepte un nom ou un numéro. Hors saison (juin à octobre), Météo France répond un message au lieu du bulletin : `has_bulletin` vaut alors `false`.
 
 `get_frost_risk` (`src/frost.js`) lit les heures brutes de Météo France, pas celles du pivot (arrondies au degré),
 de maintenant jusqu'à 10 h le matin suivant : point de rosée à partir de la température et de l'humidité (Magnus),
@@ -240,12 +245,13 @@ elle-même utilise toujours les coordonnées que le cœur passe à `onWeatherGet
 
 ## Appels à Météo France
 
-| Quoi               | Point d'accès                  | Quand                                                       |
-| ------------------ | ------------------------------ | ----------------------------------------------------------- |
-| Prévisions         | `webservice…/forecast`         | quand le cache est vide, et toutes les 30 min par maison    |
-| Vigilance          | `webservice…/v3/warning/full`  | avec chaque prévision, et toutes les 15 min par département |
-| Pluie dans l'heure | `webservice…/rain`             | toutes les 5 min par maison couverte, et à chaque action    |
-| Carte de vigilance | `public-api…/DPVigilance/v1/…` | quand le widget l'affiche (clé d'API uniquement)            |
+| Quoi                 | Point d'accès                  | Quand                                                         |
+| -------------------- | ------------------------------ | ------------------------------------------------------------- |
+| Prévisions           | `webservice…/forecast`         | quand le cache est vide, et toutes les 30 min par maison      |
+| Vigilance            | `webservice…/v3/warning/full`  | avec chaque prévision, et toutes les 15 min par département   |
+| Pluie dans l'heure   | `webservice…/rain`             | toutes les 5 min par maison couverte, et à chaque action      |
+| Carte de vigilance   | `public-api…/DPVigilance/v1/…` | quand le widget l'affiche (clé d'API uniquement)              |
+| Bulletin d'avalanche | `webservice…/v2/report` (BRA)  | toutes les heures par massif d'une maison, et à chaque action |
 
 Une maison hors de la couverture de la pluie dans l'heure (certaines zones de montagne, outre-mer) n'est revérifiée
 que toutes les 6 heures. Météo France couvre **la France et ses départements d'outre-mer** : pour une position hors

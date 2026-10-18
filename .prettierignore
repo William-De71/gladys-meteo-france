@@ -6,3 +6,6 @@ package-lock.json
 # The history before the automatic releases is kept byte for byte; the
 # sections the Release workflow adds are Prettier-clean (test/release.test.js).
 CHANGELOG.md
+
+# Generated from the official outlines of Météo France, one massif per line.
+src/massifs.json

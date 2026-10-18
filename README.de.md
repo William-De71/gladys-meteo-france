@@ -63,8 +63,8 @@ Wetter eines Zuhauses, und er versorgt das **Wetter-Widget** des Dashboards, den
   des Kerns alle 30 Minuten.
 - **Warnkarte** (optional, API-Schlüssel): die nationale Karte für heute und morgen, im Widget angezeigt.
 
-**Szenen**: neun Auslöser (Regen in der nächsten Stunde, Frost, Hitze, Wind, Glätte, Schnee, Gewitter, UV) und
-sieben lesende Aktionen, mit einer versandfertigen Zusammenfassung auf **Deutsch, Englisch, Französisch oder
+**Szenen**: zehn Auslöser (Regen in der nächsten Stunde, Frost, Hitze, Wind, Glätte, Schnee, Gewitter, UV, Lawinen) und
+acht lesende Aktionen, mit einer versandfertigen Zusammenfassung auf **Deutsch, Englisch, Französisch oder
 Spanisch**, der Sprache von Gladys.
 
 **Transport**: nur `cloud`. Météo France ist ein Internetdienst: Im lokalen Netz gibt es nichts zu erreichen, und
@@ -169,6 +169,7 @@ unabhängig vom Wert; 0 deaktiviert den Cache (langsameres Dashboard).
 | **Schnee angekündigt** `snow_forecast`           | Schnee oder Schneeregen in den nächsten 24 Stunden auftaucht (Auftreten, nie eine Menge)                       | Zuhause                  |
 | **Gewitter angekündigt** `storm_forecast`        | ein Gewitter oder Hagel in den nächsten 12 Stunden auftaucht                                                   | Zuhause                  |
 | **Hoher UV-Index angekündigt** `uv_forecast`     | der UV-Index des kommenden Tages 6, 8, 11 oder einen eigenen Schwellenwert erreicht (1 bis 11)                 | Zuhause, Stufe, Schwelle |
+| **Lawinengefahr steigt** `avalanche_risk`        | das Lawinenbulletin des Massivs des Zuhauses auf 2, 3, 4 oder 5 steigt (siehe `src/avalanche.js`)              | Zuhause, Stufe           |
 
 Jeder Auslöser liefert eine versandfertige `summary` („Mäßiger Regen in 20 Min. erwartet.“, „Frost angekündigt:
 -2 °C morgen um 06:00 erwartet.“) und seine Zahlen als Szenenvariablen: `{{triggerEvent.data.minutes_until_rain}}`,
@@ -195,6 +196,7 @@ wird:
 - Glätte, Schnee und Gewitter fügen eine Sperrzeit von 6 Stunden pro Auslöser und Stufe hinzu, und `uv_forecast`
   löst einmal pro Tag und Schwelle aus, wobei vor Mittag der heutige und danach der morgige Tagesindex gelesen
   wird;
+- `avalanche_risk` liest stündlich das Bulletin des Massivs jedes Zuhauses und löst einmal pro Stufe aus, wenn die Gefahr steigt, wieder scharf, sobald sie fällt; das Saisonende zählt als 0, daher löst das erste Bulletin im November aus;
 - die erste Abfrage nach einem Start dient als **Ausgangswert** und löst nichts aus, wie die eigene
   Wetterwarnungsprüfung des Kerns.
 
@@ -206,20 +208,23 @@ weitergegeben, für die Szenen in km/h umgerechnet).
 
 ## Szenen-Aktionen
 
-| Aktion (Schlüssel)                                            | Wichtigste Ausgaben                                                                                         |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Vorhersage eines Tages abrufen** `get_forecast`             | Tiefst- und Höchsttemperatur, Himmel, Regen und Wahrscheinlichkeit, Wind, Böen, UV, Sonnenzeiten            |
-| **Regen der nächsten Stunden abrufen** `get_rain_next_hours`  | `dry`, Niederschlagssumme, Regenstunden, Uhrzeit des ersten Regens (1 bis 24 Std.)                          |
-| **Regen in der nächsten Stunde abrufen** `get_rain_next_hour` | `available`, `raining`, `rain_expected`, Intensität, Minuten bis zum Regen / bis es trocken ist             |
-| **Unwetterwarnung abrufen** `get_vigilance`                   | Farbe und Stufe, Phänomene, Departement, offizielle Zusammenfassung, vollständiger Lagebericht              |
-| **Reifgefahr abrufen** `get_frost_risk`                       | `level` 0-2, kritischste Stunde, Temperatur, Tau- und Frostpunkt, Luftfeuchtigkeit, Wolken, Wind, `reduced` |
-| **Glättegefahr abrufen** `get_ice_risk`                       | `level` 0-2, Beginn, Temperatur, `freezing_rain`, Regen der letzten 6 Std., `freezing_probability`          |
-| **Vorhersage einer Stunde abrufen** `get_hour_forecast`       | eine Stunde von heute bis übermorgen: Temperatur, gefühlt, Himmel, Regen, Wind, Böen, Richtung, Wolken      |
+| Aktion (Schlüssel)                                            | Wichtigste Ausgaben                                                                                             |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Vorhersage eines Tages abrufen** `get_forecast`             | Tiefst- und Höchsttemperatur, Himmel, Regen und Wahrscheinlichkeit, Wind, Böen, UV, Sonnenzeiten                |
+| **Regen der nächsten Stunden abrufen** `get_rain_next_hours`  | `dry`, Niederschlagssumme, Regenstunden, Uhrzeit des ersten Regens (1 bis 24 Std.)                              |
+| **Regen in der nächsten Stunde abrufen** `get_rain_next_hour` | `available`, `raining`, `rain_expected`, Intensität, Minuten bis zum Regen / bis es trocken ist                 |
+| **Unwetterwarnung abrufen** `get_vigilance`                   | Farbe und Stufe, Phänomene, Departement, offizielle Zusammenfassung, vollständiger Lagebericht                  |
+| **Reifgefahr abrufen** `get_frost_risk`                       | `level` 0-2, kritischste Stunde, Temperatur, Tau- und Frostpunkt, Luftfeuchtigkeit, Wolken, Wind, `reduced`     |
+| **Glättegefahr abrufen** `get_ice_risk`                       | `level` 0-2, Beginn, Temperatur, `freezing_rain`, Regen der letzten 6 Std., `freezing_probability`              |
+| **Vorhersage einer Stunde abrufen** `get_hour_forecast`       | eine Stunde von heute bis übermorgen: Temperatur, gefühlt, Himmel, Regen, Wind, Böen, Richtung, Wolken          |
+| **Lawinengefahr abrufen** `get_avalanche_risk`                | `has_bulletin`, `risk` 1-5, Gefahr unter- und oberhalb von `altitude`, `risk_next_day`, Kommentar des Bulletins |
 
 Jede Aktion liefert außerdem eine `summary` in einem Satz, z. B. „Morgen: Regen, 14 bis 21 °C, 4,2 mm Regen
 (80 %), Böen bis 55 km/h.“ Eine Zahl, die Météo France nicht liefert, wird weggelassen, nie als 0 gesendet – 0 mm
 würde in den folgenden Bedingungen als „trocken“ gelesen. Die Aktionen sind rein lesend und lösen nie einen
 Auslöser aus: Eine Szene kann über die Integration keine Schleife bilden.
+
+`get_avalanche_risk` und `avalanche_risk` (`src/avalanche.js`, `src/massifs.js`) lesen das Lawinenbulletin (BRA, XML) desselben öffentlichen Dienstes. Ein Zuhause gehört zu dem Massiv, in dem es liegt, oder zum nächstgelegenen im Umkreis von 5 km, nach den offiziellen Umrissen der 36 Massive (Météo France, Licence Ouverte, auf ~170 m vereinfacht); das Feld `massif` der Aktion nimmt einen Namen oder eine Nummer. Außerhalb der Saison (Juni bis Oktober) antwortet Météo France mit einer Meldung statt des Bulletins: `has_bulletin` ist dann `false`.
 
 `get_frost_risk` (`src/frost.js`) liest die Rohstunden von Météo France, nicht die des Pivot-Formats (auf Grad
 gerundet), von jetzt bis 10:00 des kommenden Morgens: Taupunkt aus Temperatur und Luftfeuchtigkeit (Magnus),
@@ -243,12 +248,13 @@ Koordinaten, die der Kern an `onWeatherGet` übergibt.
 
 ## Aufrufe bei Météo France
 
-| Was                          | Endpunkt                       | Wann                                                     |
-| ---------------------------- | ------------------------------ | -------------------------------------------------------- |
-| Vorhersage                   | `webservice…/forecast`         | bei leerem Cache und alle 30 Min. pro Zuhause (Szenen)   |
-| Warnungen                    | `webservice…/v3/warning/full`  | mit jeder Vorhersage und alle 15 Min. pro Departement    |
-| Regen in der nächsten Stunde | `webservice…/rain`             | alle 5 Min. pro abgedecktem Zuhause und bei jeder Aktion |
-| Warnkarte                    | `public-api…/DPVigilance/v1/…` | wenn das Widget sie anzeigt (nur mit API-Schlüssel)      |
+| Was                          | Endpunkt                       | Wann                                                      |
+| ---------------------------- | ------------------------------ | --------------------------------------------------------- |
+| Vorhersage                   | `webservice…/forecast`         | bei leerem Cache und alle 30 Min. pro Zuhause (Szenen)    |
+| Warnungen                    | `webservice…/v3/warning/full`  | mit jeder Vorhersage und alle 15 Min. pro Departement     |
+| Regen in der nächsten Stunde | `webservice…/rain`             | alle 5 Min. pro abgedecktem Zuhause und bei jeder Aktion  |
+| Warnkarte                    | `public-api…/DPVigilance/v1/…` | wenn das Widget sie anzeigt (nur mit API-Schlüssel)       |
+| Lawinenbulletin              | `webservice…/v2/report` (BRA)  | stündlich pro Massiv eines Zuhauses, und bei jeder Aktion |
 
 Ein Zuhause außerhalb der Abdeckung des Regens in der nächsten Stunde (manche Berggebiete, Übersee) wird nur alle
 6 Stunden erneut geprüft. Météo France deckt **Frankreich und seine Überseedepartements** ab: Für einen Ort

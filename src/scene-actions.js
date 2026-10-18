@@ -57,6 +57,8 @@ const SCENE_ACTIONS = {
   GET_FROST_RISK: 'get_frost_risk',
   GET_ICE_RISK: 'get_ice_risk',
   GET_HOUR_FORECAST: 'get_hour_forecast',
+  // Built in avalanche.js.
+  GET_AVALANCHE_RISK: 'get_avalanche_risk',
 };
 
 // Bounds of the `hours` field of get_rain_next_hours, mirrored from the

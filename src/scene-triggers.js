@@ -62,6 +62,8 @@ const SCENE_TRIGGERS = {
   SNOW_FORECAST: 'snow_forecast',
   STORM_FORECAST: 'storm_forecast',
   UV_FORECAST: 'uv_forecast',
+  // Watched in avalanche-watcher.js.
+  AVALANCHE_RISK: 'avalanche_risk',
 };
 
 // How far ahead the forecast triggers look.

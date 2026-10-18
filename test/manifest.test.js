@@ -14,6 +14,8 @@ import {
 import { SCENE_TRIGGERS, CUSTOM_LEVEL, FORECAST_LEVELS } from '../src/scene-triggers.js';
 import { RAIN_INTENSITIES } from '../src/rain.js';
 import { ICE_TRIGGER_LEVELS, UV_LEVELS } from '../src/hazard-triggers.js';
+import { AVALANCHE_LEVELS } from '../src/avalanche.js';
+import { triggerSamples, actionSamples } from './helpers/samples.js';
 
 const manifest = JSON.parse(
   readFileSync(new URL('../gladys-assistant-integration.json', import.meta.url), 'utf8'),
@@ -112,6 +114,32 @@ test('mirrors the bounds of the hour forecast fields', () => {
   assert.equal(day.options.length, MAX_HOUR_DAY_OFFSET + 1);
   const hour = fields.find((field) => field.key === 'hour');
   assert.deepEqual([hour.min, hour.max, hour.default], [0, 23, DEFAULT_FORECAST_HOUR]);
+});
+
+test('offers exactly the avalanche levels the code fires, and declares what it sends', () => {
+  const trigger = byKey(manifest.scene_triggers).get(SCENE_TRIGGERS.AVALANCHE_RISK);
+  const level = trigger.fields.find((field) => field.key === 'level');
+  assert.deepEqual(
+    level.options.map((option) => option.value),
+    AVALANCHE_LEVELS.map(({ level: value }) => value),
+  );
+  // Required with a default: an empty level would fire every level at once.
+  assert.equal(level.required, true);
+  assert.ok(level.options.some((option) => option.value === level.default));
+  const variables = trigger.variables.map((variable) => variable.key).sort();
+  assert.deepEqual(variables, Object.keys(triggerSamples('en').avalanche_risk).sort());
+  const action = byKey(manifest.scene_actions).get(SCENE_ACTIONS.GET_AVALANCHE_RISK);
+  assert.deepEqual(
+    action.fields.map((field) => [field.key, field.type, field.required]),
+    [
+      ['house', 'string', false],
+      ['massif', 'string', false],
+    ],
+  );
+  const outputs = action.outputs.map((output) => output.key);
+  for (const key of Object.keys(actionSamples('en').get_avalanche_risk)) {
+    assert.ok(outputs.includes(key), `get_avalanche_risk.${key}`);
+  }
 });
 
 test('asks for the house location the triggers need', () => {

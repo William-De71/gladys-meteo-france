@@ -57,7 +57,7 @@ scene triggers**. When installed, it takes over from OpenWeather automatically.
   changes, so a "Weather alert raised" scene fires in seconds instead of within the core's 30-minute check.
 - **Vigilance map** (optional, API key): the national map for today and tomorrow, rendered in the widget.
 
-**Scenes**: nine triggers (rain within the hour, frost, heat, wind, black ice, snow, storm, UV) and seven read-only
+**Scenes**: ten triggers (rain within the hour, frost, heat, wind, black ice, snow, storm, UV, avalanche) and eight read-only
 actions, with a ready-to-send summary in **English, French, German or Spanish**, the language of Gladys.
 
 **Transport**: `cloud` only. Météo France is an Internet service: there is nothing to reach on the local network,
@@ -161,6 +161,7 @@ cache (slower dashboard).
 | **Snow forecast** `snow_forecast`                 | snow or sleet enters the next 24 hours (presence, never an amount)                                    | house                   |
 | **Storm forecast** `storm_forecast`               | a thunderstorm or hail enters the next 12 hours                                                       | house                   |
 | **High UV forecast** `uv_forecast`                | the daily UV index of the coming day reaches 6, 8, 11 or a custom threshold (1-11)                    | house, level, threshold |
+| **Avalanche danger rising** `avalanche_risk`      | the avalanche bulletin of the massif of the house rises to 2, 3, 4 or 5 (see `src/avalanche.js`)      | house, level            |
 
 Every trigger carries a ready-to-send `summary` ("Moderate rain expected in 20 min.", "Frost forecast: -2 °C
 expected tomorrow at 06:00.") and its figures as scene variables: `{{triggerEvent.data.minutes_until_rain}}`,
@@ -182,6 +183,7 @@ A trigger is a **transition**, published once — never a state re-sent on every
 - a rain trigger never repeats within 30 minutes for a house, the radar flickering at the edge of a shower;
 - ice / snow / storm add a 6-hour cooldown per trigger and level, and `uv_forecast` fires once per day and
   threshold, reading today's daily index before noon and tomorrow's after;
+- `avalanche_risk` reads the bulletin of the massif of every house each hour and fires once per level when the danger rises, re-armed when it falls back; the end of the season counts as 0, so the first bulletin of November fires;
 - the first poll after a start is a **baseline** and fires nothing, like the core's own weather-alert check.
 
 MF's `probability_forecast[].freezing` is the chance of a temperature below 0 °C, not of black ice:
@@ -191,20 +193,23 @@ through to the pivot for metric, converted to km/h for the scenes).
 
 ## Scene actions
 
-| Action (key)                                             | Main outputs                                                                                          |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **Get the forecast of a day** `get_forecast`             | min/max temperatures, sky, rain and probability, wind, gusts, UV, sun times                           |
-| **Get the rain of the next hours** `get_rain_next_hours` | `dry`, total precipitation, rainy hours, time of the first rain (1-24 h)                              |
-| **Get the rain within the hour** `get_rain_next_hour`    | `available`, `raining`, `rain_expected`, intensity, minutes until rain / dry                          |
-| **Get the vigilance** `get_vigilance`                    | color and level, phenomena, department, official summary, full bulletin                               |
-| **Get the frost risk** `get_frost_risk`                  | `level` 0-2, worst hour, temperature, dew and frost points, humidity, clouds, wind, `reduced`         |
-| **Get the black ice risk** `get_ice_risk`                | `level` 0-2, onset time, temperature, `freezing_rain`, rain of the last 6 h, `freezing_probability`   |
-| **Get the forecast of an hour** `get_hour_forecast`      | an hour of today to the day after: temperature, feels like, sky, rain, wind, gusts, direction, clouds |
+| Action (key)                                             | Main outputs                                                                                            |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Get the forecast of a day** `get_forecast`             | min/max temperatures, sky, rain and probability, wind, gusts, UV, sun times                             |
+| **Get the rain of the next hours** `get_rain_next_hours` | `dry`, total precipitation, rainy hours, time of the first rain (1-24 h)                                |
+| **Get the rain within the hour** `get_rain_next_hour`    | `available`, `raining`, `rain_expected`, intensity, minutes until rain / dry                            |
+| **Get the vigilance** `get_vigilance`                    | color and level, phenomena, department, official summary, full bulletin                                 |
+| **Get the frost risk** `get_frost_risk`                  | `level` 0-2, worst hour, temperature, dew and frost points, humidity, clouds, wind, `reduced`           |
+| **Get the black ice risk** `get_ice_risk`                | `level` 0-2, onset time, temperature, `freezing_rain`, rain of the last 6 h, `freezing_probability`     |
+| **Get the forecast of an hour** `get_hour_forecast`      | an hour of today to the day after: temperature, feels like, sky, rain, wind, gusts, direction, clouds   |
+| **Get the avalanche danger** `get_avalanche_risk`        | `has_bulletin`, `risk` 1-5, danger below and above `altitude`, `risk_next_day`, comment of the bulletin |
 
 Every action also returns a one-sentence `summary`, e.g. "Tomorrow: rain, 14 to 21 °C, 4.2 mm of rain (80%),
 gusts up to 55 km/h." — in German "Morgen: Regen, 14 bis 21 °C, 4,2 mm Regen (80 %), Böen bis 55 km/h.". A figure
 Météo France does not provide is left out, never sent as 0 — a 0 mm would read as "dry" in the conditions that
 follow. The actions are read-only and never fire a trigger, so a scene cannot loop through the integration.
+
+`get_avalanche_risk` and `avalanche_risk` (`src/avalanche.js`, `src/massifs.js`) read the avalanche bulletin (BRA, XML) of the same public service. A house belongs to the massif containing it, or to the nearest one within 5 km, from the official outlines of the 36 massifs (Météo France, Licence Ouverte, simplified to ~170 m); the `massif` field of the action takes a name or a number. Out of season (June to October), Météo France answers a message instead of the bulletin: `has_bulletin` is then `false`.
 
 `get_frost_risk` (`src/frost.js`) reads the raw MF hours, not the pivot ones (rounded to the degree), from now until
 10:00 of the coming morning: dew point from temperature and humidity (Magnus), frost point from the dew point, then
@@ -233,6 +238,7 @@ passes to `onWeatherGet`.
 | Vigilance            | `webservice…/v3/warning/full`  | with each forecast, and every 15 min per department  |
 | Rain within the hour | `webservice…/rain`             | every 5 min per covered house, and on each action    |
 | Vigilance map        | `public-api…/DPVigilance/v1/…` | when the widget shows it (API key only)              |
+| Avalanche bulletin   | `webservice…/v2/report` (BRA)  | every hour per massif of a house, and on each action |
 
 A house outside the rain nowcast coverage (some mountain areas, overseas) is re-checked only every 6 hours.
 Météo France covers **France and its overseas departments**: for a location outside that area, the forecast API

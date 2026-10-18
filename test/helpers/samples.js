@@ -7,7 +7,15 @@
 // -----------------------------------------------------------------------------
 
 import { buildRainEventData, buildForecastEventData } from '../../src/scene-triggers.js';
+import { readFileSync } from 'node:fs';
+
 import { buildHazardEventData } from '../../src/hazard-triggers.js';
+import {
+  AVALANCHE_LEVELS,
+  parseAvalancheBulletin,
+  buildAvalancheOutputs,
+  buildAvalancheEventData,
+} from '../../src/avalanche.js';
 import {
   buildForecastOutputs,
   buildRainHoursOutputs,
@@ -123,6 +131,12 @@ const RAINING = {
   minutesUntilNextRain: null,
 };
 
+// A real bulletin of Météo France (Mont-Blanc, 18 May 2026), trimmed.
+const AVALANCHE_BULLETIN = parseAvalancheBulletin(
+  readFileSync(new URL('../fixtures/avalanche-mont-blanc.xml', import.meta.url), 'utf8'),
+);
+const MASSIF = { id: '03', name: 'Mont-Blanc' };
+
 const VIGILANCE = {
   color_max: 3,
   phenomenons_items: [
@@ -191,6 +205,14 @@ function triggerSamples(language, units = 'metric') {
       date: '2026-08-05',
       today: false,
     }),
+    avalanche_risk: buildAvalancheEventData({
+      level: AVALANCHE_LEVELS[0],
+      bulletin: AVALANCHE_BULLETIN,
+      massif: MASSIF,
+      house: HOUSE,
+      previousRisk: 1,
+      language,
+    }),
   };
 }
 
@@ -226,7 +248,8 @@ function actionSamples(language, units = 'metric') {
       day: '1',
       hour: 8,
     }),
+    get_avalanche_risk: buildAvalancheOutputs(AVALANCHE_BULLETIN, MASSIF, language),
   };
 }
 
-export { triggerSamples, actionSamples, EVENING, TIMEZONE, HOUSE };
+export { triggerSamples, actionSamples, EVENING, TIMEZONE, HOUSE, AVALANCHE_BULLETIN, MASSIF };

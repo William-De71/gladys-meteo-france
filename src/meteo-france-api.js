@@ -7,6 +7,7 @@
 //      vigilance. It is the backend of the official Météo France mobile app and
 //      answers with a PUBLIC token embedded in that app, so forecast and
 //      vigilance need NO configuration at all.
+//      The avalanche bulletins (BRA) come from the same webservice, as XML.
 //   2. The PUBLIC API (https://public-api.meteofrance.fr) — the national
 //      vigilance map thumbnail. This one DOES require a personal API key, which
 //      is why the key is an OPTIONAL config field: without it everything works
@@ -163,11 +164,48 @@ async function getVigilanceMap(apiKey, day, { fetchImpl = fetch } = {}) {
   }
 }
 
+/**
+ * @description Get the raw avalanche bulletin (BRA) of a massif, as text: XML
+ * in season (November to May); out of season, or for Andorra, a short JSON
+ * or XML message instead (see avalanche.js).
+ * @param {string} massifId - The massif number on two digits (e.g. '03').
+ * @param {object} [options] - Options.
+ * @param {typeof fetch} [options.fetchImpl] - fetch implementation (for tests).
+ * @returns {Promise<string>} Resolves with the body.
+ * @example
+ * const xml = await getAvalancheBulletin('03');
+ */
+async function getAvalancheBulletin(massifId, { fetchImpl = fetch } = {}) {
+  const url = new URL(`${WEBSERVICE_URL}/v2/report`);
+  url.searchParams.set('domain', massifId);
+  url.searchParams.set('report_type', 'Forecast');
+  url.searchParams.set('report_subtype', 'BRA');
+  url.searchParams.set('format', 'xml');
+  url.searchParams.set('token', PUBLIC_TOKEN);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  try {
+    const response = await fetchImpl(url, { method: 'GET', signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`Météo France avalanche bulletin returned HTTP ${response.status}`);
+    }
+    return await response.text();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Météo France avalanche bulletin timed out', { cause: err });
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export {
   getForecast,
   getRain,
   getVigilance,
   getVigilanceMap,
+  getAvalancheBulletin,
   WEBSERVICE_URL,
   PUBLIC_API_URL,
   PUBLIC_TOKEN,

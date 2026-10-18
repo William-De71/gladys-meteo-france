@@ -195,6 +195,15 @@ const ICE_LABELS = {
   es: { 0: 'Sin hielo', 1: 'Riesgo de hielo', 2: 'Hielo probable' },
 };
 
+// Avalanche danger level 1-5 (European scale, see avalanche.js) -> label,
+// as the official bulletins of each language write it.
+const AVALANCHE_LABELS = {
+  fr: { 1: 'faible', 2: 'limité', 3: 'marqué', 4: 'fort', 5: 'très fort' },
+  en: { 1: 'low', 2: 'moderate', 3: 'considerable', 4: 'high', 5: 'very high' },
+  de: { 1: 'gering', 2: 'mäßig', 3: 'erheblich', 4: 'groß', 5: 'sehr groß' },
+  es: { 1: 'débil', 2: 'limitado', 3: 'notable', 4: 'fuerte', 5: 'muy fuerte' },
+};
+
 // UV index bands of the WHO scale, lowest first.
 const UV_BANDS = [
   [0, { en: 'low', fr: 'faible', de: 'niedrig', es: 'bajo' }],
@@ -389,6 +398,7 @@ export {
   VIGILANCE_LABELS,
   FROST_LABELS,
   ICE_LABELS,
+  AVALANCHE_LABELS,
   PHENOMENON_LABELS,
   textLanguage,
   pick,

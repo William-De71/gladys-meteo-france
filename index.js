@@ -21,12 +21,14 @@
 //   - onSceneAction(key)       read-only actions: the forecast of a day or of
 //                              an hour, the rain over the next hours, the rain
 //                              within the hour, the vigilance, the frost and
-//                              black ice risks of the coming morning (see
-//                              scene-actions.js, frost.js, ice.js);
+//                              black ice risks of the coming morning, the
+//                              avalanche danger of a massif (see
+//                              scene-actions.js, frost.js, ice.js, avalanche.js);
 //   - publishSceneEvent(key)   triggers: rain expected / stopped from the radar
 //                              nowcast, frost / heat / wind, black ice, snow,
-//                              storm and UV forecast (see scene-triggers.js,
-//                              hazard-triggers.js and scene-watcher.js).
+//                              storm and UV forecast, avalanche danger rising
+//                              (see scene-triggers.js, hazard-triggers.js,
+//                              scene-watcher.js and avalanche-watcher.js).
 //   The triggers watch the weather on their own, so they need the houses:
 //   hence `location: true` and getHouses() (see houses.js).
 //
@@ -50,7 +52,13 @@ import {
   readPreferences,
   PREFERENCE_KEYS,
 } from './src/config.js';
-import { getForecast, getRain, getVigilance, getVigilanceMap } from './src/meteo-france-api.js';
+import {
+  getForecast,
+  getRain,
+  getVigilance,
+  getVigilanceMap,
+  getAvalancheBulletin,
+} from './src/meteo-france-api.js';
 import { buildWeather, readDepartment, readTimezone } from './src/forecast.js';
 import { buildAlerts, readMaxColor } from './src/vigilance.js';
 import { createVigilanceWatcher } from './src/vigilance-watcher.js';
@@ -68,6 +76,9 @@ import {
   buildHourForecastOutputs,
 } from './src/scene-actions.js';
 import { createSceneWatcher } from './src/scene-watcher.js';
+import { findMassif, findMassifByName } from './src/massifs.js';
+import { parseAvalancheBulletin, buildAvalancheOutputs } from './src/avalanche.js';
+import { createAvalancheWatcher } from './src/avalanche-watcher.js';
 
 const gladys = new GladysIntegration();
 
@@ -123,6 +134,15 @@ const sceneWatcher = createSceneWatcher({
     getRain(latitude, longitude, { language: preferences.language }),
   fetchForecast: (latitude, longitude) =>
     getForecast(latitude, longitude, { language: preferences.language }),
+  publish: (key, data) => gladys.publishSceneEvent(key, data),
+  getPreferences: () => preferences,
+  logger,
+});
+
+// Scene trigger: the avalanche danger of the massif of a house rising.
+const avalancheWatcher = createAvalancheWatcher({
+  houses,
+  fetchBulletin: (massifId) => getAvalancheBulletin(massifId),
   publish: (key, data) => gladys.publishSceneEvent(key, data),
   getPreferences: () => preferences,
   logger,
@@ -366,6 +386,26 @@ gladys.onSceneAction(SCENE_ACTIONS.GET_HOUR_FORECAST, async (fields) => {
   });
 });
 
+gladys.onSceneAction(SCENE_ACTIONS.GET_AVALANCHE_RISK, async (fields) => {
+  let massif;
+  if (fields.massif !== undefined && fields.massif !== null && String(fields.massif).trim()) {
+    // Any massif by its name or number: the ski resort, not only the house.
+    massif = findMassifByName(fields.massif);
+    if (massif === null) {
+      throw new Error(`Unknown avalanche massif "${fields.massif}"`);
+    }
+  } else {
+    const house = await resolveHouse(fields.house);
+    massif = findMassif(house.latitude, house.longitude);
+    if (massif === null) {
+      throw new Error(`House "${house.name}" is in none of the 36 avalanche massifs`);
+    }
+  }
+  // Fresh: a bulletin is read once, right after it is written or amended.
+  const bulletin = parseAvalancheBulletin(await getAvalancheBulletin(massif.id));
+  return buildAvalancheOutputs(bulletin, massif, preferences.language);
+});
+
 // --- Configuration -----------------------------------------------------------
 // The API key is optional: an empty configuration is perfectly valid, it just
 // means the vigilance map is unavailable.
@@ -399,6 +439,7 @@ gladys.on('connected', async () => {
     // forecast can take 20 s per house, the connection must not wait for it.
     await houses.refresh();
     sceneWatcher.start();
+    avalancheWatcher.start();
   } catch (err) {
     logger.error('Post-connection initialization failed', err);
   }
@@ -409,6 +450,7 @@ gladys.handleShutdown((signal) => {
   logger.info(`Received ${signal} -> graceful shutdown`);
   vigilanceWatcher.stop();
   sceneWatcher.stop();
+  avalancheWatcher.stop();
 });
 
 // --- Startup -----------------------------------------------------------------

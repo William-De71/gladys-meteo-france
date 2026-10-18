@@ -6,6 +6,7 @@ import {
   getRain,
   getVigilance,
   getVigilanceMap,
+  getAvalancheBulletin,
   PUBLIC_TOKEN,
 } from '../src/meteo-france-api.js';
 
@@ -92,4 +93,21 @@ test('returns the vigilance map as raw base64, without a data URI prefix', async
 
 test('refuses to fetch the map without an API key', async () => {
   await assert.rejects(() => getVigilanceMap('', 'J'), /API key is required/);
+});
+
+test('reads the avalanche bulletin of a massif as text, with the public token', async () => {
+  const fetchImpl = buildFetch([{ ok: true, text: async () => '<BULLETINS_NEIGE_AVALANCHE/>' }]);
+  assert.equal(await getAvalancheBulletin('03', { fetchImpl }), '<BULLETINS_NEIGE_AVALANCHE/>');
+  const url = new URL(fetchImpl.calls[0].url);
+  assert.equal(url.pathname, '/v2/report');
+  assert.equal(url.searchParams.get('domain'), '03');
+  assert.equal(url.searchParams.get('report_type'), 'Forecast');
+  assert.equal(url.searchParams.get('report_subtype'), 'BRA');
+  assert.equal(url.searchParams.get('format'), 'xml');
+  assert.equal(url.searchParams.get('token'), PUBLIC_TOKEN);
+});
+
+test('an unknown massif is an error', async () => {
+  const fetchImpl = buildFetch([{ ok: false, status: 404 }]);
+  await assert.rejects(getAvalancheBulletin('99', { fetchImpl }), /HTTP 404/);
 });

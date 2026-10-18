@@ -6,3 +6,8 @@ This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 The forecasts, vigilance alerts, bulletins and maps it displays come from
 Météo France. This integration is not affiliated with or endorsed by
 Météo France.
+
+src/massifs.json is derived from the outlines of the avalanche massifs of
+Météo France ("Metadata_massif_DP_2024"), published under the Licence
+Ouverte / Open Licence 2.0 (Etalab): simplified and rounded, names unchanged.
+Source: Météo France.

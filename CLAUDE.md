@@ -8,9 +8,10 @@ contributors.
 A Gladys Assistant **external integration** of type `weather`: it answers the
 weather requests of Gladys with the forecasts and the official vigilance of
 [Météo France](https://meteofrance.com) (France), watches the radar nowcast and
-the forecast of every located house for nine scene triggers, and adds seven
-scene actions. A Node.js service (Node 22+, ESM, no build step) that runs in
-its own sandboxed Docker container and talks to Gladys through
+the forecast of every located house for nine scene triggers, the avalanche
+bulletin of its massif for a tenth, and adds eight scene actions. A Node.js
+service (Node 22+, ESM, no build step) that runs in its own sandboxed Docker
+container and talks to Gladys through
 [`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js).
 Forecasts and vigilance go through the public token of the Météo France mobile
 app: nothing to configure. The optional personal API key only unlocks the
@@ -45,7 +46,11 @@ src/frost.js, src/ice.js  frost and black ice risk of the coming morning
 src/scene-triggers.js     rain, frost, heat and wind triggers and their data
 src/hazard-triggers.js    black ice, snow, storm and UV triggers and their data
 src/scene-watcher.js      the 5-minute / hourly watch of every house
-src/scene-actions.js      the outputs of the seven scene actions
+src/scene-actions.js      the outputs of the scene actions (avalanche: avalanche.js)
+src/avalanche.js          MF avalanche bulletin (BRA XML) -> action outputs, trigger
+src/avalanche-watcher.js  the hourly watch of the massif of every house
+src/massifs.js            the 36 massifs and the massif of a house (massifs.json,
+                          official outlines, simplified: never edit by hand)
 src/scene-text.js         the four languages: labels, numbers, dates, compass
 src/config.js             configuration
 gladys-assistant-integration.json   manifest
@@ -89,5 +94,8 @@ docs/{en,fr,de,es}.md     user documentation, re-hosted by the store
 - **Scenes.** Never fire a scene trigger as a consequence of a scene action.
   The first check after a start is a baseline (no event). The forecast
   triggers fire once per day and level.
+- **Manifest size.** The manifest is formatted by Prettier with a print width of
+  400 (`.prettierrc.json` override): one line per four-language text keeps it
+  far under the 100 KB of the store.
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.

@@ -60,8 +60,8 @@ automáticamente.
   comprobación del núcleo, cada 30 minutos.
 - **Mapa de avisos** (opcional, clave de API): el mapa nacional de hoy y mañana, mostrado en el widget.
 
-**Escenas**: nueve desencadenantes (lluvia en la próxima hora, helada, calor, viento, hielo, nieve, tormenta, UV) y
-siete acciones de solo lectura, con un resumen listo para enviar en **español, inglés, francés o alemán**, el
+**Escenas**: diez desencadenantes (lluvia en la próxima hora, helada, calor, viento, hielo, nieve, tormenta, UV, aludes) y
+ocho acciones de solo lectura, con un resumen listo para enviar en **español, inglés, francés o alemán**, el
 idioma de Gladys.
 
 **Transporte**: solo `cloud`. Météo France es un servicio de Internet: no hay nada que alcanzar en la red local, y
@@ -155,17 +155,18 @@ sea el valor; 0 desactiva la caché (panel más lento).
 
 ## Desencadenantes de escena
 
-| Desencadenante (clave)                     | Se activa cuando                                                                                     | Filtros             |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------- |
-| **Lluvia inminente** `rain_expected`       | la previsión radar anuncia lluvia en la próxima hora, cuando antes no la anunciaba                   | casa, intensidad    |
-| **Fin de la lluvia** `rain_stopped`        | la lluvia en curso cesa                                                                              | casa                |
-| **Helada prevista** `frost_forecast`       | las próximas 24 horas alcanzan 0 °C, -5 °C o un umbral personalizado (-20 a 5 °C)                    | casa, nivel, umbral |
-| **Calor intenso previsto** `heat_forecast` | las próximas 24 horas alcanzan 30 °C, 35 °C o un umbral personalizado (20 a 45 °C)                   | casa, nivel, umbral |
-| **Viento fuerte previsto** `wind_forecast` | las rachas de las próximas 24 horas alcanzan 60, 80, 100 km/h o un umbral (20 a 150 km/h, de 5 en 5) | casa, nivel, umbral |
-| **Hielo previsto** `ice_forecast`          | las próximas 24 horas alcanzan el nivel riesgo / probable de hielo (ver `src/ice.js`)                | casa, nivel         |
-| **Nieve prevista** `snow_forecast`         | la nieve o el aguanieve aparece en las próximas 24 horas (presencia, nunca cantidad)                 | casa                |
-| **Tormenta prevista** `storm_forecast`     | una tormenta o granizo aparece en las próximas 12 horas                                              | casa                |
-| **UV alto previsto** `uv_forecast`         | el índice UV del día siguiente alcanza 6, 8, 11 o un umbral personalizado (1 a 11)                   | casa, nivel, umbral |
+| Desencadenante (clave)                            | Se activa cuando                                                                                     | Filtros             |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------- |
+| **Lluvia inminente** `rain_expected`              | la previsión radar anuncia lluvia en la próxima hora, cuando antes no la anunciaba                   | casa, intensidad    |
+| **Fin de la lluvia** `rain_stopped`               | la lluvia en curso cesa                                                                              | casa                |
+| **Helada prevista** `frost_forecast`              | las próximas 24 horas alcanzan 0 °C, -5 °C o un umbral personalizado (-20 a 5 °C)                    | casa, nivel, umbral |
+| **Calor intenso previsto** `heat_forecast`        | las próximas 24 horas alcanzan 30 °C, 35 °C o un umbral personalizado (20 a 45 °C)                   | casa, nivel, umbral |
+| **Viento fuerte previsto** `wind_forecast`        | las rachas de las próximas 24 horas alcanzan 60, 80, 100 km/h o un umbral (20 a 150 km/h, de 5 en 5) | casa, nivel, umbral |
+| **Hielo previsto** `ice_forecast`                 | las próximas 24 horas alcanzan el nivel riesgo / probable de hielo (ver `src/ice.js`)                | casa, nivel         |
+| **Nieve prevista** `snow_forecast`                | la nieve o el aguanieve aparece en las próximas 24 horas (presencia, nunca cantidad)                 | casa                |
+| **Tormenta prevista** `storm_forecast`            | una tormenta o granizo aparece en las próximas 12 horas                                              | casa                |
+| **UV alto previsto** `uv_forecast`                | el índice UV del día siguiente alcanza 6, 8, 11 o un umbral personalizado (1 a 11)                   | casa, nivel, umbral |
+| **Peligro de aludes en aumento** `avalanche_risk` | el boletín de aludes del macizo de la casa sube a 2, 3, 4 o 5 (ver `src/avalanche.js`)               | casa, nivel         |
 
 Cada desencadenante lleva un `summary` listo para enviar («Lluvia moderada prevista en 20 min.», «Helada prevista:
 -2 °C mañana a las 06:00.») y sus cifras como variables de escena: `{{triggerEvent.data.minutes_until_rain}}`,
@@ -189,6 +190,7 @@ Un desencadenante es una **transición**, publicada una vez, nunca un estado ree
   un chubasco;
 - hielo, nieve y tormenta añaden una espera de 6 horas por desencadenante y nivel, y `uv_forecast` se activa una
   vez al día y por umbral, leyendo el índice de hoy antes de mediodía y el de mañana después;
+- `avalanche_risk` lee cada hora el boletín del macizo de cada casa y se activa una vez por nivel cuando el peligro sube, rearmado cuando baja; el fin de la temporada cuenta como 0, así que el primer boletín de noviembre se activa;
 - la primera consulta tras un arranque sirve de **referencia** y no activa nada, como la propia comprobación de
   alertas meteorológicas del núcleo.
 
@@ -200,20 +202,23 @@ escenas).
 
 ## Acciones de escena
 
-| Acción (clave)                                                    | Salidas principales                                                                                          |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| **Obtener la previsión de un día** `get_forecast`                 | temperaturas mín./máx., cielo, lluvia y probabilidad, viento, rachas, UV, horas del sol                      |
-| **Obtener la lluvia de las próximas horas** `get_rain_next_hours` | `dry`, precipitación total, horas de lluvia, hora de la primera lluvia (1 a 24 h)                            |
-| **Obtener la lluvia en la próxima hora** `get_rain_next_hour`     | `available`, `raining`, `rain_expected`, intensidad, minutos hasta la lluvia / hasta que pare                |
-| **Obtener los avisos** `get_vigilance`                            | color y nivel, fenómenos, departamento, resumen oficial, boletín completo                                    |
-| **Obtener el riesgo de escarcha** `get_frost_risk`                | `level` 0-2, hora más crítica, temperatura, puntos de rocío y de escarcha, humedad, nubes, viento, `reduced` |
-| **Obtener el riesgo de hielo** `get_ice_risk`                     | `level` 0-2, hora de inicio, temperatura, `freezing_rain`, lluvia de las últimas 6 h, `freezing_probability` |
-| **Obtener la previsión de una hora** `get_hour_forecast`          | una hora de hoy a pasado mañana: temperatura, sensación, cielo, lluvia, viento, rachas, dirección, nubes     |
+| Acción (clave)                                                    | Salidas principales                                                                                                |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Obtener la previsión de un día** `get_forecast`                 | temperaturas mín./máx., cielo, lluvia y probabilidad, viento, rachas, UV, horas del sol                            |
+| **Obtener la lluvia de las próximas horas** `get_rain_next_hours` | `dry`, precipitación total, horas de lluvia, hora de la primera lluvia (1 a 24 h)                                  |
+| **Obtener la lluvia en la próxima hora** `get_rain_next_hour`     | `available`, `raining`, `rain_expected`, intensidad, minutos hasta la lluvia / hasta que pare                      |
+| **Obtener los avisos** `get_vigilance`                            | color y nivel, fenómenos, departamento, resumen oficial, boletín completo                                          |
+| **Obtener el riesgo de escarcha** `get_frost_risk`                | `level` 0-2, hora más crítica, temperatura, puntos de rocío y de escarcha, humedad, nubes, viento, `reduced`       |
+| **Obtener el riesgo de hielo** `get_ice_risk`                     | `level` 0-2, hora de inicio, temperatura, `freezing_rain`, lluvia de las últimas 6 h, `freezing_probability`       |
+| **Obtener la previsión de una hora** `get_hour_forecast`          | una hora de hoy a pasado mañana: temperatura, sensación, cielo, lluvia, viento, rachas, dirección, nubes           |
+| **Obtener el peligro de aludes** `get_avalanche_risk`             | `has_bulletin`, `risk` 1-5, peligro por debajo y por encima de `altitude`, `risk_next_day`, comentario del boletín |
 
 Cada acción devuelve también un `summary` de una frase, p. ej. «Mañana: lluvia, de 14 a 21 °C, 4,2 mm de lluvia
 (80 %), rachas de hasta 55 km/h.» Una cifra que Météo France no proporciona se omite, nunca se envía como 0: 0 mm
 se leería como «seco» en las condiciones siguientes. Las acciones son de solo lectura y nunca activan un
 desencadenante: una escena no puede crear un bucle a través de la integración.
+
+`get_avalanche_risk` y `avalanche_risk` (`src/avalanche.js`, `src/massifs.js`) leen el boletín de peligro de aludes (BRA, XML) del mismo servicio público. Una casa pertenece al macizo que la contiene, o al más cercano a menos de 5 km, según los contornos oficiales de los 36 macizos (Météo France, Licence Ouverte, simplificados a ~170 m); el campo `massif` de la acción admite un nombre o un número. Fuera de temporada (junio a octubre), Météo France responde con un mensaje en lugar del boletín: `has_bulletin` vale entonces `false`.
 
 `get_frost_risk` (`src/frost.js`) lee las horas brutas de Météo France, no las del formato pivote (redondeadas al
 grado), desde ahora hasta las 10:00 de la mañana siguiente: punto de rocío a partir de la temperatura y la humedad
@@ -244,6 +249,7 @@ las coordenadas que el núcleo pasa a `onWeatherGet`.
 | Avisos                    | `webservice…/v3/warning/full`  | con cada previsión, y cada 15 min por departamento   |
 | Lluvia en la próxima hora | `webservice…/rain`             | cada 5 min por casa cubierta, y en cada acción       |
 | Mapa de avisos            | `public-api…/DPVigilance/v1/…` | cuando el widget lo muestra (solo con clave de API)  |
+| Boletín de aludes         | `webservice…/v2/report` (BRA)  | cada hora por macizo de una casa, y en cada acción   |
 
 Una casa fuera de la cobertura de la lluvia en la próxima hora (algunas zonas de montaña, ultramar) solo se vuelve a
 comprobar cada 6 horas. Météo France cubre **Francia y sus departamentos de ultramar**: para una ubicación fuera de

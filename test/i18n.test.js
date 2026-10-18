@@ -9,6 +9,7 @@ import {
   VIGILANCE_LABELS,
   FROST_LABELS,
   ICE_LABELS,
+  AVALANCHE_LABELS,
   PHENOMENON_LABELS,
   textLanguage,
   uvLabel,
@@ -62,7 +63,7 @@ test('catalog description: 10 to 100 characters per language', () => {
 });
 
 test('the manifest stays under the 100 KB of the store', () => {
-  // 97 KB with the four languages: a long new text may not fit anymore.
+  // 91 KB with the four languages, one line per text (Prettier width 400).
   assert.ok(Buffer.byteLength(read('../gladys-assistant-integration.json')) < 100 * 1024);
 });
 
@@ -73,6 +74,7 @@ test('every runtime label exists in the four languages', () => {
     VIGILANCE_LABELS,
     FROST_LABELS,
     ICE_LABELS,
+    AVALANCHE_LABELS,
     PHENOMENON_LABELS,
   };
   for (const [name, table] of Object.entries(tables)) {
@@ -121,7 +123,13 @@ test('every scene summary and label is written in the language of the instance',
     for (const [key, data] of Object.entries(samples)) {
       assert.ok(data.summary?.trim(), `${key}.summary in ${language}`);
       assert.notEqual(data.summary, english[key].summary, `${key}.summary in ${language}`);
-      for (const label of ['intensity_label', 'level_label', 'condition_label', 'uv_label']) {
+      for (const label of [
+        'intensity_label',
+        'level_label',
+        'condition_label',
+        'uv_label',
+        'risk_label',
+      ]) {
         if (label in data && !['orange'].includes(data[label])) {
           assert.notEqual(data[label], english[key][label], `${key}.${label} in ${language}`);
         }
