@@ -251,7 +251,7 @@ las coordenadas que el núcleo pasa a `onWeatherGet`.
 | Mapa de avisos            | `public-api…/DPVigilance/v1/…` | cuando el widget lo muestra (solo con clave de API)  |
 | Boletín de aludes         | `webservice…/v2/report` (BRA)  | cada hora por macizo de una casa, y en cada acción   |
 
-Una casa fuera de la cobertura de la lluvia en la próxima hora (algunas zonas de montaña, ultramar) solo se vuelve a
+Una casa fuera de la cobertura de la lluvia en la próxima hora (ultramar) solo se vuelve a
 comprobar cada 6 horas. Météo France cubre **Francia y sus departamentos de ultramar**: para una ubicación fuera de
 esa zona, la API de previsiones no devuelve nada utilizable y Gladys pasa a otro proveedor meteorológico
 configurado.

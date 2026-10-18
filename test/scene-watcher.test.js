@@ -136,6 +136,22 @@ test('keeps the previous nowcast across an upstream failure', async () => {
   );
 });
 
+test('watches a house whose flag is 0 but whose nowcast has slots', async () => {
+  const { watcher, published, calls } = buildWatcher({
+    rain: [
+      { levels: [1, 1], available: 0 },
+      { levels: [1, 3], available: 0 },
+    ],
+  });
+  await watcher.pollRain();
+  await watcher.pollRain();
+  assert.equal(calls.rain, 2);
+  assert.deepEqual(
+    published.map(({ key }) => key),
+    ['rain_expected'],
+  );
+});
+
 test('stops asking for the nowcast of a house outside its coverage', async () => {
   const { watcher, calls } = buildWatcher({ rain: [{ levels: [], available: 0 }] });
   await watcher.pollRain();

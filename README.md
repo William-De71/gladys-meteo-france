@@ -240,7 +240,7 @@ passes to `onWeatherGet`.
 | Vigilance map        | `public-api…/DPVigilance/v1/…` | when the widget shows it (API key only)              |
 | Avalanche bulletin   | `webservice…/v2/report` (BRA)  | every hour per massif of a house, and on each action |
 
-A house outside the rain nowcast coverage (some mountain areas, overseas) is re-checked only every 6 hours.
+A house outside the rain nowcast coverage (overseas) is re-checked only every 6 hours.
 Météo France covers **France and its overseas departments**: for a location outside that area, the forecast API
 answers with no usable data and Gladys falls back to another configured weather provider.
 

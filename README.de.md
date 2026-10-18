@@ -256,7 +256,7 @@ Koordinaten, die der Kern an `onWeatherGet` übergibt.
 | Warnkarte                    | `public-api…/DPVigilance/v1/…` | wenn das Widget sie anzeigt (nur mit API-Schlüssel)       |
 | Lawinenbulletin              | `webservice…/v2/report` (BRA)  | stündlich pro Massiv eines Zuhauses, und bei jeder Aktion |
 
-Ein Zuhause außerhalb der Abdeckung des Regens in der nächsten Stunde (manche Berggebiete, Übersee) wird nur alle
+Ein Zuhause außerhalb der Abdeckung des Regens in der nächsten Stunde (Übersee) wird nur alle
 6 Stunden erneut geprüft. Météo France deckt **Frankreich und seine Überseedepartements** ab: Für einen Ort
 außerhalb dieses Gebiets liefert die Vorhersage-API nichts Verwertbares, und Gladys wechselt zu einem anderen
 konfigurierten Wetteranbieter.

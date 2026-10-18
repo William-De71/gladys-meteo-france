@@ -104,8 +104,7 @@ async function getVigilance(department, { fetchImpl = fetch } = {}) {
 /**
  * @description Get the "rain within the hour" nowcast of a location: 5 to
  * 10-minute slots over the next hour, each rated 1 (dry) to 4 (heavy rain).
- * Only part of the territory is covered: the payload says so through
- * `position.rain_product_available`.
+ * Outside the coverage (overseas), the payload has no slot.
  * @param {number} latitude - Latitude.
  * @param {number} longitude - Longitude.
  * @param {object} [options] - Options.

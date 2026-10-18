@@ -54,6 +54,14 @@ test('says unavailable, never dry, outside the nowcast coverage', () => {
   assert.equal(nowcast.rainExpected, false);
 });
 
+test('ignores the obsolete rain_product_available flag when slots are there', () => {
+  // Strasbourg, 18 October 2026: flag at 0, light rain under way (issue #2).
+  const nowcast = readNowcast(buildNowcast([2, 2, 2, 1], { rain_product_available: 0 }), NOW);
+  assert.equal(nowcast.available, true);
+  assert.equal(nowcast.raining, true);
+  assert.equal(nowcast.intensity, 'light');
+});
+
 test('ignores slots it cannot read', () => {
   const data = buildNowcast([1, 2]);
   data.forecast.unshift({ dt: NOW - 300, rain: 9 }, null, { dt: 'x', rain: 2 });

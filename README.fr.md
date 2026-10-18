@@ -253,7 +253,7 @@ elle-même utilise toujours les coordonnées que le cœur passe à `onWeatherGet
 | Carte de vigilance   | `public-api…/DPVigilance/v1/…` | quand le widget l'affiche (clé d'API uniquement)              |
 | Bulletin d'avalanche | `webservice…/v2/report` (BRA)  | toutes les heures par massif d'une maison, et à chaque action |
 
-Une maison hors de la couverture de la pluie dans l'heure (certaines zones de montagne, outre-mer) n'est revérifiée
+Une maison hors de la couverture de la pluie dans l'heure (outre-mer) n'est revérifiée
 que toutes les 6 heures. Météo France couvre **la France et ses départements d'outre-mer** : pour une position hors
 de cette zone, l'API de prévisions ne renvoie rien d'exploitable et Gladys bascule sur un autre fournisseur météo
 configuré.

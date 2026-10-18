@@ -9,8 +9,12 @@
 //
 // The level is Météo France's own scale: 1 dry, 2 light, 3 moderate, 4 heavy.
 // The first slot is the one under way, so it says whether it rains NOW.
-// The nowcast is radar-based and only covers part of the territory:
-// `rain_product_available: 0` means "no nowcast here", never "dry".
+// Metropolitan France and Corsica are covered; elsewhere (overseas) the
+// payload has no slot, which means "no nowcast here", never "dry".
+//
+// `rain_product_available` is NOT read: obsolete, it says 0 for places with a
+// perfectly valid nowcast (Strasbourg, Marseille, Bastia… issue #2; Home
+// Assistant dropped it too, core PR #128533). The slots are the truth.
 // -----------------------------------------------------------------------------
 
 // MF rain level -> intensity key, shared by the scene triggers and actions.
@@ -70,10 +74,9 @@ function minutesUntil(dt, nowSeconds) {
  * readNowcast(rawRain); // -> { available: true, raining: false, rainExpected: true, ... }
  */
 function readNowcast(data, nowSeconds = Math.floor(Date.now() / 1000)) {
-  const position = (data && data.position) || {};
   const slots = readSlots(data);
   const summary = {
-    available: position.rain_product_available !== 0 && slots.length > 0,
+    available: slots.length > 0,
     raining: false,
     rainExpected: false,
     level: 1,
