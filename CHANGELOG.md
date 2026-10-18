@@ -5,6 +5,12 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions
 follow [Semantic Versioning](https://semver.org/). This file is generated at
 each release from the Conventional Commits: do not edit it by hand.
 
+## [1.6.0] - 2026-10-18
+
+### Added
+
+- avalanche danger of the massif of each house, as a scene trigger and a scene action ([8b874ca](https://github.com/William-De71/gladys-meteo-france/commit/8b874cacaa725f61aad08c0e41ef81f4fb30ed99))
+
 ## [1.5.0] - 2026-10-13
 
 ### Added
@@ -100,4 +106,5 @@ each release from the Conventional Commits: do not edit it by hand.
 * align with the published weather SDK, add a forecast cache ([4a2834c](https://github.com/William-De71/gladys-meteo-france/commit/4a2834c27aeb519c1775af22a9206981fd3f1c2d))
 * Météo France weather provider as an external integration ([c5921e9](https://github.com/William-De71/gladys-meteo-france/commit/c5921e993cdd45288c76bd629b940862ba847797))
 
+[1.6.0]: https://github.com/William-De71/gladys-meteo-france/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/William-De71/gladys-meteo-france/compare/v1.4.1...v1.5.0
