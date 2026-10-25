@@ -5,6 +5,12 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions
 follow [Semantic Versioning](https://semver.org/). This file is generated at
 each release from the Conventional Commits: do not edit it by hand.
 
+## [1.7.0] - 2026-10-25
+
+### Added
+
+- require Gladys 5.3 and declare catalog keywords and countries ([c1c0f2b](https://github.com/William-De71/gladys-meteo-france/commit/c1c0f2b744d3a62ec382a17d2e7bdaef40585a83))
+
 ## [1.6.2] - 2026-10-24
 
 ### Security
@@ -118,6 +124,7 @@ each release from the Conventional Commits: do not edit it by hand.
 * align with the published weather SDK, add a forecast cache ([4a2834c](https://github.com/William-De71/gladys-meteo-france/commit/4a2834c27aeb519c1775af22a9206981fd3f1c2d))
 * Météo France weather provider as an external integration ([c5921e9](https://github.com/William-De71/gladys-meteo-france/commit/c5921e993cdd45288c76bd629b940862ba847797))
 
+[1.7.0]: https://github.com/William-De71/gladys-meteo-france/compare/v1.6.2...v1.7.0
 [1.6.2]: https://github.com/William-De71/gladys-meteo-france/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/William-De71/gladys-meteo-france/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/William-De71/gladys-meteo-france/compare/v1.5.0...v1.6.0
