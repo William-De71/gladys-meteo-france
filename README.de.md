@@ -5,7 +5,7 @@
 [![Lizenz: Apache-2.0](https://img.shields.io/badge/Lizenz-Apache--2.0-blue.svg)](LICENSE)
 [![Neueste Version](https://img.shields.io/github/v/release/William-De71/gladys-meteo-france?sort=semver)](https://github.com/William-De71/gladys-meteo-france/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-meteo-france/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-meteo-france/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.1.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Météo France für Gladys Assistant](cover.jpg)
 
@@ -120,7 +120,7 @@ Eine Wetter-Integration hat keine Geräte: keine Suche, keine Zustände, keine A
 
 ## Installation
 
-In Gladys (ab 5.1.0): **Integrationen → Store → Météo France → Installieren**, und den Standortzugriff erlauben
+In Gladys (ab 5.3.0): **Integrationen → Store → Météo France → Installieren**, und den Standortzugriff erlauben
 (die Szenen-Auslöser brauchen die Position der Zuhause). Lege den Standort jedes Zuhauses fest (**Einstellungen →
 Zuhause**). Gladys nutzt Météo France dann als Wetteranbieter für die Zuhause in Frankreich und greift anderswo auf
 den nächsten Anbieter zurück. Siehe die [Benutzerdokumentation](docs/de.md).
@@ -284,8 +284,8 @@ Funktionen oder Fabriken, die ihre Abhängigkeiten als Argumente erhalten. Aufba
 - `test/i18n.test.js` prüft die vier Sprachen des Manifests, der Szenentexte, der Dokumentation und der READMEs.
 - `test/release.test.js` deckt das Release-Skript ab (Versionen, Changelog, Versionsanhebung).
 
-Voraussetzungen: Gladys `>= 5.1.0` (von einer Integration deklarierte Szenen-Auslöser und -Aktionen),
-Node.js `>= 22`.
+Voraussetzungen: Gladys `>= 5.3.0` (von einer Integration deklarierte Szenen-Auslöser und -Aktionen,
+Katalog-Suchbegriffe und -Länder von Gladys 5.3), Node.js `>= 22`.
 
 ## Release und Commit-Konvention
 

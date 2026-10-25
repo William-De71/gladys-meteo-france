@@ -5,7 +5,7 @@
 [![Licencia: Apache-2.0](https://img.shields.io/badge/licencia-Apache--2.0-blue.svg)](LICENSE)
 [![Última versión](https://img.shields.io/github/v/release/William-De71/gladys-meteo-france?sort=semver)](https://github.com/William-De71/gladys-meteo-france/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-meteo-france/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-meteo-france/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.1.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Météo France para Gladys Assistant](cover.jpg)
 
@@ -117,7 +117,7 @@ Una integración meteorológica no tiene dispositivos: ni descubrimiento, ni est
 
 ## Instalación
 
-Desde Gladys (5.1.0 o posterior): **Integraciones → store → Météo France → Instalar**, y acepte el acceso a la
+Desde Gladys (5.3.0 o posterior): **Integraciones → store → Météo France → Instalar**, y acepte el acceso a la
 ubicación (los desencadenantes de escena necesitan la posición de las casas). Indique la ubicación de cada casa
 (**Ajustes → Viviendas**). Gladys usa entonces Météo France como proveedor meteorológico para las casas situadas en
 Francia, y pasa al siguiente proveedor en otros lugares. Vea la [documentación de usuario](docs/es.md).
@@ -280,8 +280,8 @@ que reciben sus dependencias como argumentos. Organización: vea [CLAUDE.md](CLA
   los README.
 - `test/release.test.js` cubre el script de release (versiones, changelog, actualización de versiones).
 
-Requisitos: Gladys `>= 5.1.0` (desencadenantes y acciones de escena declarados por una integración),
-Node.js `>= 22`.
+Requisitos: Gladys `>= 5.3.0` (desencadenantes y acciones de escena declarados por una integración,
+palabras clave y países del catálogo de Gladys 5.3), Node.js `>= 22`.
 
 ## Release y convención de commits
 

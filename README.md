@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/William-De71/gladys-meteo-france?sort=semver)](https://github.com/William-De71/gladys-meteo-france/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-meteo-france/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-meteo-france/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.1.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Météo France for Gladys Assistant](cover.jpg)
 
@@ -113,7 +113,7 @@ A weather integration has no devices: no discovery, no states, no polling by the
 
 ## Installation
 
-From Gladys (5.1.0 or later): **Integrations → store → Météo France → Install**, and accept the location access
+From Gladys (5.3.0 or later): **Integrations → store → Météo France → Install**, and accept the location access
 (the scene triggers need the position of the houses). Set the location of each house (**Settings → Houses**).
 Gladys then uses Météo France as its weather provider for the houses in France, and falls through to the next
 provider elsewhere. See the [user documentation](docs/en.md).
@@ -265,7 +265,7 @@ factories taking their dependencies as arguments. Layout: see [CLAUDE.md](CLAUDE
 - `test/i18n.test.js` checks the four languages of the manifest, the scene texts, the docs and the READMEs.
 - `test/release.test.js` covers the release script (versions, changelog, bump).
 
-Requirements: Gladys `>= 5.1.0` (scene triggers and actions declared by an integration), Node.js `>= 22`.
+Requirements: Gladys `>= 5.3.0` (scene triggers and actions declared by an integration, catalog keywords and countries of Gladys 5.3), Node.js `>= 22`.
 
 ## Release and commit convention
 

@@ -145,3 +145,17 @@ test('offers exactly the avalanche levels the code fires, and declares what it s
 test('asks for the house location the triggers need', () => {
   assert.equal(manifest.location, true);
 });
+
+test('catalog search terms and countries, which need Gladys 5.3.0', () => {
+  assert.equal(manifest.gladys_version, '>=5.3.0');
+  assert.ok(Array.isArray(manifest.keywords));
+  assert.ok(manifest.keywords.length >= 1 && manifest.keywords.length <= 10);
+  const terms = manifest.keywords.map((keyword) => keyword.trim().toLowerCase());
+  for (const [index, term] of terms.entries()) {
+    assert.ok(term.length >= 2 && manifest.keywords[index].length <= 30, term);
+  }
+  assert.equal(new Set(terms).size, terms.length, 'unique once trimmed and lowercased');
+  assert.ok(!terms.includes(manifest.name.toLowerCase()), 'the name is already searched');
+  // Only usable there: the API serves this country alone.
+  assert.deepEqual(manifest.countries, ['FR']);
+});

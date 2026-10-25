@@ -5,7 +5,7 @@
 [![Licence : Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-blue.svg)](LICENSE)
 [![Dernière version](https://img.shields.io/github/v/release/William-De71/gladys-meteo-france?sort=semver)](https://github.com/William-De71/gladys-meteo-france/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/William-De71/gladys-meteo-france/release.yml?branch=main&label=CI)](https://github.com/William-De71/gladys-meteo-france/actions/workflows/release.yml)
-[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.1.0-2f6fb5)](https://gladysassistant.com)
+[![Gladys](https://img.shields.io/badge/Gladys-%E2%89%A5%205.3.0-2f6fb5)](https://gladysassistant.com)
 
 ![Météo France pour Gladys Assistant](cover.jpg)
 
@@ -119,7 +119,7 @@ Une intégration météo n'a pas d'appareils : pas de découverte, pas d'états,
 
 ## Installation
 
-Depuis Gladys (5.1.0 ou plus récent) : **Intégrations → store → Météo France → Installer**, et acceptez l'accès à
+Depuis Gladys (5.3.0 ou plus récent) : **Intégrations → store → Météo France → Installer**, et acceptez l'accès à
 la position (les déclencheurs de scène ont besoin de la position des maisons). Renseignez la position de chaque
 maison (**Paramètres → Maisons**). Gladys utilise alors Météo France comme fournisseur météo pour les maisons
 situées en France, et passe au fournisseur suivant ailleurs. Voir la [documentation utilisateur](docs/fr.md).
@@ -280,7 +280,7 @@ pures ou de fabriques qui reçoivent leurs dépendances en arguments. Organisati
 - `test/i18n.test.js` vérifie les quatre langues du manifeste, des textes de scène, des docs et des README.
 - `test/release.test.js` couvre le script de release (versions, changelog, mise à jour des versions).
 
-Prérequis : Gladys `>= 5.1.0` (déclencheurs et actions de scène déclarés par une intégration), Node.js `>= 22`.
+Prérequis : Gladys `>= 5.3.0` (déclencheurs et actions de scène déclarés par une intégration, mots-clés et pays du catalogue de Gladys 5.3), Node.js `>= 22`.
 
 ## Release et convention de commits
 
